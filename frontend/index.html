@@ -1,13 +1,84 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Convalidación</title>
+  
+  <!-- Tailwind CSS desde CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Configuración de Tailwind -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: '#3b82f6',
+              hover: '#2563eb'
+            },
+            secondary: {
+              DEFAULT: '#6b7280',
+              hover: '#4b5563'
+            },
+            success: {
+              DEFAULT: '#10b981',
+              hover: '#059669'
+            },
+            danger: {
+              DEFAULT: '#ef4444',
+              hover: '#dc2626'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Estilos personalizados -->
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- React desde CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- React Router desde CDN -->
+  <script crossorigin src="https://unpkg.com/react-router-dom@6/umd/react-router-dom.development.js"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <!-- Componentes React -->
+  <script type="text/babel" src="components/theme-provider.jsx"></script>
+  <script type="text/babel" src="components/theme-toggle.jsx"></script>
+  <script type="text/babel" src="components/user-nav.jsx"></script>
+  <script type="text/babel" src="components/dashboard/sidebar.jsx"></script>
+  <script type="text/babel" src="components/dashboard/dashboard-shell.jsx"></script>
+  <script type="text/babel" src="components/dashboard/dashboard-header.jsx"></script>
+  <script type="text/babel" src="components/dashboard/dashboard-stats.jsx"></script>
+  <script type="text/babel" src="components/dashboard/recent-validations.jsx"></script>
+  <script type="text/babel" src="components/login-form.jsx"></script>
+  
+  <!-- Páginas -->
+  <script type="text/babel" src="pages/login.jsx"></script>
+  <script type="text/babel" src="pages/dashboard.jsx"></script>
+  <script type="text/babel" src="pages/universities.jsx"></script>
+  <script type="text/babel" src="pages/careers.jsx"></script>
+  <script type="text/babel" src="pages/curriculums.jsx"></script>
+  <script type="text/babel" src="pages/students.jsx"></script>
+  <script type="text/babel" src="pages/courses.jsx"></script>
+  <script type="text/babel" src="pages/validations/new.jsx"></script>
+  <script type="text/babel" src="pages/validations/review.jsx"></script>
+  <script type="text/babel" src="pages/validations/report.jsx"></script>
+  <script type="text/babel" src="pages/history.jsx"></script>
+  
+  <!-- App principal -->
+  <script type="text/babel" src="app.jsx"></script>
+</body>
 </html>
