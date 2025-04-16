@@ -8,8 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('Convalidaciones', function (Blueprint $table) {
-            $table->id('idConvalidacion');
+        Schema::create('Comparaciones', function (Blueprint $table) {
+            $table->id('idComparacion');
             $table->unsignedBigInteger('idSolicitud')->unique();
             $table->unsignedBigInteger('idCursoOrigen'); 
             $table->unsignedBigInteger('idCursoDestino'); 
@@ -21,7 +21,7 @@ return new class extends Migration
             $table->foreign('idSolicitud')->references('idSolicitud')->on('Solicitudes')->onDelete('cascade');
             $table->foreign('idCursoOrigen')->references('idCurso')->on('Cursos')->onDelete('cascade');
             $table->foreign('idCursoDestino')->references('idCurso')->on('Cursos')->onDelete('cascade');
-            
+
             $table->index('idCursoOrigen');
             $table->index('idCursoDestino');
 
@@ -31,6 +31,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('Convalidaciones');
+        Schema::dropIfExists('Comparaciones');
     }
 };

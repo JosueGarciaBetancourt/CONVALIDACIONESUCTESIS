@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Http\Requests\LoginRequest;
 use Illuminate\Support\Facades\Hash;
-use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\user\RegisterRequest;
+use App\Http\Requests\user\LoginRequest;
 
 class AuthController extends Controller
 {
@@ -28,7 +28,7 @@ class AuthController extends Controller
             ], 201);  // Código de estado 201 para "creado correctamente"
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error al crear el usuario: ' . $e->getMessage()
+                'message' => 'Error al registrar el usuario: ' . $e->getMessage()
             ], 500);  // Código de estado 500 para "Error interno del servidor"
         }
     }

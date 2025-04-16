@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Carrera extends Model
+class Carrera extends BaseModel
 {
+    use SoftDeletes;
+
     protected $table = 'Carreras';
     protected $primaryKey = 'idCarrera';
     public $incrementing = true;
@@ -29,9 +32,15 @@ class Carrera extends Model
     // Tiene muchas mallas 
     public function mallas()
     {
-        return $this->hasMany(Malla::class, 'idMalla', 'idMalla');
+        return $this->hasMany(Malla::class, 'idCarrera', 'idCarrera');
     }
     
+    // Tiene muchas carreras cursos
+    public function solicitudes()
+    {
+        return $this->hasMany(Solicitud::class, 'idCarrera', 'idCarreraDestino');
+    }
+
     // Tiene muchas carreras cursos
     public function carrerasCursos()
     {

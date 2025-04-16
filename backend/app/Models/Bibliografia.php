@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Bibliografia extends Model
+class Bibliografia extends BaseModel
 {
     protected $table = 'Bibliografias';
     protected $primaryKey = 'idBibliografia';

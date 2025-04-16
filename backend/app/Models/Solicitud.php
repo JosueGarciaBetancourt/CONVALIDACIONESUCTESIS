@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Solicitud extends Model
+class Solicitud extends BaseModel
 {
     protected $table = 'Solicitudes';
     protected $primaryKey = 'idSolicitud';
@@ -33,9 +33,15 @@ class Solicitud extends Model
         return $this->belongsTo(Estudiante::class, 'idEstudiante', 'idEstudiante');
     }
 
-    // Tiene una convalidacion
-    public function convalidacion()
+    // Tiene muchas comparaciones (pares de cursos)
+    public function comparaciones()
     {
-        return $this->hasOne(Convalidacion::class, 'idSolicitud', 'idSolicitud');
+        return $this->hasMany(Comparacion::class, 'idSolicitud', 'idSolicitud');
+    }
+
+    // Genera un resultado
+    public function resultado()
+    {
+        return $this->hasOne(Resultado::class, 'idSolicitud', 'idSolicitud');
     }
 }

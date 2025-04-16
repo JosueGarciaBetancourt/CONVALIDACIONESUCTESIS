@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Curso extends Model
+class Curso extends BaseModel
 {
     protected $table = 'Cursos';
     protected $primaryKey = 'idCurso';
@@ -33,15 +33,15 @@ class Curso extends Model
         return $this->hasOne(Silabo::class, 'idCurso', 'idCurso');
     }
 
-    // Aparece en muchas convalidaciones
-    public function convalidacionesComoOrigen()
+    // Aparece en muchas comparaciones
+    public function comparacionesComoOrigen()
     {
-        return $this->hasMany(Convalidacion::class, 'idCursoOrigen', 'idCurso');
+        return $this->hasMany(Comparacion::class, 'idCursoOrigen', 'idCurso');
     }
 
-    // Aparece en muchas convalidaciones
-    public function convalidacionesComoDestino()
+    // Aparece en muchas comparaciones
+    public function comparacionesComoDestino()
     {
-        return $this->hasMany(Convalidacion::class, 'idCursoDestino', 'idCurso');
+        return $this->hasMany(Comparacion::class, 'idCursoDestino', 'idCurso');
     }
 }

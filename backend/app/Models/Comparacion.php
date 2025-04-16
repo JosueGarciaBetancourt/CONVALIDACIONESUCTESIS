@@ -4,14 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Convalidacion extends Model
+class Comparacion extends BaseModel
 {
-    protected $table = 'Convalidaciones';
-    protected $primaryKey = 'idConvalidacion';
+    protected $table = 'Comparaciones';
+    protected $primaryKey = 'idComparacion';
     public $incrementing = true;
 
     protected $fillable = [
-        'idConvalidacion', 'idSolicitud', 'idCursoOrigen', 'idCursoDestino', 'fechaHora',
+        'idComparacion', 'idSolicitud', 'idCursoOrigen', 'idCursoDestino', 'idResultado', 'fechaHora',
 		'porcentaje_similitud', 'resultado', 'justificacion'
     ];
 
@@ -45,15 +45,9 @@ class Convalidacion extends Model
 		return $this->belongsTo(Curso::class, 'idCursoDestino', 'idCurso');
 	}
 	
-	// Tiene un detalle de convalidacion
-    public function detalleConvalidacion()
+	// Tiene un detalle de comparacion
+    public function detalleComparacion()
     {
-        return $this->hasOne(DetalleConvalidacion::class, 'idConvalidacion', 'idConvalidacion');
-    }
-    
- 	// Genera un resultado de convalidacion
-    public function resultado()
-    {
-		return $this->hasOne(Resultado::class, 'idConvalidacion', 'idConvalidacion');
+        return $this->hasOne(DetalleComparacion::class, 'idComparacion', 'idComparacion');
     }
 }

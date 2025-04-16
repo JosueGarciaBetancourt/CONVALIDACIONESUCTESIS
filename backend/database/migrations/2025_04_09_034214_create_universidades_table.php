@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('abreviatura')->unique();
             $table->string('region');
             $table->string('ciudad');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

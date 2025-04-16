@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Estudiante extends Model
+class Estudiante extends BaseModel
 {
     protected $table = 'Estudiantes';
     protected $primaryKey = 'idEstudiante';
@@ -25,5 +25,11 @@ class Estudiante extends Model
     public function universidad()
     {
         return $this->belongsTo(Universidad::class, 'idUniversidadOrigen', 'idUniversidad');
+    } 
+
+    // Tiene muchas solicitudes
+    public function solicitudes()
+    {
+        return $this->hasMany(Solicitud::class, 'idEstudiante', 'idEstudiante');
     } 
 }

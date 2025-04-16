@@ -22,6 +22,10 @@ class DatabaseSeeder extends Seeder
         $this->call(SilaboSeeder::class);
         $this->call(UnidadSeeder::class);
         $this->call(BibliografiaSeeder::class);
+        $this->call(SolicitudSeeder::class);
+        $this->call(ComparacionSeeder::class);
+        $this->call(DetalleComparacionSeeder::class);
+        $this->call(ResultadoSeeder::class);
 
         $endTime = microtime(true);
         $totalTime = $endTime - $startTime;

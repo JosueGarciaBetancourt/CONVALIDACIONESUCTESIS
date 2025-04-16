@@ -5,27 +5,29 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
-{
+{   
     public function up(): void
     {
         Schema::create('Resultados', function (Blueprint $table) {
             $table->id('idResultado');
-            $table->unsignedBigInteger('idConvalidacion');
+            $table->unsignedBigInteger('idSolicitud');
             $table->unsignedInteger('totalCursosEvaluados');
-            $table->unsignedInteger('totalCursosAprobados');
+            $table->unsignedInteger('totalCursosConvalidados');
             $table->unsignedInteger('totalCursosRechazados');
+            $table->unsignedInteger('totalCreditosEvaluados');
             $table->unsignedInteger('totalCreditosConvalidados');
-            $table->float('porcentaje_similitud');
+            $table->unsignedInteger('totalCreditosRechazados');
+            $table->decimal('porcentajeSimilitudPromedio', 5, 2);
             $table->text('observacionesGenerales');
-            $table->string('responsableEvaluacion');
-            $table->string('cargoResponsable');
-            $table->string('correoResponsable');
-            $table->string('firmaResponsable');
-            $table->string('cargoFirmante');
+            $table->unsignedBigInteger('idUser');
+            $table->string('responsableEvaluacion')->nullable(); // personal_name
+            $table->string('cargoResponsable')->nullable(); // cargo
+            $table->string('correoResponsable')->nullable(); // corporative_email
+            $table->string('DNI')->nullable(); // DNI
             $table->dateTime('fechaHoraEmision')->useCurrent();
 
-            $table->foreign('idConvalidacion')->references('idConvalidacion')
-                    ->on('Convalidaciones')->onDelete('cascade');
+            $table->foreign('idSolicitud')->references('idSolicitud')->on('Solicitudes')->onDelete('cascade');
+            $table->foreign('idUser')->references('id')->on('users')->onDelete('cascade');
 
             $table->timestamps();
         });

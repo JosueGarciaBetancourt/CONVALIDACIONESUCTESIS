@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Silabo extends Model
+class Silabo extends BaseModel
 {
     protected $table = 'Silabos';
     protected $primaryKey = 'idSilabo';

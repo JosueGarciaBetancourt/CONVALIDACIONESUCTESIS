@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('Solicitudes', function (Blueprint $table) {
             $table->id('idSolicitud');
+            // El código es el id con el térmio SOLI, ejemplo: SOLI-0001
             $table->string('codigo')->unique();
             $table->unsignedBigInteger('idEstudiante'); 
             $table->unsignedBigInteger('idCarreraDestino'); 

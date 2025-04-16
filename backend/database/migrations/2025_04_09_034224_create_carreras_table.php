@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('abreviatura'); //ISI
             $table->unsignedBigInteger('idUniversidad');
             $table->foreign('idUniversidad')->references('idUniversidad')->on('Universidades');
+            $table->softDeletes();
             $table->timestamps();
         });
     }
