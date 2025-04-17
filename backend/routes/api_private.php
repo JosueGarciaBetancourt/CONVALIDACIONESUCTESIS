@@ -7,7 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UniversidadController;
 use App\Http\Controllers\CarreraController;
-use App\Models\User;
+use App\Http\Controllers\EstudianteController;
 
 // ==============================
 // 🔒 RUTAS PROTEGIDAS (requieren token Sanctum)
@@ -51,3 +51,14 @@ Route::put('/carreras/{idCarrera}', [CarreraController::class, 'updateCarrera'])
 Route::delete('/carreras/{idCarrera}/disable', [CarreraController::class, 'disableCarrera'])->name('disableCarrera');
 Route::post('/carreras/{idCarrera}/enable', [CarreraController::class, 'enableCarrera'])->name('enableCarrera');
 Route::delete('/carreras/{idCarrera}/delete', [CarreraController::class, 'deleteCarrera'])->name('deleteCarrera');
+
+// Estudiantes
+Route::get('/estudiantes', [EstudianteController::class, 'getEstudiantes'])->name('getEstudiantes');
+Route::get('/estudiantes/{idEstudiante}', [EstudianteController::class, 'getEstudiante'])->name('getEstudiante');
+Route::get('/estudiantes-trashed', [EstudianteController::class, 'getTrashedEstudiantes'])->name('getTrashedEstudiantes');
+Route::get('/estudiantes/{idEstudiante}/trashed', [EstudianteController::class, 'getTrashedEstudiante'])->name('getTrashedEstudiante');
+Route::post('/estudiantes', [EstudianteController::class, 'createEstudiante'])->name('createEstudiante');
+Route::put('/estudiantes/{idEstudiante}', [EstudianteController::class, 'updateEstudiante'])->name('updateEstudiante');
+Route::delete('/estudiantes/{idEstudiante}/disable', [EstudianteController::class, 'disableEstudiante'])->name('disableEstudiante');
+Route::post('/estudiantes/{idEstudiante}/enable', [EstudianteController::class, 'enableEstudiante'])->name('enableEstudiante');
+Route::delete('/estudiantes/{idEstudiante}/delete', [EstudianteController::class, 'deleteEstudiante'])->name('deleteEstudiante');

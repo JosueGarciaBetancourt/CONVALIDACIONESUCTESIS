@@ -13,12 +13,15 @@ return new class extends Migration
             $table->string('DNI', 8)->unique();
             $table->string('nombre'); 
             $table->string('apellido'); 
-            $table->string('email'); 
+            $table->string('email')->unique(); 
             $table->string('celular')->nullable(); 
             $table->unsignedBigInteger('idCarreraOrigen');
-            $table->foreign('idCarreraOrigen')->references('idCarrera')->on('Carreras');
             $table->unsignedBigInteger('idUniversidadOrigen');
+        
+            $table->foreign('idCarreraOrigen')->references('idCarrera')->on('Carreras');
             $table->foreign('idUniversidadOrigen')->references('idUniversidad')->on('Universidades');
+
+            $table->softDeletes();
             $table->timestamps();
         });
     }

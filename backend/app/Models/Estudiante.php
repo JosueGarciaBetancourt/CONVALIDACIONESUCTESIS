@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Estudiante extends BaseModel
 {
+    use SoftDeletes;
+
     protected $table = 'Estudiantes';
     protected $primaryKey = 'idEstudiante';
     public $incrementing = true;
