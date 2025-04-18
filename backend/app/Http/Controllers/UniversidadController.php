@@ -87,16 +87,15 @@ class UniversidadController extends Controller
             // Validación automática por UpdateUniversidadRequest
             $data = $request->validated();
 
+            if (empty($data)) {
+                return response()->json([
+                    'message' => 'No se enviaron datos para actualizar.'
+                ], 400);
+            }
+
             // Buscar la universidad por su ID
             $universidad = Universidad::findOrFail($idUniversidad);
-            
-            // Actualizar solo los campos presentes
-            if (isset($data['nombre'])) $universidad->nombre = $data['nombre'];
-            if (isset($data['abreviatura'])) $universidad->abreviatura = $data['abreviatura'];
-            if (isset($data['region'])) $universidad->region = $data['region'];
-            if (isset($data['ciudad'])) $universidad->ciudad = $data['ciudad'];
-
-            $universidad->save();
+            $universidad->update($data);
 
             return response()->json([
                 'message' => 'Universidad actualizada correctamente'

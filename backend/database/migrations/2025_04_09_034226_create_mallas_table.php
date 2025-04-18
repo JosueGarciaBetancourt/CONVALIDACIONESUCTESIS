@@ -11,10 +11,14 @@ return new class extends Migration
         Schema::create('Mallas', function (Blueprint $table) {
             $table->id('idMalla');
             $table->unsignedBigInteger('idCarrera');
-            $table->foreign('idCarrera')->references('idCarrera')->on('Carreras');
             $table->year('anio_inicio');
             $table->string('semestre_inicio'); 
             $table->string('semestre_fin')->nullable();
+
+            $table->foreign('idCarrera')->references('idCarrera')->on('Carreras');
+            
+            $table->unique(['idCarrera', 'anio_inicio', 'semestre_inicio']);
+            $table->softDeletes();
             $table->timestamps();
         });
     }

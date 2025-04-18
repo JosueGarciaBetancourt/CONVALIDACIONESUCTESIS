@@ -8,6 +8,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UniversidadController;
 use App\Http\Controllers\CarreraController;
 use App\Http\Controllers\EstudianteController;
+use App\Http\Controllers\MallaController;
 
 // ==============================
 // 🔒 RUTAS PROTEGIDAS (requieren token Sanctum)
@@ -62,3 +63,14 @@ Route::put('/estudiantes/{idEstudiante}', [EstudianteController::class, 'updateE
 Route::delete('/estudiantes/{idEstudiante}/disable', [EstudianteController::class, 'disableEstudiante'])->name('disableEstudiante');
 Route::post('/estudiantes/{idEstudiante}/enable', [EstudianteController::class, 'enableEstudiante'])->name('enableEstudiante');
 Route::delete('/estudiantes/{idEstudiante}/delete', [EstudianteController::class, 'deleteEstudiante'])->name('deleteEstudiante');
+
+// Mallas
+Route::get('/mallas', [MallaController::class, 'getMallas'])->name('getMallas');
+Route::get('/mallas/{idMalla}', [MallaController::class, 'getMalla'])->name('getMalla');
+Route::get('/mallas-trashed', [MallaController::class, 'getTrashedmallas'])->name('getTrashedmallas');
+Route::get('/mallas/{idMalla}/trashed', [MallaController::class, 'getTrashedMalla'])->name('getTrashedMalla');
+Route::post('/mallas', [MallaController::class, 'createMalla'])->name('createMalla');
+Route::put('/mallas/{idMalla}', [MallaController::class, 'updateMalla'])->name('updateMalla');
+Route::delete('/mallas/{idMalla}/disable', [MallaController::class, 'disableMalla'])->name('disableMalla');
+Route::post('/mallas/{idMalla}/enable', [MallaController::class, 'enableMalla'])->name('enableMalla');
+Route::delete('/mallas/{idMalla}/delete', [MallaController::class, 'deleteMalla'])->name('deleteMalla');

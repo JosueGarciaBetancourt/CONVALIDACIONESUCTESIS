@@ -90,15 +90,14 @@ class EstudianteController extends Controller
         try {
             $data = $request->validated();
 
+            if (empty($data)) {
+                return response()->json([
+                    'message' => 'No se enviaron datos para actualizar.'
+                ], 400);
+            }
+
             $estudiante = Estudiante::findOrFail($idEstudiante);
-
-            // Actualizar solo los campos presentes
-            if (isset($data['nombre'])) $estudiante->nombre = $data['nombre'];
-            if (isset($data['apellido'])) $estudiante->apellido = $data['apellido'];
-            if (isset($data['email'])) $estudiante->email = $data['email'];
-            if (isset($data['celular'])) $estudiante->celular = $data['celular'];
-
-            $estudiante->save();
+            $estudiante->update($data);
 
             return response()->json([
                 'message' => 'Estudiante actualizado correctamente'
