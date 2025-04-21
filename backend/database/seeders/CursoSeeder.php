@@ -94,6 +94,14 @@ class CursoSeeder extends Seeder
                 'codigo' => 'UNCP-ISI-EGI14D-2024-ELEC',
                 'nombre' => 'Redes de Computadoras',
                 'fueComparado' => false,
+            ],
+            // Curso de prueba
+            [   
+                'idCurso' => 10,
+                'idMalla' => 3, // Malla 2024 UC
+                'codigo' => null,
+                'nombre' => 'Curso de prueba',
+                'fueComparado' => true,
             ]
         ];
 

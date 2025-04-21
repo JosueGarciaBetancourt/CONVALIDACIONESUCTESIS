@@ -17,6 +17,8 @@ return new class extends Migration
             $table->foreign('idCurso')->references('idCurso')->on('Cursos')->onDelete('cascade');
             
             $table->unique(['idCarrera', 'idCurso']); // para evitar duplicados
+
+            $table->softDeletes();
             $table->timestamps();
         });
     }

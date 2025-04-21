@@ -136,10 +136,9 @@ class CarreraController extends Controller
             
             $hasEstudiantes = Estudiante::where('idCarreraOrigen', $carrera->idCarrera)->exists();
             $hasMallas = $carrera->mallas()->exists();
-            $hasCarrerasCursos = $carrera->carrerasCursos()->exists();
             $hasSolicitudes = Solicitud::where('idCarreraDestino', $carrera->idCarrera)->exists();
     
-            if ($hasEstudiantes || $hasMallas || $hasCarrerasCursos || $hasSolicitudes) {
+            if ($hasEstudiantes || $hasMallas || $hasSolicitudes) {
                 $motivos = [];
     
                 if ($hasEstudiantes) {
@@ -148,10 +147,6 @@ class CarreraController extends Controller
     
                 if ($hasMallas) {
                     $motivos[] = 'mallas curriculares asociadas';
-                }
-    
-                if ($hasCarrerasCursos) {
-                    $motivos[] = 'cursos asignados';
                 }
     
                 if ($hasSolicitudes) {
@@ -208,10 +203,9 @@ class CarreraController extends Controller
             
             $hasEstudiantes = Estudiante::where('idCarreraOrigen', $carrera->idCarrera)->exists();
             $hasMallas = $carrera->mallas()->exists();
-            $hasCarrerasCursos = $carrera->carrerasCursos()->exists();
             $hasSolicitudes = Solicitud::where('idCarreraDestino', $carrera->idCarrera)->exists();
     
-            if ($hasEstudiantes || $hasMallas || $hasCarrerasCursos || $hasSolicitudes) {
+            if ($hasEstudiantes || $hasMallas || $hasSolicitudes) {
                 $motivos = [];
     
                 if ($hasEstudiantes) {
@@ -220,10 +214,6 @@ class CarreraController extends Controller
     
                 if ($hasMallas) {
                     $motivos[] = 'mallas curriculares asociadas';
-                }
-    
-                if ($hasCarrerasCursos) {
-                    $motivos[] = 'cursos asignados';
                 }
     
                 if ($hasSolicitudes) {

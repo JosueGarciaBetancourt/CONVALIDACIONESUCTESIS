@@ -137,22 +137,17 @@ class CursoController extends Controller
     {
         try {
             $curso = Curso::findOrFail($idCurso); // Solo cursos activos (no eliminados lógicamente)
-            
+
             $hasSilabo = $curso->silabo()->exists();
-            $hasCarrerasCursos = $curso->carrerasCursos()->exists();
             $hasComparacionesComoOrigen = $curso->comparacionesComoOrigen()->exists();
             $hasComparacionesComoDestino = $curso->comparacionesComoDestino()->exists();
 
-            if ($hasSilabo || $hasCarrerasCursos || $hasComparacionesComoOrigen || $hasComparacionesComoDestino) {
+            if ($hasSilabo || $hasComparacionesComoOrigen || $hasComparacionesComoDestino) {
 
                 $motivos = [];
     
                 if ($hasSilabo) {
                     $motivos[] = 'un sílabo asociado';
-                }
-    
-                if ($hasCarrerasCursos) {
-                    $motivos[] = 'carreras asociadas';
                 }
     
                 if ($hasComparacionesComoOrigen) {
@@ -212,20 +207,15 @@ class CursoController extends Controller
             $curso = Curso::withTrashed()->findOrFail($idCurso); // Buscar incluso si está eliminado lógicamente
             
             $hasSilabo = $curso->silabo()->exists();
-            $hasCarrerasCursos = $curso->carrerasCursos()->exists();
             $hasComparacionesComoOrigen = $curso->comparacionesComoOrigen()->exists();
             $hasComparacionesComoDestino = $curso->comparacionesComoDestino()->exists();
 
-            if ($hasSilabo || $hasCarrerasCursos || $hasComparacionesComoOrigen || $hasComparacionesComoDestino) {
+            if ($hasSilabo || $hasComparacionesComoOrigen || $hasComparacionesComoDestino) {
 
                 $motivos = [];
     
                 if ($hasSilabo) {
                     $motivos[] = 'un sílabo asociado';
-                }
-    
-                if ($hasCarrerasCursos) {
-                    $motivos[] = 'carreras asociadas';
                 }
     
                 if ($hasComparacionesComoOrigen) {

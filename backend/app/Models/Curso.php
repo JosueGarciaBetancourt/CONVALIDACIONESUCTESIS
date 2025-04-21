@@ -47,4 +47,26 @@ class Curso extends BaseModel
     {
         return $this->hasMany(Comparacion::class, 'idCursoDestino', 'idCurso');
     }
+
+    protected static function booted()
+    {
+        // Eliminación de registros en la tabla CarrerasCursos
+        static::deleting(function ($curso) {
+            if ($curso->isForceDeleting()) {
+                $curso->carrerasCursos()->forceDelete();
+            } else {
+                $curso->carrerasCursos()->each(function ($relacion) {
+                    $relacion->delete();
+                });
+            }
+        });
+
+        // Restauración de registros en la tabla CarrerasCursos
+        static::restoring(function ($curso) {
+            $curso->carrerasCursos()
+                ->onlyTrashed()
+                ->restore();
+        });
+    }
+
 }

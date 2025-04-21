@@ -39,6 +39,14 @@ class CarreraSeeder extends Seeder
                 'abreviatura' => 'IS',
                 'idUniversidad' => 1, // UNCP
             ],
+            // Carrera de prueba
+            [   
+                'idCarrera' => 5,
+                'nombre' => 'Carrera de prueba',
+                'codigo' => 'UP-CP',
+                'abreviatura' => 'CP',
+                'idUniversidad' => 4,
+            ]
         ];
 
         foreach ($carreras as $carrera) {

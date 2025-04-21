@@ -46,4 +46,28 @@ class Carrera extends BaseModel
     {
         return $this->hasMany(CarreraCurso::class, 'idCarrera', 'idCarrera');
     }
+
+    protected static function booted()
+    {   
+        // Eliminación de registros en la tabla CarrerasCursos
+        static::deleting(function ($carrera) {
+            if ($carrera->isForceDeleting()) {
+                // Eliminación permanente
+                $carrera->carrerasCursos()->forceDelete();
+            } else {
+                // Soft delete en la tabla pivote
+                $carrera->carrerasCursos()->each(function ($relacion) {
+                    $relacion->delete();
+                });
+            }
+        });
+
+        // Restauración de registros en la tabla CarrerasCursos
+        static::restoring(function ($carrera) {
+            $carrera->carrerasCursos()
+                ->onlyTrashed()
+                ->restore();
+        });
+    }
+
 }

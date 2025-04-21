@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\CursoController;
 use App\Http\Controllers\MallaController;
 use App\Http\Controllers\CarreraController;
+use App\Http\Controllers\CarreraCursoController;
 use App\Http\Controllers\SilaboController;
 use App\Http\Controllers\TestApiController;
 use App\Http\Controllers\EstudianteController;
@@ -90,6 +91,17 @@ Route::delete('/cursos/{idCurso}/disable', [CursoController::class, 'disableCurs
 Route::post('/cursos/{idCurso}/enable', [CursoController::class, 'enableCurso'])->name('enableCurso');
 Route::delete('/cursos/{idCurso}/delete', [CursoController::class, 'deleteCurso'])->name('deleteCurso');
 
+// Carreras Cursos
+Route::get('/carrerasCursos', [CarreraCursoController::class, 'getCarrerasCursos'])->name('getCarreraCursos');
+Route::get('/carrerasCursos/{idCarreraCurso}', [CarreraCursoController::class, 'getCarreraCurso'])->name('getCarreraCurso');
+Route::get('/carrerasCursos-trashed', [CarreraCursoController::class, 'getTrashedCarrerasCursos'])->name('getTrashedCarreraCursos');
+Route::get('/carrerasCursos/{idCarreraCurso}/trashed', [CarreraCursoController::class, 'getTrashedCarreraCurso'])->name('getTrashedCarreraCurso');
+Route::post('/carrerasCursos', [CarreraCursoController::class, 'createCarreraCurso'])->name('createCarreraCurso');
+Route::put('/carrerasCursos/{idCarreraCurso}', [CarreraCursoController::class, 'updateCarreraCurso'])->name('updateCarreraCurso');
+Route::delete('/carrerasCursos/{idCarreraCurso}/disable', [CarreraCursoController::class, 'disableCarreraCurso'])->name('disableCarreraCurso');
+Route::post('/carrerasCursos/{idCarreraCurso}/enable', [CarreraCursoController::class, 'enableCarreraCurso'])->name('enableCarreraCurso');
+Route::delete('/carrerasCursos/{idCarreraCurso}/delete', [CarreraCursoController::class, 'deleteCarreraCurso'])->name('deleteCarreraCurso');
+
 // Silabos
 Route::get('/silabos', [SilaboController::class, 'getSilabos'])->name('getSilaboss');
 Route::get('/silabos/{idSilabo}', [SilaboController::class, 'getSilabo'])->name('getSilabo');
@@ -122,3 +134,4 @@ Route::put('/bibliografias/{idBibliografia}', [BibliografiaController::class, 'u
 Route::delete('/bibliografias/{idBibliografia}/disable', [BibliografiaController::class, 'disableBibliografia'])->name('disableBibliografia');
 Route::post('/bibliografias/{idBibliografia}/enable', [BibliografiaController::class, 'enableBibliografia'])->name('enableBibliografia');
 Route::delete('/bibliografias/{idBibliografia}/delete', [BibliografiaController::class, 'deleteBibliografia'])->name('deleteBibliografia');
+

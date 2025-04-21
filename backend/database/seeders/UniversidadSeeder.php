@@ -32,6 +32,13 @@ class UniversidadSeeder extends Seeder
                 'region' => 'Junín',
                 'ciudad' => 'Huancayo',
             ],
+            [
+                'idUniversidad' => 4,
+                'nombre' => 'Universidad de Prueba',
+                'abreviatura' => 'UP',
+                'region' => 'Junín',
+                'ciudad' => 'Huancayo',
+            ],
         ];
 
         foreach ($universidades as $universidad) {

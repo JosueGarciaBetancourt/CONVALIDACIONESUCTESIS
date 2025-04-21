@@ -42,11 +42,4 @@ class UpdateCursoRequest extends FormRequest
             }
         });
     }
-    
-    /* Para estandarizar el código de un curso se usará la siguiente estructura:
-        → Cursos locales:
-            Abreviatura_Universidad-Abreviatura_Carrera-Codigo_Silabo-Anio_Silabo-Electivo/Obligatorio
-        → Cursos foráneos:
-            Abreviatura_Universidad-Abreviatura_Carrera-Codigo_Silabo-Anio_Silabo
-    */
 }
