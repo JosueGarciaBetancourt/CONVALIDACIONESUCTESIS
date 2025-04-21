@@ -3,16 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Silabo extends BaseModel
 {
+    use SoftDeletes;
+    
     protected $table = 'Silabos';
     protected $primaryKey = 'idSilabo';
     public $incrementing = true;
 
-
     protected $fillable = [
-        'idSilabo', 'idCurso', 'anio', 'sumilla', 'aprendizaje_general'
+        'idSilabo', 'idCurso', 'codigo', 'anio', 'caracter', 'creditos', 'horas_teoria', 'horas_practica',
+        'horas_teoricoPracticas', 'sumilla', 'aprendizaje_general'
     ];
     
     // Pertenece a un curso

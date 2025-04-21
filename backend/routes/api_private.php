@@ -2,13 +2,17 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\TestApiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\UniversidadController;
-use App\Http\Controllers\CarreraController;
-use App\Http\Controllers\EstudianteController;
+use App\Http\Controllers\CursoController;
 use App\Http\Controllers\MallaController;
+use App\Http\Controllers\CarreraController;
+use App\Http\Controllers\SilaboController;
+use App\Http\Controllers\TestApiController;
+use App\Http\Controllers\EstudianteController;
+use App\Http\Controllers\UniversidadController;
+use App\Http\Controllers\UnidadController;
+use App\Http\Controllers\BibliografiaController;
 
 // ==============================
 // 🔒 RUTAS PROTEGIDAS (requieren token Sanctum)
@@ -74,3 +78,47 @@ Route::put('/mallas/{idMalla}', [MallaController::class, 'updateMalla'])->name('
 Route::delete('/mallas/{idMalla}/disable', [MallaController::class, 'disableMalla'])->name('disableMalla');
 Route::post('/mallas/{idMalla}/enable', [MallaController::class, 'enableMalla'])->name('enableMalla');
 Route::delete('/mallas/{idMalla}/delete', [MallaController::class, 'deleteMalla'])->name('deleteMalla');
+
+// Cursos
+Route::get('/cursos', [CursoController::class, 'getCursos'])->name('getCursoss');
+Route::get('/cursos/{idCurso}', [CursoController::class, 'getCurso'])->name('getCurso');
+Route::get('/cursos-trashed', [CursoController::class, 'getTrashedCursos'])->name('getTrashedCursos');
+Route::get('/cursos/{idCurso}/trashed', [CursoController::class, 'getTrashedCurso'])->name('getTrashedCurso');
+Route::post('/cursos', [CursoController::class, 'createCurso'])->name('createCurso');
+Route::put('/cursos/{idCurso}', [CursoController::class, 'updateCurso'])->name('updateCurso');
+Route::delete('/cursos/{idCurso}/disable', [CursoController::class, 'disableCurso'])->name('disableCurso');
+Route::post('/cursos/{idCurso}/enable', [CursoController::class, 'enableCurso'])->name('enableCurso');
+Route::delete('/cursos/{idCurso}/delete', [CursoController::class, 'deleteCurso'])->name('deleteCurso');
+
+// Silabos
+Route::get('/silabos', [SilaboController::class, 'getSilabos'])->name('getSilaboss');
+Route::get('/silabos/{idSilabo}', [SilaboController::class, 'getSilabo'])->name('getSilabo');
+Route::get('/silabos-trashed', [SilaboController::class, 'getTrashedSilabos'])->name('getTrashedSilabos');
+Route::get('/silabos/{idSilabo}/trashed', [SilaboController::class, 'getTrashedSilabo'])->name('getTrashedSilabo');
+Route::post('/silabos', [SilaboController::class, 'createSilabo'])->name('createSilabo');
+Route::put('/silabos/{idSilabo}', [SilaboController::class, 'updateSilabo'])->name('updateSilabo');
+Route::delete('/silabos/{idSilabo}/disable', [SilaboController::class, 'disableSilabo'])->name('disableSilabo');
+Route::post('/silabos/{idSilabo}/enable', [SilaboController::class, 'enableSilabo'])->name('enableSilabo');
+Route::delete('/silabos/{idSilabo}/delete', [SilaboController::class, 'deleteSilabo'])->name('deleteSilabo');
+
+// Unidades
+Route::get('/unidades', [UnidadController::class, 'getUnidades'])->name('getUnidades');
+Route::get('/unidades/{idUnidad}', [UnidadController::class, 'getUnidad'])->name('getUnidad');
+Route::get('/unidades-trashed', [UnidadController::class, 'getTrashedUnidades'])->name('getTrashedUnidades');
+Route::get('/unidades/{idUnidad}/trashed', [UnidadController::class, 'getTrashedUnidad'])->name('getTrashedUnidad');
+Route::post('/unidades', [UnidadController::class, 'createUnidad'])->name('createUnidad');
+Route::put('/unidades/{idUnidad}', [UnidadController::class, 'updateUnidad'])->name('updateUnidad');
+Route::delete('/unidades/{idUnidad}/disable', [UnidadController::class, 'disableUnidad'])->name('disableUnidad');
+Route::post('/unidades/{idUnidad}/enable', [UnidadController::class, 'enableUnidad'])->name('enableUnidad');
+Route::delete('/unidades/{idUnidad}/delete', [UnidadController::class, 'deleteUnidad'])->name('deleteUnidad');
+
+// Bibliografías
+Route::get('/bibliografias', [BibliografiaController::class, 'getBibliografias'])->name('getBibliografias');
+Route::get('/bibliografias/{idBibliografia}', [BibliografiaController::class, 'getBibliografia'])->name('getBibliografia');
+Route::get('/bibliografias-trashed', [BibliografiaController::class, 'getTrashedBibliografiaes'])->name('getTrashedBibliografias');
+Route::get('/bibliografias/{idBibliografia}/trashed', [BibliografiaController::class, 'getTrashedBibliografia'])->name('getTrashedBibliografia');
+Route::post('/bibliografias', [BibliografiaController::class, 'createBibliografia'])->name('createBibliografia');
+Route::put('/bibliografias/{idBibliografia}', [BibliografiaController::class, 'updateBibliografia'])->name('updateBibliografia');
+Route::delete('/bibliografias/{idBibliografia}/disable', [BibliografiaController::class, 'disableBibliografia'])->name('disableBibliografia');
+Route::post('/bibliografias/{idBibliografia}/enable', [BibliografiaController::class, 'enableBibliografia'])->name('enableBibliografia');
+Route::delete('/bibliografias/{idBibliografia}/delete', [BibliografiaController::class, 'deleteBibliografia'])->name('deleteBibliografia');

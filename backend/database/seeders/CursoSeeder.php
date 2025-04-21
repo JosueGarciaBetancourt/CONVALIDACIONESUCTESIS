@@ -25,11 +25,6 @@ class CursoSeeder extends Seeder
                 'idMalla' => 1, // Malla 2015 UC
                 'codigo' => 'UTP-ISI-ASUC00687-2015',
                 'nombre' => 'Programación I',
-                'anio' => 2015,
-                'creditos' => 3,
-                'horas_teoria' => 3,
-                'horas_practica' => 2,
-                'horas_teoricoPracticas' => 5,
                 'fueComparado' => false,
             ],
             // Malla 2018
@@ -38,11 +33,6 @@ class CursoSeeder extends Seeder
                 'idMalla' => 2, // Malla 2018 UC
                 'codigo' => 'UTP-ISI-ASUC00469-2018',
                 'nombre' => 'Ingeniería web',
-                'anio' => 2018,
-                'creditos' => 4,
-                'horas_teoria' => 3,
-                'horas_practica' => 3,
-                'horas_teoricoPracticas' => 6,
                 'fueComparado' => false,
             ],
             // Malla 2024
@@ -51,11 +41,6 @@ class CursoSeeder extends Seeder
                 'idMalla' => 3, // Malla 2024 UC
                 'codigo' => 'UTP-ISI-F00050134-2024',
                 'nombre' => 'Redes de computadoras',
-                'anio' => 2024,
-                'creditos' => 3,
-                'horas_teoria' => 2,
-                'horas_practica' => 4,
-                'horas_teoricoPracticas' => 6,
                 'fueComparado' => false,
             ],
 
@@ -66,11 +51,6 @@ class CursoSeeder extends Seeder
                 'idMalla' => 4, // Malla 2016 UTP
                 'codigo' => 'UTP-ISI-100000Z106-2016',
                 'nombre' => 'Introducción a la Programación',
-                'anio' => 2016,
-                'creditos' => 3,
-                'horas_teoria' => 3,
-                'horas_practica' => 2,
-                'horas_teoricoPracticas' => 5,
                 'fueComparado' => false,
             ],
             // Malla 2019
@@ -79,11 +59,6 @@ class CursoSeeder extends Seeder
                 'idMalla' => 5, // Malla 2019 UTP
                 'codigo' => 'UTP-ISI-100000Z107-2019',
                 'nombre' => 'Desarrollo web',
-                'anio' => 2019,
-                'creditos' => 4,
-                'horas_teoria' => 3,
-                'horas_practica' => 3,
-                'horas_teoricoPracticas' => 6,
                 'fueComparado' => false,
             ],
             // Malla 2023
@@ -92,11 +67,6 @@ class CursoSeeder extends Seeder
                 'idMalla' => 6, // Malla 2023 UTP
                 'codigo' => 'UTP-ISI-100000Z108-2023',
                 'nombre' => 'Redes de computadoras 1',
-                'anio' => 2023,
-                'creditos' => 3,
-                'horas_teoria' => 2,
-                'horas_practica' => 4,
-                'horas_teoricoPracticas' => 6,
                 'fueComparado' => false,
             ],
 
@@ -107,11 +77,6 @@ class CursoSeeder extends Seeder
                 'idMalla' => 7, // Malla 2017 UNCP
                 'codigo' => 'UNCP-ISI-EGI14B-2017',
                 'nombre' => 'Introducción a la Programación',
-                'anio' => 2017,
-                'creditos' => 3,
-                'horas_teoria' => 3,
-                'horas_practica' => 2,
-                'horas_teoricoPracticas' => 5,
                 'fueComparado' => false,
             ],
             // Malla 2020
@@ -120,11 +85,6 @@ class CursoSeeder extends Seeder
                 'idMalla' => 8, // Malla 2020 UNCP
                 'codigo' => 'UNCP-ISI-EGI14C-2020-OBLI',
                 'nombre' => 'Programación Web',
-                'anio' => 2020,
-                'creditos' => 4,
-                'horas_teoria' => 3,
-                'horas_practica' => 3,
-                'horas_teoricoPracticas' => 6,
                 'fueComparado' => false,
             ],
             // Malla 2024
@@ -133,11 +93,6 @@ class CursoSeeder extends Seeder
                 'idMalla' => 9, // Malla 2024 UNCP
                 'codigo' => 'UNCP-ISI-EGI14D-2024-ELEC',
                 'nombre' => 'Redes de Computadoras',
-                'anio' => 2024,
-                'creditos' => 3,
-                'horas_teoria' => 2,
-                'horas_practica' => 4,
-                'horas_teoricoPracticas' => 6,
                 'fueComparado' => false,
             ]
         ];

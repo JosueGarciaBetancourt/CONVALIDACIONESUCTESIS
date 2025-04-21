@@ -57,8 +57,8 @@ class CreateMallaRequest extends FormRequest
             // Validar semestre_fin > semestre_inicio
             if ($semestre_fin) {
                 if (
-                    preg_match('/^\d{4}-[12]$/', $semestre_inicio) &&
-                    preg_match('/^\d{4}-[12]$/', $semestre_fin)
+                    preg_match('/^\d{4}-[012]$/', $semestre_inicio) &&
+                    preg_match('/^\d{4}-[012]$/', $semestre_fin)
                 ) {
                     $inicio_valor = intval(str_replace('-', '', $semestre_inicio));
                     $fin_valor = intval(str_replace('-', '', $semestre_fin));
@@ -67,7 +67,7 @@ class CreateMallaRequest extends FormRequest
                         $validator->errors()->add('semestre_fin', 'El semestre de fin debe ser posterior al semestre de inicio.');
                     }
                 } else {
-                    $validator->errors()->add('semestre_fin', 'El formato de semestre debe ser YYYY-1 o YYYY-2.');
+                    $validator->errors()->add('semestre_fin', 'El formato de semestre debe ser YYYY-0, YYYY-1 ó YYYY-2.');
                 }
             }
         });

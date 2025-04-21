@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id('idCarrera');
             $table->string('nombre');
             /* Para estandarizar el código de una carrera se usará la siguiente estructura:
-                    Abreviatura_Universidad-Abreviatura_Carrera
+                Abreviatura_Universidad-Abreviatura_Carrera
             */
             $table->string('codigo')->unique(); //UC-ISI
             $table->string('abreviatura'); //ISI

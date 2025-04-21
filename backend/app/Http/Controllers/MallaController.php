@@ -71,7 +71,7 @@ class MallaController extends Controller
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => "Error al crear la Malla. " . $e->getMessage()
+                'message' => "Error al crear la malla. " . $e->getMessage()
             ], 500);
         }
     }

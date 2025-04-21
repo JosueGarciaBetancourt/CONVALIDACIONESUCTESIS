@@ -16,7 +16,10 @@ return new class extends Migration
 
             $table->foreign('idSilabo')->references('idSilabo')
                     ->on('Silabos')->onDelete('cascade');
-
+            
+            $table->unique(['idSilabo', 'referencia', 'url']);
+            
+            $table->softDeletes();
             $table->timestamps();
         });
     }

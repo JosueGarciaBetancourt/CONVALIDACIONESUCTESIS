@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Unidad extends BaseModel
 {
+    use SoftDeletes;
+
     protected $table = 'Unidades';
     protected $primaryKey = 'idUnidad';
     public $incrementing = true;
