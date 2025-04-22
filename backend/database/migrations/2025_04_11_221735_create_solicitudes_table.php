@@ -22,7 +22,7 @@ return new class extends Migration
             $table->foreign('idUsuarioEvaluador')->references('id')->on('users');
             
             $table->index('codigo');
-
+            $table->softDeletes();
             $table->timestamps();
         });
     }

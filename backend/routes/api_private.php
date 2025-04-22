@@ -14,6 +14,10 @@ use App\Http\Controllers\EstudianteController;
 use App\Http\Controllers\UniversidadController;
 use App\Http\Controllers\UnidadController;
 use App\Http\Controllers\BibliografiaController;
+use App\Http\Controllers\SolicitudController;
+use App\Http\Controllers\ComparacionController;
+use App\Http\Controllers\DetalleComparacionController;
+use App\Http\Controllers\ResultadoController;
 
 // ==============================
 // 🔒 RUTAS PROTEGIDAS (requieren token Sanctum)
@@ -134,4 +138,31 @@ Route::put('/bibliografias/{idBibliografia}', [BibliografiaController::class, 'u
 Route::delete('/bibliografias/{idBibliografia}/disable', [BibliografiaController::class, 'disableBibliografia'])->name('disableBibliografia');
 Route::post('/bibliografias/{idBibliografia}/enable', [BibliografiaController::class, 'enableBibliografia'])->name('enableBibliografia');
 Route::delete('/bibliografias/{idBibliografia}/delete', [BibliografiaController::class, 'deleteBibliografia'])->name('deleteBibliografia');
+
+// Solicitudes
+Route::get('/solicitudes', [SolicitudController::class, 'getSolicitudes'])->name('getSolicitudes');
+Route::get('/solicitudes/{idSolicitud}', [SolicitudController::class, 'getSolicitud'])->name('getSolicitud');
+Route::get('/solicitudes-trashed', [SolicitudController::class, 'getTrashedSolicitudes'])->name('getTrashedSolicitudes');
+Route::get('/solicitudes/{idSolicitud}/trashed', [SolicitudController::class, 'getTrashedSolicitud'])->name('getTrashedSolicitud');
+Route::post('/solicitudes', [SolicitudController::class, 'createSolicitud'])->name('createSolicitud');
+Route::delete('/solicitudes/{idSolicitud}/disable', [SolicitudController::class, 'disableSolicitud'])->name('disableSolicitud');
+Route::post('/solicitudes/{idSolicitud}/enable', [SolicitudController::class, 'enableSolicitud'])->name('enableSolicitud');
+
+// Comparaciones
+Route::get('/comparaciones', [ComparacionController::class, 'getComparaciones'])->name('getComparaciones');
+Route::get('/comparaciones/{idComparacion}', [ComparacionController::class, 'getComparacion'])->name('getComparacion');
+Route::get('/comparaciones-trashed', [ComparacionController::class, 'getTrashedComparaciones'])->name('getTrashedComparaciones');
+Route::get('/comparaciones/{idComparacion}/trashed', [ComparacionController::class, 'getTrashedComparacion'])->name('getTrashedComparacion');
+Route::post('/comparaciones', [ComparacionController::class, 'createComparacion'])->name('createComparacion');
+Route::put('/comparaciones/{idComparacion}', [ComparacionController::class, 'updateComparacion'])->name('updateComparacion');
+
+// Detalles de Comparaciones
+Route::get('/detallesComparaciones', [DetalleComparacionController::class, 'getDetallesComparaciones'])->name('getDetallesComparaciones');
+Route::get('/detallesComparaciones/{idDetalleComparacion}', [DetalleComparacionController::class, 'getDetalleComparacion'])->name('getDetalleComparacion');
+Route::get('/detallesComparaciones-trashed', [DetalleComparacionController::class, 'getTrashedDetallesComparaciones'])->name('getTrashedDetallesComparaciones');
+Route::get('/detallesComparaciones/{idDetalleComparacion}/trashed', [DetalleComparacionController::class, 'getTrashedDetalleComparacion'])->name('getTrashedDetalleComparacion');
+Route::post('/detallesComparaciones', [DetalleComparacionController::class, 'createDetalleComparacion'])->name('createDetalleComparacion');
+Route::put('/detallesComparaciones/{idDetalleComparacion}', [DetalleComparacionController::class, 'updateDetalleComparacion'])->name('updateDetalleComparacion');
+
+
 

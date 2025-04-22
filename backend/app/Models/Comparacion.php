@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Comparacion extends BaseModel
 {
+	use SoftDeletes;
+	
     protected $table = 'Comparaciones';
     protected $primaryKey = 'idComparacion';
     public $incrementing = true;

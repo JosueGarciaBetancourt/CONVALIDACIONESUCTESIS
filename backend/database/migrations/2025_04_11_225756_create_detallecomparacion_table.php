@@ -10,15 +10,15 @@ return new class extends Migration
     {
         Schema::create('Detalle_Comparacion', function (Blueprint $table) {
             $table->id('idDetalleComparacion');
-            $table->unsignedBigInteger('idComparacion');
+            $table->unsignedBigInteger('idComparacion')->unique();
             $table->float('similitud_sumilla');
             $table->float('similitud_aprendizajes');
             $table->float('similitud_unidades');
             $table->float('similitud_bibliografia');
                      
-            $table->foreign('idComparacion')->references('idComparacion')
-                    ->on('Comparaciones')->onDelete('cascade');
+            $table->foreign('idComparacion')->references('idComparacion')->on('Comparaciones')->onDelete('cascade');
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }

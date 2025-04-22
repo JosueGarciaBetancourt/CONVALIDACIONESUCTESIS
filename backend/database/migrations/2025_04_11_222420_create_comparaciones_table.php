@@ -10,13 +10,13 @@ return new class extends Migration
     {
         Schema::create('Comparaciones', function (Blueprint $table) {
             $table->id('idComparacion');
-            $table->unsignedBigInteger('idSolicitud')->unique();
+            $table->unsignedBigInteger('idSolicitud');
             $table->unsignedBigInteger('idCursoOrigen'); 
             $table->unsignedBigInteger('idCursoDestino'); 
             $table->datetime('fechaHora')->useCurrent(); 
             $table->float('porcentaje_similitud'); 
-            $table->boolean('resultado'); 
-            $table->text('justificacion'); 
+            $table->boolean('resultado')->nullable(); 
+            $table->text('justificacion')->nullable(); 
 
             $table->foreign('idSolicitud')->references('idSolicitud')->on('Solicitudes')->onDelete('cascade');
             $table->foreign('idCursoOrigen')->references('idCurso')->on('Cursos')->onDelete('cascade');
@@ -24,7 +24,8 @@ return new class extends Migration
 
             $table->index('idCursoOrigen');
             $table->index('idCursoDestino');
-
+            
+            $table->softDeletes();
             $table->timestamps();
         });
     }
