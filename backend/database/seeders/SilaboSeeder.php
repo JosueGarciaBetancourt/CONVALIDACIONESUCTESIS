@@ -113,6 +113,18 @@ class SilaboSeeder extends Seeder
                 'sumilla' => 'Curso que introduce los fundamentos de redes, abordando topologías, direccionamiento IP, protocolos, y seguridad básica de red.',
                 'aprendizaje_general' => 'El estudiante podrá identificar componentes de red y diseñar soluciones de conectividad en entornos controlados.',
             ],
+            [
+                'idSilabo' => 10,
+                'idCurso' => 10,
+                'codigo' => 'AAAEEE',
+                'anio' => 2024,
+                'creditos' => 5,
+                'horas_teoria' => 3,
+                'horas_practica' => 5,
+                'horas_teoricoPracticas' => 8,
+                'sumilla' => 'Sumilla de curso de prueba.',
+                'aprendizaje_general' => 'Aprendizajes de curso de prueba.',
+            ],
         ];
 
         foreach ($silabos as $silabo) {

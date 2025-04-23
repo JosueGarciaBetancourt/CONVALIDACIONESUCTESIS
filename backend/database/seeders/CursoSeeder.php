@@ -98,7 +98,7 @@ class CursoSeeder extends Seeder
             // Curso de prueba
             [   
                 'idCurso' => 10,
-                'idMalla' => 3, // Malla 2024 UC
+                'idMalla' =>  9, // Malla de Prueba 2024
                 'codigo' => null,
                 'nombre' => 'Curso de prueba',
                 'fueComparado' => true,

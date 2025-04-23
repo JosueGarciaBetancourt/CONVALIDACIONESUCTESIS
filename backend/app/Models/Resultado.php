@@ -14,10 +14,10 @@ class Resultado extends BaseModel
     public $incrementing = true;
 
     protected $fillable = [
-        'idResultado', 'idSolicitud', 'totalCursosEvaluados', 'totalCursosConvalidados', 
-        'totalCursosRechazados', 'totalCreditosEvaluados', 'totalCreditosConvalidados', 'totalCreditosRechazados',
-        'nivelSimilitudPromedio', 'observacionesGenerales', 'responsableEvaluacion', 'cargoResponsable',
-        'correoResponsable', 'firmaResponsable', 'fechaHoraEmision'
+        'idResultado', 'idSolicitud', 'totalCursosEvaluados', 'cursosConvalidados', 
+        'cursosRechazados', 'totalCreditosEvaluados', 'creditosConvalidados', 'creditosRechazados', 'porcentajeSimilitudPromedio',
+        'observacionesGenerales', 'idUser', 'responsableEvaluacion', 'cargoResponsable',
+        'correoResponsable', 'DNI', 'fechaHoraEmision'
     ];
 
     // Campos virtuales 

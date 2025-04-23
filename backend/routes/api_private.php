@@ -164,5 +164,13 @@ Route::get('/detallesComparaciones/{idDetalleComparacion}/trashed', [DetalleComp
 Route::post('/detallesComparaciones', [DetalleComparacionController::class, 'createDetalleComparacion'])->name('createDetalleComparacion');
 Route::put('/detallesComparaciones/{idDetalleComparacion}', [DetalleComparacionController::class, 'updateDetalleComparacion'])->name('updateDetalleComparacion');
 
+// Resultados
+Route::get('/resultados', [ResultadoController::class, 'getResultados'])->name('getResultados');
+Route::get('/resultados/{idResultado}', [ResultadoController::class, 'getResultado'])->name('getResultado');
+Route::get('/resultados-trashed', [ResultadoController::class, 'getTrashedResultados'])->name('getTrashedResultados');
+Route::get('/resultados/{idResultado}/trashed', [ResultadoController::class, 'getTrashedResultado'])->name('getTrashedResultado');
+Route::post('/resultados', [ResultadoController::class, 'createResultado'])->name('createResultado');
+
+
 
 

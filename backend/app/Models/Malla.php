@@ -23,6 +23,12 @@ class Malla extends BaseModel
         return $this->belongsTo(Carrera::class, 'idCarrera', 'idCarrera');
     }
 
+    // Genera muchas solicitudes
+    public function solicitudes()
+    {
+        return $this->hasMany(Solicitud::class, 'idMalla', 'idMallaConvalidar');
+    }
+
     // Incluye muchos cursos
     public function cursos()
     {

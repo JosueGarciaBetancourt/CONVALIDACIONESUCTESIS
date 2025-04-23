@@ -15,7 +15,7 @@ class Solicitud extends BaseModel
 
 
     protected $fillable = [
-        'idSolicitud', 'codigo', 'idEstudiante', 'idCarreraDestino', 'fechaHora', 'idUsuarioEvaluador'
+        'idSolicitud', 'codigo', 'idEstudiante', 'idCarreraDestino', 'idMallaConvalidar', 'fechaHora', 'idUsuarioEvaluador'
     ];
 
     // Es evaluada por un usuario
@@ -28,6 +28,12 @@ class Solicitud extends BaseModel
     public function carrera()
     {
         return $this->belongsTo(Carrera::class, 'idCarreraDestino', 'idCarrera');
+    }
+
+    // Requiere solo una malla
+    public function malla()
+    {
+        return $this->belongsTo(Malla::class, 'idMallaConvalidar', 'idMalla');
     }
 
     // Requiere solo un estudiante

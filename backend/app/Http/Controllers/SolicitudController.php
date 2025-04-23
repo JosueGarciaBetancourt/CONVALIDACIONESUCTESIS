@@ -59,11 +59,15 @@ class SolicitudController extends Controller
         }
     }
     
-    public function returnNuevoCodigoSolicitud() {
+    public static function returnNuevoCodigoSolicitud($idSolicitud=null) {
+        if ($idSolicitud) {
+            return 'SOLI-'. str_pad($idSolicitud, 4, '0', STR_PAD_LEFT);
+        }
+
         $lastNumberSolicitudID = Solicitud::max('idSolicitud');
         
         if (!$lastNumberSolicitudID) {
-            return 'SOLI-01';
+            return 'SOLI-0001';
         }
 
         $newNumberSolicitudID = $lastNumberSolicitudID + 1;
@@ -75,12 +79,13 @@ class SolicitudController extends Controller
     {
         try {
             $data = $request->validated();
-            $codigo = $this->returnNuevoCodigoSolicitud();
+            $codigo = $this::returnNuevoCodigoSolicitud();
 
             Solicitud::create([
                 'codigo' => $codigo,
                 'idEstudiante' => $data['idEstudiante'],
                 'idCarreraDestino' => $data['idCarreraDestino'],
+                'idMallaConvalidar' => $data['idMallaConvalidar'],
                 'idUsuarioEvaluador' => Auth::id(),
             ]);
                         
@@ -97,6 +102,8 @@ class SolicitudController extends Controller
         }
     }
 
+    // updateSolicitud, se implementará según el avance del frontend
+    
     public function disableSolicitud($idSolicitud)
     {
         DB::beginTransaction();

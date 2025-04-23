@@ -12,12 +12,12 @@ return new class extends Migration
             $table->id('idResultado');
             $table->unsignedBigInteger('idSolicitud');
             $table->unsignedInteger('totalCursosEvaluados');
-            $table->unsignedInteger('totalCursosConvalidados');
-            $table->unsignedInteger('totalCursosRechazados');
+            $table->unsignedInteger('cursosConvalidados');
+            $table->unsignedInteger('cursosRechazados');
             $table->unsignedInteger('totalCreditosEvaluados');
-            $table->unsignedInteger('totalCreditosConvalidados');
-            $table->unsignedInteger('totalCreditosRechazados');
-            $table->decimal('porcentajeSimilitudPromedio', 5, 2);
+            $table->unsignedInteger('creditosConvalidados');
+            $table->unsignedInteger('creditosRechazados');
+            $table->float('porcentajeSimilitudPromedio');
             $table->text('observacionesGenerales');
             $table->unsignedBigInteger('idUser');
             $table->string('responsableEvaluacion')->nullable(); // personal_name

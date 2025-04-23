@@ -29,6 +29,25 @@ class ComparacionSeeder extends Seeder
                 'resultado' => 1, // 1 (aprobado) ó 0 (rechazado)
                 'justificacion' => 'El porcentaje de similitud supera el 75% para aprobar la convalidación de este curso',
             ],
+            [   
+                'idComparacion' => 3,
+                'idSolicitud' => 3,
+                'idCursoOrigen' => 8,
+                'idCursoDestino' => 2,
+                'porcentaje_similitud' => 0.78,
+                'resultado' => 1, // 1 (aprobado) ó 0 (rechazado)
+                'justificacion' => 'El porcentaje de similitud supera el 75% para aprobar la convalidación de este curso',
+            ],
+            // Comparación de prueba
+            [   
+                'idComparacion' => 4,
+                'idSolicitud' => 4,
+                'idCursoOrigen' => 10,
+                'idCursoDestino' => 9,
+                'porcentaje_similitud' => 0.30,
+                'resultado' => 1, // 1 (aprobado) ó 0 (rechazado)
+                'justificacion' => 'El porcentaje de similitud no supera el 75% para aprobar la convalidación de este curso',
+            ],
         ];
 
         foreach ($comparaciones as $comparacion) {

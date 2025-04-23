@@ -188,6 +188,17 @@ class BibliografiaSeeder extends Seeder
                 'referencia' => 'White, C. M. (2023). Data Communications and Computer Networks: A Business User\'s Approach (9th ed.). Cengage Learning.',
                 'url' => 'https://www.cengage.com/data-communications-networks',
             ],
+            // Curso de prueba
+            [
+                'idSilabo' => 10,
+                'referencia' => 'PRUEBA, C. M. (2023). Data Communications and Computer Networks: A Business User\'s Approach (9th ed.). Cengage Learning.',
+                'url' => 'https://www.pruebasilabo10.com',
+            ],
+            [
+                'idSilabo' => 10,
+                'referencia' => 'PRUEBA XD, C. M. (2023). Data Communications and Computer Networks: A Business User\'s Approach (9th ed.). Cengage Learning.',
+                'url' => 'https://www.pruebasilabo10.com.pe',
+            ],
         ];
 
         foreach ($bibliografias as $bibliografia) {

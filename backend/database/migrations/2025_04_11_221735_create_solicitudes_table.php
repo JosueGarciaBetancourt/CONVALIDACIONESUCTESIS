@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('codigo')->unique();
             $table->unsignedBigInteger('idEstudiante'); 
             $table->unsignedBigInteger('idCarreraDestino'); 
+            $table->unsignedBigInteger('idMallaConvalidar'); 
             $table->datetime('fechaHora')->useCurrent(); 
             $table->unsignedBigInteger('idUsuarioEvaluador'); 
 

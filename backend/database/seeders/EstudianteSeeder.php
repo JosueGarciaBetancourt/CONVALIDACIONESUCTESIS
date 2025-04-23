@@ -40,6 +40,16 @@ class EstudianteSeeder extends Seeder
                 'celular' => '987654321',
                 'idCarreraOrigen' => 3, // UNCP-IS
                 'idUniversidadOrigen' => 3, // UNCP
+            ],
+            [
+                'idEstudiante' => 4,
+                'DNI' => '99887766',
+                'nombre' => 'Nombre de Prueba',
+                'apellido' => 'Apellido de Prueba',
+                'email' => '99887766@continental.edu.pe',
+                'celular' => '998877665',
+                'idCarreraOrigen' => 2, // UTP-ISI
+                'idUniversidadOrigen' => 2, // UTP
             ]
         ];
 

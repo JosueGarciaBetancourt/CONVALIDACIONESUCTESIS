@@ -79,6 +79,14 @@ class MallaSeeder extends Seeder
                 'semestre_inicio' => "2024-1",
                 'semestre_fin' => null, // Aún no finaliza esta malla
             ],
+             // Malla de prueba
+             [   
+                'idMalla' => 10,
+                'idCarrera' => 5,
+                'anio_inicio' => 2024,
+                'semestre_inicio' => "2024-1",
+                'semestre_fin' => null, // Aún no finaliza esta malla
+            ]
         ];
 
         foreach ($mallas as $malla) {

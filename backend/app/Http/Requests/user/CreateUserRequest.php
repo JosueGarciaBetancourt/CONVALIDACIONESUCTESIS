@@ -25,6 +25,10 @@ class CreateUserRequest extends FormRequest
             'name' => 'required|string|unique:users,name',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8',
+            'DNI' => 'nullable|email|unique:users,DNI',
+            'personal_name' => 'nullable|string',
+            'cargo' => 'nullable|string',
+            'corporative_email' => 'nullable|email',
         ];
     }
 }
