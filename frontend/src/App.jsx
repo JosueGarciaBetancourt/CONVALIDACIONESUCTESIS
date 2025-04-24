@@ -1,15 +1,18 @@
-// En tu archivo de rutas (normalmente App.jsx o routes.jsx)
-import { Routes, Route } from 'react-router-dom';
-import ApiTester from './pages/ApiTester'; // Ajusta la ruta según tu estructura
-/* import Home from './pages/Home'; // Tu página principal
- */
+import { Routes, Route } from 'react-router-dom'
+import ApiTester from './pages/ApiTester'
+import Login from './pages/Login'
+import Dashboard from './pages/Dashboard'
+
 function App() {
   return (
     <Routes>
-      {/* <Route path="/" element={<Home />} /> */}
       <Route path="/api-tester" element={<ApiTester />} />
+
+      <Route path="/" element={<Login />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/dashboard" element={<Dashboard />} />
     </Routes>
-  );
+  )
 }
 
-export default App;
+export default App
