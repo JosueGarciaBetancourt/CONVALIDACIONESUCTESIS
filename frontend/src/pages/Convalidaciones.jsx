@@ -74,7 +74,7 @@ const Convalidaciones = () => {
             <h1 className="text-xl sm:text-2xl font-bold text-white">Panel de Control</h1>
             <p className="text-sm text-gray-400">Gestione las convalidaciones de cursos para estudiantes</p>
           </div>
-          <button className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white py-2 px-3 rounded-lg text-sm">
+          <button className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white py-2 px-3 rounded-lg text-sm cursor-pointer">
             <span className="text-base">+</span>
             <span>Nueva Convalidación</span>
           </button>

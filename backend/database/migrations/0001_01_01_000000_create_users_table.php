@@ -12,10 +12,10 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->string('email')->unique();
-            $table->string('DNI')->unique(); 
-            $table->string('personal_name'); // nombre completo real
-            $table->string('cargo'); // Coordinador de convalidaciones
-            $table->string('corporative_email')->unique();
+            $table->string('DNI')->unique()->nullable(); 
+            $table->string('personal_name')->nullable(); // nombre completo real
+            $table->string('cargo')->nullable(); // Coordinador de convalidaciones
+            $table->string('corporative_email')->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();

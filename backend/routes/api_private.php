@@ -23,15 +23,13 @@ use App\Http\Controllers\ResultadoController;
 // 🔒 RUTAS PROTEGIDAS (requieren token Sanctum)
 // ==============================
 
-// Dashboard protegido
-Route::get('/dashboard', [TestApiController::class, 'dashboard']);
-
 // Logout
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Users
 Route::get('/users', [UserController::class, 'getUsers'])->name('getUsers');
 Route::get('/users/{id}', [UserController::class, 'getUser'])->name('getUser');
+Route::get('/users-authenticated', [UserController::class, 'getAuthenticatedUser'])->name('getAuthenticatedUser');
 Route::get('/users-trashed', [UserController::class, 'getTrashedUsers'])->name('getTrashedUsers');
 Route::get('/users/{id}/trashed', [UserController::class, 'getTrashedUser'])->name('getTrashedUser');
 Route::post('/users', [UserController::class, 'createUser'])->name('createUser');

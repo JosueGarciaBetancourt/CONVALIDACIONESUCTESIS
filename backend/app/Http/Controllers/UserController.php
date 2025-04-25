@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\user\CreateUserRequest;
 use App\Http\Requests\user\UpdateUserRequest;
@@ -30,6 +31,18 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "Error al obtener el usuario con ID $id. " . $e->getMessage()
+            ], 500); 
+        }
+    }
+
+    public function getAuthenticatedUser()
+    {
+        try {
+            $user = Auth::user();
+            return response()->json($user, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Error al obtener el usuario autenticado. " . $e->getMessage()
             ], 500); 
         }
     }

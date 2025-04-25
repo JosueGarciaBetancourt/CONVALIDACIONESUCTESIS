@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
-use App\Http\Requests\user\RegisterRequest;
 use App\Http\Requests\user\LoginRequest;
+use App\Http\Requests\user\RegisterRequest;
 
 class AuthController extends Controller
 {
@@ -71,11 +72,11 @@ class AuthController extends Controller
 
             return response()->json([
                 'message' => 'Sesión cerrada correctamente'
-            ], 200);  // Código de estado 200 para "OK"
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al cerrar la sesión: ' . $e->getMessage()
-            ], 500);  // Código de estado 500 para "Error interno del servidor"
+            ], 500);
         }
     }
 }

@@ -1,30 +1,54 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { User, LogOut, Settings } from "lucide-react"
+import { logout } from '../../services/auth'
+import { getAuthenticatedUser } from '../../services/users'
 
 export function UserNav() {
-  // Estado para manejar la visibilidad del menú
   const [isOpen, setIsOpen] = useState(false)
+  const [user, setUser] = useState(null)
   const navigate = useNavigate()
 
-  // Función para cerrar sesión
-  const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated")
-    navigate("/login")
+  // Cargar usuario logueado al montar el componente
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await getAuthenticatedUser()
+        setUser(userData)
+      } catch (err) {
+        console.error("Error cargando usuario logeado:", err)
+      }
+    }
+
+    fetchUser()
+  }, [])
+
+  const handleLogout = async (e) => {
+    e.preventDefault()
+
+    try {
+      const res = await logout()
+      console.log(res)
+      navigate('/login')
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   return (
     <div className="relative">
-      {/* Información del usuario */}
       <div className="flex items-center space-x-4">
         <div className="flex flex-col items-left space-y-2">
-          <p className="text-white text-sm font-medium">Administrador</p>
-          <p className="text-white text-xs text-muted-foreground">admin@example.com</p>
+          <p className="text-white text-sm font-medium">
+            {user ? user.name : 'Cargando...'}
+          </p>
+          <p className="text-white text-xs text-muted-foreground">
+            {user ? user.email : ''}
+          </p>
         </div>
-       
-        {/* Botón para abrir el menú de usuario */}
+
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-white cursor-pointer"
@@ -34,17 +58,18 @@ export function UserNav() {
         </button>
       </div>
 
-      {/* Menú de usuario, solo visible cuando isOpen es true */}
       {isOpen && (
         <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-md border bg-card shadow-lg ring-1 ring-gray-950 ring-opacity-5 focus:outline-none">
           <div className="p-2 bg-gray-950">
-            {/* Información de usuario en el menú */}
             <div className="border-b px-2 py-2">
-              <p className="text-white text-sm font-medium">Administrador</p>
-              <p className="text-white text-xs text-muted-foreground">admin@example.com</p>
+              <p className="text-white text-sm font-medium">
+                {user ? user.name : 'Cargando...'}
+              </p>
+              <p className="text-white text-xs text-muted-foreground">
+                {user ? user.email : ''}
+              </p>
             </div>
 
-            {/* Opciones de configuración y cerrar sesión */}
             <div className="mt-2 space-y-1">
               <button className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground">
                 <Settings className="text-white h-4 w-4" />

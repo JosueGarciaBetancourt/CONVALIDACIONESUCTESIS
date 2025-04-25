@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { login } from '../services/login'
+import { login } from '../services/auth'
 
 function Login() {
   const [email, setEmail] = useState('admin@example.com')
@@ -18,40 +18,40 @@ function Login() {
     }
 
     try {
-      const res = await login(data)
-      setResponse(res.data)
-      setError('')
-      console.log(res.data)
-	  navigate('/dashboard')  // Redirige a /dashboard, cámbialo por la ruta que tengas configurada
+      const res = await login(data);
+      setError('');
+      console.log(res.data);
+      localStorage.setItem('token', res.data.token);
+      navigate('/dashboard/inicio');
     } catch (err) {
-      console.error(err)
+      console.error(err);
       setError('Credenciales inválidas o error en el servidor.')
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Iniciar Sesión</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-950">
+      <div className="bg-gray-700 p-8 rounded-2xl shadow-xl w-full max-w-lg">
+        <h2 className="text-2xl font-bold mb-6 text-center text-white">Sistema de Convalidaciones UC-ISI</h2>
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email:</label>
+            <label className="block text-sm font-medium text-gray-200 mb-1">Email:</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="text-white w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña:</label>
+            <label className="block text-sm font-medium text-gray-200 mb-1">Contraseña:</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="text-white w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
           <button
@@ -63,7 +63,7 @@ function Login() {
         </form>
 
         {error && (
-          <p className="mt-4 text-center text-red-600 text-sm font-medium">{error}</p>
+          <p className="mt-4 text-center text-red-400 text-sm font-medium">{error}</p>
         )}
 
         {response && (
