@@ -38,7 +38,7 @@ const DashboardShell = () => {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="h-6 w-6"
+              className="h-6 w-6 text-white"
             >
               <path d="M5 7 3 5"></path>
               <path d="M9 5 5 9"></path>

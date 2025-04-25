@@ -5,43 +5,51 @@ import { LayoutDashboard, FilePlus, Book, School, Settings, HelpCircle, ChevronR
 
 const Sidebar = () => {
   const location = useLocation();
+  
+  // Construir rutas completas para las rutas hijas del dashboard
+  const getFullPath = (childRoute) => {
+    // Si la ruta ya comienza con '/', devolver tal cual
+    if (childRoute.startsWith('/')) return childRoute;
+    // Sino, construir la ruta completa
+    return `${routes.dashboard}/${childRoute}`;
+  };
 
   // Menú principal
   const navItems = [
     {
       title: "Inicio",
-      to: routes.inicio,
+      to: getFullPath(routes.inicio),
       icon: <LayoutDashboard className="h-5 w-5" />,
     },
     {
       title: "Convalidaciones",
-      to: routes.convalidaciones,
+      to: getFullPath(routes.convalidaciones),
       icon: <FilePlus className="h-5 w-5" />,
       // Submenú para convalidaciones
       /* subItems: [
         {
           title: "Nueva Convalidación",
-          to: `${routes.convalidaciones}/nueva`,
+          to: `${getFullPath(routes.convalidaciones)}/nueva`,
         },
         {
           title: "Pendientes",
-          to: `${routes.convalidaciones}/pendientes`,
+          to: `${getFullPath(routes.convalidaciones)}/pendientes`,
           badge: "8",
         },
         {
           title: "Historial",
-          to: `${routes.convalidaciones}/historial`,
+          to: `${getFullPath(routes.convalidaciones)}/historial`,
         },
       ] */
     },
     {
       title: "Universidades",
-      to: routes.universidades,
+      to: getFullPath(routes.universidades),
       icon: <School className="h-5 w-5" />,
     },
     {
       title: "Cursos",
-      to: routes.cursos,
+      to: getFullPath(routes.cursos),
       icon: <Book className="h-5 w-5" />,  
     },
   ];
@@ -50,12 +58,12 @@ const Sidebar = () => {
   const secondaryNavItems = [
     {
       title: "Configuración",
-      to: "/configuracion",
+      to: getFullPath(routes.configuracion),
       icon: <Settings className="h-5 w-5" />,
     },
     {
       title: "Ayuda",
-      to: "/ayuda",
+      to: getFullPath(routes.ayuda),
       icon: <HelpCircle className="h-5 w-5" />,
     },
   ];
@@ -65,18 +73,22 @@ const Sidebar = () => {
     // Exact match
     if (location.pathname === path) return true;
     
-    // Special case for home route
-    if (path === routes.inicio) {
-      return location.pathname === routes.inicio;
+    // Special case for home route (dashboard/inicio)
+    if (path === getFullPath(routes.inicio)) {
+      return location.pathname === path;
     }
     
     // For other routes, check if current path starts with the nav item path
-    // But make sure we're matching complete path segments
-    if (path !== routes.inicio && location.pathname.startsWith(path)) {
-      // Check if the next character after the path is a slash or nothing
-      // This ensures we don't match partial segments (e.g., /curso won't match /cursos)
-      const remainingPath = location.pathname.slice(path.length);
-      return remainingPath === '' || remainingPath.startsWith('/');
+    if (path !== '/') {
+      // Ensure path has no trailing slash for consistent comparison
+      const normPath = path.endsWith('/') ? path.slice(0, -1) : path;
+      const normCurrentPath = location.pathname.endsWith('/') 
+        ? location.pathname.slice(0, -1) 
+        : location.pathname;
+      
+      // Check if current path exactly matches or starts with path and is followed by /
+      return normCurrentPath === normPath || 
+             normCurrentPath.startsWith(normPath + '/');
     }
     
     return false;

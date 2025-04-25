@@ -10,6 +10,9 @@ const routes = {
 		convalidaciones: "convalidaciones",
 		universidades: "universidades",
 		cursos: "cursos",
+		configuracion: "configuracion",
+		ayuda: "ayuda",
+
 	//
   };
   

@@ -7,6 +7,8 @@ import Inicio from "./pages/Inicio";
 import Convalidaciones from "./pages/Convalidaciones";
 import Universidades from "./pages/Universidades";
 import Cursos from "./pages/Cursos";
+import Configuracion from "./pages/Configuracion";
+import Ayuda from "./pages/Ayuda";
 
 import routes from "./routes";
 import PrivateRoute from "./components/PrivateRoute";
@@ -26,6 +28,9 @@ function App() {
           <Route path="convalidaciones" element={<Convalidaciones />} />
           <Route path="universidades" element={<Universidades />} />
           <Route path="cursos" element={<Cursos />} />
+
+          <Route path="configuracion" element={<Configuracion />} />
+          <Route path="Ayuda" element={<Ayuda />} />
         </Route>
       </Route>
     </Routes>
