@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { login } from '../services/auth'
 
@@ -8,24 +8,39 @@ function Login() {
   const [error, setError] = useState('')
   const [response, setResponse] = useState(null)
   const navigate = useNavigate()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      setIsLoggedIn(true)
+    }
+  }, [])
 
   const handleLogin = async (e) => {
     e.preventDefault()
+    setIsLoading(true)
 
-    const data = {
-      email,
-      password
-    }
+    const data = { email, password }
 
     try {
-      const res = await login(data);
-      setError('');
-      console.log(res.data);
-      localStorage.setItem('token', res.data.token);
-      navigate('/dashboard/inicio');
+      const token = localStorage.getItem('token')
+      if (token) {
+        setError('')
+        navigate('/dashboard/inicio')
+      } else {
+        const res = await login(data)
+        setError('')
+        console.log(res.data)
+        localStorage.setItem('token', res.data.token)
+        navigate('/dashboard/inicio')
+      }
     } catch (err) {
-      console.error(err);
+      console.error(err)
       setError('Credenciales inválidas o error en el servidor.')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -56,9 +71,19 @@ function Login() {
           </div>
           <button
             type="submit"
-            className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition duration-200 cursor-pointer"
+            disabled={isLoading}
+            className={`w-full flex items-center justify-center gap-2 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition duration-200 cursor-pointer ${
+              isLoading ? 'opacity-70 cursor-not-allowed' : ''
+            }`}
           >
-            Ingresar
+            {isLoading && (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            )}
+            {isLoading
+              ? 'Iniciando sesión...'
+              : isLoggedIn
+              ? 'Ingresar'
+              : 'Iniciar Sesión'}
           </button>
         </form>
 
@@ -67,7 +92,9 @@ function Login() {
         )}
 
         {response && (
-          <pre className="mt-4 p-2 bg-gray-50 border border-gray-200 rounded text-sm overflow-x-auto">{JSON.stringify(response, null, 2)}</pre>
+          <pre className="mt-4 p-2 bg-gray-50 border border-gray-200 rounded text-sm overflow-x-auto">
+            {JSON.stringify(response, null, 2)}
+          </pre>
         )}
       </div>
     </div>

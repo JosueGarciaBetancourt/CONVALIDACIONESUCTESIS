@@ -26,8 +26,7 @@ function App() {
           <Route path="convalidaciones" element={<Convalidaciones />} />
           <Route path="universidades" element={<Universidades />} />
           <Route path="cursos" element={<Cursos />} />
-
-      </Route>
+        </Route>
       </Route>
     </Routes>
   );

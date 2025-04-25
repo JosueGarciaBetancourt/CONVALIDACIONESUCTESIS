@@ -62,8 +62,23 @@ const Sidebar = () => {
 
   // Verificar si un elemento está activo o está dentro de sus subrutas
   const isActiveOrHasActiveChild = (path) => {
+    // Exact match
     if (location.pathname === path) return true;
-    if (path !== routes.inicio && location.pathname.startsWith(path)) return true;
+    
+    // Special case for home route
+    if (path === routes.inicio) {
+      return location.pathname === routes.inicio;
+    }
+    
+    // For other routes, check if current path starts with the nav item path
+    // But make sure we're matching complete path segments
+    if (path !== routes.inicio && location.pathname.startsWith(path)) {
+      // Check if the next character after the path is a slash or nothing
+      // This ensures we don't match partial segments (e.g., /curso won't match /cursos)
+      const remainingPath = location.pathname.slice(path.length);
+      return remainingPath === '' || remainingPath.startsWith('/');
+    }
+    
     return false;
   };
 
@@ -84,9 +99,9 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="flex h-full flex-col border-r bg-white dark:border-gray-800 dark:bg-gray-950">
+    <div className="flex flex-col justify-between h-screen border-r bg-white dark:border-gray-800 dark:bg-gray-950">
       {/* Menú principal */}
-      <div className="flex-1 overflow-auto py-4">
+      <div className="flex-1 overflow-auto py-20">
         <nav className="grid gap-1 px-2">
           {navItems.map((item, index) => {
             const isActive = isActiveOrHasActiveChild(item.to);
@@ -97,28 +112,35 @@ const Sidebar = () => {
               <div key={index}>
                 {/* Elemento principal */}
                 <div className="flex flex-col">
-                  <div 
-                    className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium cursor-pointer ${
-                      isActive
-                        ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
-                        : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-                    }`}
-                    onClick={() => hasSubItems ? toggleExpand(item.title) : null}
-                  >
+                  {hasSubItems ? (
+                    <button
+                      type="button"
+                      onClick={() => toggleExpand(item.title)}
+                      className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium w-full text-left ${
+                        isActive
+                          ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
+                          : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                      }`}
+                    >
+                      <span className="flex items-center gap-3">
+                        {item.icon}
+                        {item.title}
+                      </span>
+                      <ChevronRight className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                    </button>
+                  ) : (
                     <Link
                       to={item.to}
-                      className="flex items-center gap-3 flex-1"
-                      onClick={(e) => hasSubItems && e.preventDefault()}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium ${
+                        isActive
+                          ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
+                          : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                      }`}
                     >
                       {item.icon}
                       {item.title}
                     </Link>
-                    {hasSubItems && (
-                      <ChevronRight 
-                        className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
-                      />
-                    )}
-                  </div>
+                  )}
                   
                   {/* Submenú */}
                   {hasSubItems && isExpanded && (
@@ -151,12 +173,12 @@ const Sidebar = () => {
       </div>
       
       {/* Separador */}
-      <div className="mx-4 my-2 border-t dark:border-gray-800"></div>
+      <div className="border-t mx-4 my-2 dark:border-gray-800"></div>
       
       {/* Menú secundario */}
-      {/* <nav className="grid gap-1 px-2 mb-6">
+      <nav className="grid gap-1 px-2 mb-6">
         {secondaryNavItems.map((item, index) => {
-          const isActive = location.pathname === item.to;
+          const isActive = isActiveOrHasActiveChild(item.to);
           return (
             <Link
               key={index}
@@ -172,7 +194,7 @@ const Sidebar = () => {
             </Link>
           );
         })}
-      </nav> */}
+      </nav>
     </div>
   );
 };

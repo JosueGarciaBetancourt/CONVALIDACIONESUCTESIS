@@ -25,11 +25,7 @@ export const getUser = async (id) => {
 
 export const getAuthenticatedUser = async () => {
 	try {
-		const res = await api.get('/users-authenticated', {
-			headers: {
-				Authorization: `Bearer ${token}`
-			}
-		});
+		const res = await api.get('/users-authenticated');
 		return res.data
 	} catch (error) {
 		console.error(error)

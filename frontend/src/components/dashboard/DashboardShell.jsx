@@ -55,7 +55,7 @@ const DashboardShell = () => {
           <UserNav />
         </div>
       </header>
-      <div className="flex flex-1 relative">
+      <div className="flex flex-1">
         {/* Sidebar móvil con overlay */}
         <div 
           className={`fixed inset-0 z-20 bg-gray-950/50 md:hidden ${
@@ -73,13 +73,13 @@ const DashboardShell = () => {
           <Sidebar />
         </aside>
         
-        {/* Sidebar para escritorio (siempre visible) */}
-        <aside className="hidden w-64 border-r md:block dark:border-gray-800">
+        {/* Sidebar fijo para escritorio (siempre visible) */}
+        <aside className="fixed inset-y-0 left-0 z-20 w-64 border-r bg-white dark:border-gray-800 dark:bg-gray-950">
           <Sidebar />
         </aside>
         
         {/* Contenido principal */}
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 ml-64 overflow-auto"> {/* Agrega margen izquierdo para el sidebar fijo */}
           <ReactRouterDOM.Outlet />
         </main>
       </div>
