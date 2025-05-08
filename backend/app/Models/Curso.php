@@ -47,7 +47,7 @@ class Curso extends BaseModel
     {
         return $this->hasMany(Comparacion::class, 'idCursoDestino', 'idCurso');
     }
-
+    
     protected static function booted()
     {
         // Eliminación de registros en la tabla CarrerasCursos

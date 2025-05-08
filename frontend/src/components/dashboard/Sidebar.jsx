@@ -3,14 +3,12 @@ import { Link, useLocation } from "react-router-dom";
 import routes from "../../routes";
 import { LayoutDashboard, FilePlus, Book, School, Settings, HelpCircle, ChevronRight } from "lucide-react";
 
-const Sidebar = () => {
+const Sidebar = ({ sidebarHidden }) => {  // Recibiendo el prop 'sidebarHidden'
   const location = useLocation();
-  
+
   // Construir rutas completas para las rutas hijas del dashboard
   const getFullPath = (childRoute) => {
-    // Si la ruta ya comienza con '/', devolver tal cual
     if (childRoute.startsWith('/')) return childRoute;
-    // Sino, construir la ruta completa
     return `${routes.dashboard}/${childRoute}`;
   };
 
@@ -25,22 +23,6 @@ const Sidebar = () => {
       title: "Convalidaciones",
       to: getFullPath(routes.convalidaciones),
       icon: <FilePlus className="h-5 w-5" />,
-      // Submenú para convalidaciones
-      /* subItems: [
-        {
-          title: "Nueva Convalidación",
-          to: `${getFullPath(routes.convalidaciones)}/nueva`,
-        },
-        {
-          title: "Pendientes",
-          to: `${getFullPath(routes.convalidaciones)}/pendientes`,
-          badge: "8",
-        },
-        {
-          title: "Historial",
-          to: `${getFullPath(routes.convalidaciones)}/historial`,
-        },
-      ] */
     },
     {
       title: "Universidades",
@@ -70,33 +52,13 @@ const Sidebar = () => {
 
   // Verificar si un elemento está activo o está dentro de sus subrutas
   const isActiveOrHasActiveChild = (path) => {
-    // Exact match
     if (location.pathname === path) return true;
-    
-    // Special case for home route (dashboard/inicio)
-    if (path === getFullPath(routes.inicio)) {
-      return location.pathname === path;
-    }
-    
-    // For other routes, check if current path starts with the nav item path
-    if (path !== '/') {
-      // Ensure path has no trailing slash for consistent comparison
-      const normPath = path.endsWith('/') ? path.slice(0, -1) : path;
-      const normCurrentPath = location.pathname.endsWith('/') 
-        ? location.pathname.slice(0, -1) 
-        : location.pathname;
-      
-      // Check if current path exactly matches or starts with path and is followed by /
-      return normCurrentPath === normPath || 
-             normCurrentPath.startsWith(normPath + '/');
-    }
-    
-    return false;
-  };
-
-  // Verificar si un subelemento está activo
-  const isSubItemActive = (path) => {
-    return location.pathname === path;
+    if (path === getFullPath(routes.inicio)) return location.pathname === path;
+    const normPath = path.endsWith('/') ? path.slice(0, -1) : path;
+    const normCurrentPath = location.pathname.endsWith('/') 
+      ? location.pathname.slice(0, -1) 
+      : location.pathname;
+    return normCurrentPath === normPath || normCurrentPath.startsWith(normPath + '/');
   };
 
   // Estado para submenús expandidos
@@ -113,7 +75,7 @@ const Sidebar = () => {
   return (
     <div className="flex flex-col justify-between h-screen border-r bg-white dark:border-gray-800 dark:bg-gray-950">
       {/* Menú principal */}
-      <div className="flex-1 overflow-auto py-20">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden py-20">
         <nav className="grid gap-1 px-2">
           {navItems.map((item, index) => {
             const isActive = isActiveOrHasActiveChild(item.to);
@@ -128,29 +90,29 @@ const Sidebar = () => {
                     <button
                       type="button"
                       onClick={() => toggleExpand(item.title)}
-                      className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium w-full text-left ${
-                        isActive
-                          ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
-                          : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-                      }`}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-left w-full
+                                ${isActive 
+                                  ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
+                                  : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                                }`}
                     >
                       <span className="flex items-center gap-3">
                         {item.icon}
-                        {item.title}
+                        {!sidebarHidden && item.title} {/* Solo mostrar texto si sidebarHidden es false */}
                       </span>
                       <ChevronRight className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                     </button>
                   ) : (
                     <Link
                       to={item.to}
-                      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium ${
-                        isActive
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium
+                      ${isActive
                           ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
                           : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
                       }`}
                     >
                       {item.icon}
-                      {item.title}
+                      {!sidebarHidden && item.title} {/* Solo mostrar texto si sidebarHidden es false */}
                     </Link>
                   )}
                   
@@ -162,7 +124,7 @@ const Sidebar = () => {
                           key={subIndex}
                           to={subItem.to}
                           className={`flex items-center justify-between rounded-md px-3 py-1.5 text-sm ${
-                            isSubItemActive(subItem.to)
+                            location.pathname === subItem.to
                               ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-purple-400 font-medium"
                               : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
                           }`}
@@ -202,7 +164,7 @@ const Sidebar = () => {
               }`}
             >
               {item.icon}
-              {item.title}
+              {!sidebarHidden && item.title} {/* Solo mostrar texto si sidebarHidden es false */}
             </Link>
           );
         })}

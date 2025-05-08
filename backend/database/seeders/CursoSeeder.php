@@ -12,7 +12,7 @@ class CursoSeeder extends Seeder
     {
         /* Para estandarizar el código de un curso se usará la siguiente estructura:
             → Cursos locales:
-                Abreviatura_Universidad-Abreviatura_Carrera-CodigoSilabo-AnioSilabo-Elecivo/Obligatorio
+                Abreviatura_Universidad-Abreviatura_Carrera-CodigoSilabo-AnioSilabo-Electivo/Obligatorio
             → Cursos foráneos:
                 Abreviatura_Universidad-Abreviatura_Carrera-CodigoSilabo-AnioSilabo
         */

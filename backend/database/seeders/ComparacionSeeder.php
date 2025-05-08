@@ -10,6 +10,9 @@ class ComparacionSeeder extends Seeder
 {
     public function run(): void
     {
+        // Las comparaciones se crearán automáticamente después de recibir la respuesta del API de PLN
+        // por ahora solo son datos ficticios 
+        
         $comparaciones = [
             [   
                 'idComparacion' => 1,

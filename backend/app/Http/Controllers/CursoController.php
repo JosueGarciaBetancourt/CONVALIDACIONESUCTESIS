@@ -59,6 +59,57 @@ class CursoController extends Controller
         }
     }
 
+    public function getCoursePairForComparison($idCurso1, $idCurso2)
+    {
+        try {
+            $cursos = Curso::select('idCurso', 'nombre')
+                ->whereIn('idCurso', [$idCurso1, $idCurso2])
+                ->with([
+                    'silabo' => function($query) {
+                        $query->select('idSilabo', 'idCurso', 'sumilla', 'aprendizaje_general');
+                    },
+                    'silabo.unidades' => function($query) {
+                        $query->select('idUnidad', 'idSilabo', 'numero', 'titulo', 'duracion_semanas', 'aprendizajes', 'temas');
+                    },
+                    'silabo.bibliografias' => function($query) {
+                        $query->select('idBibliografia', 'idSilabo', 'referencia', 'url');
+                    }
+                ])
+                ->get();
+    
+            return response()->json($cursos);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Error al obtener los cursos. " . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getCursoSilaboUnidadBibliografia($idCurso)
+    {
+        try {
+            $curso = Curso::select('idCurso', 'nombre')
+                    ->with([
+                        'silabo' => function($query) {
+                            $query->select();
+                        },
+                        'silabo.unidades' => function($query) {
+                            $query->select();
+                        },
+                        'silabo.bibliografias' => function($query) {
+                            $query->select();
+                        }
+                    ])
+                    ->findOrFail($idCurso);
+            return response()->json($curso);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Error al obtener el curso con su silabo, unidades y bibliografia con ID $idCurso. " . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function createCurso(CreateCursoRequest $request)
     {
         try {

@@ -85,6 +85,8 @@ Route::delete('/mallas/{idMalla}/delete', [MallaController::class, 'deleteMalla'
 // Cursos
 Route::get('/cursos', [CursoController::class, 'getCursos'])->name('getCursoss');
 Route::get('/cursos/{idCurso}', [CursoController::class, 'getCurso'])->name('getCurso');
+Route::get('/cursos/full/{idCurso}', [CursoController::class, 'getCursoSilaboUnidadBibliografia'])->name('getCursoSilaboUnidadBibliografia');
+Route::get('/cursos/forComparison/{idCurso1}/{idCurso2}', [CursoController::class, 'getCoursePairForComparison'])->name('getCoursePairForComparison');
 Route::get('/cursos-trashed', [CursoController::class, 'getTrashedCursos'])->name('getTrashedCursos');
 Route::get('/cursos/{idCurso}/trashed', [CursoController::class, 'getTrashedCurso'])->name('getTrashedCurso');
 Route::post('/cursos', [CursoController::class, 'createCurso'])->name('createCurso');
