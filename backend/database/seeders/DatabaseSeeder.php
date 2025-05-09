@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ComparacionSeeder::class);
         $this->call(DetalleComparacionSeeder::class);
         $this->call(ResultadoSeeder::class);
+        $this->call(UnidadesComparadasSeeder::class);
 
         $endTime = microtime(true);
         $totalTime = $endTime - $startTime;

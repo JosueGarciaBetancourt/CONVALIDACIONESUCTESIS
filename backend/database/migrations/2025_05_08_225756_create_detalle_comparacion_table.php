@@ -11,11 +11,11 @@ return new class extends Migration
         Schema::create('Detalle_Comparacion', function (Blueprint $table) {
             $table->id('idDetalleComparacion');
             $table->unsignedBigInteger('idComparacion')->unique();
-            $table->float('similitud_sumilla');
-            $table->float('similitud_aprendizajes');
-            $table->float('similitud_unidades');
-            $table->float('similitud_bibliografia');
-                     
+            $table->decimal('similitud_sumilla', 5, 2);
+            $table->decimal('similitud_aprendizajes', 5, 2);
+            $table->decimal('similitud_unidades', 5, 2);
+            $table->decimal('similitud_bibliografia', 5, 2);
+
             $table->foreign('idComparacion')->references('idComparacion')->on('Comparaciones')->onDelete('cascade');
 
             $table->softDeletes();

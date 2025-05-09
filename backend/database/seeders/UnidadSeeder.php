@@ -13,6 +13,7 @@ class UnidadSeeder extends Seeder
         $unidades = [
             // Silabo 1 (Programación I - 2015)
             [
+                'idUnidad' => 1,
                 'idSilabo' => 1,
                 'numero' => 1,
                 'titulo' => 'Fundamentos de programación estructurada',
@@ -21,6 +22,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'Algoritmos, diagramas de flujo, pseudocódigo.',
             ],
             [
+                'idUnidad' => 2,
                 'idSilabo' => 1,
                 'numero' => 2,
                 'titulo' => 'Introducción al lenguaje C',
@@ -29,6 +31,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'Sintaxis básica, entrada/salida, operadores.',
             ],
             [
+                'idUnidad' => 3,
                 'idSilabo' => 1,
                 'numero' => 3,
                 'titulo' => 'Control de flujo',
@@ -37,6 +40,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'if, else, switch, while, for, do-while.',
             ],
             [
+                'idUnidad' => 4,
                 'idSilabo' => 1,
                 'numero' => 4,
                 'titulo' => 'Funciones y modularidad',
@@ -47,6 +51,7 @@ class UnidadSeeder extends Seeder
 
             // Silabo 2 (Ingeniería Web - 2018)
             [
+                'idUnidad' => 5,
                 'idSilabo' => 2,
                 'numero' => 1,
                 'titulo' => 'Fundamentos de desarrollo web',
@@ -55,6 +60,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'HTML5, CSS3, arquitectura cliente-servidor, HTTP.',
             ],
             [
+                'idUnidad' => 6,
                 'idSilabo' => 2, 
                 'numero' => 2,
                 'titulo' => 'JavaScript y programación del lado cliente',
@@ -63,6 +69,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'Sintaxis JavaScript, DOM, eventos, AJAX.',
             ],
             [
+                'idUnidad' => 7,
                 'idSilabo' => 2,
                 'numero' => 3,
                 'titulo' => 'Gestión de formularios web',
@@ -71,6 +78,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'Formularios HTML, validación, métodos GET y POST.',
             ],
             [
+                'idUnidad' => 8,
                 'idSilabo' => 2,
                 'numero' => 4,
                 'titulo' => 'Integración con bases de datos',
@@ -81,6 +89,7 @@ class UnidadSeeder extends Seeder
 
             // Silabo 3 (Redes - 2024)
             [
+                'idUnidad' => 9,
                 'idSilabo' => 3,
                 'numero' => 1,
                 'titulo' => 'Fundamentos de redes de computadoras',
@@ -89,6 +98,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'Modelos OSI y TCP/IP, topologías, medios de transmisión.',
             ],
             [
+                'idUnidad' => 10,
                 'idSilabo' => 3,
                 'numero' => 2,
                 'titulo' => 'Direccionamiento IP',
@@ -97,6 +107,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'IPv4, IPv6, subnetting, VLSM.',
             ],
             [
+                'idUnidad' => 11,
                 'idSilabo' => 3,
                 'numero' => 3,
                 'titulo' => 'Protocolos de red',
@@ -105,6 +116,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'TCP, UDP, HTTP, FTP, DNS.',
             ],
             [
+                'idUnidad' => 12,
                 'idSilabo' => 3,
                 'numero' => 4,
                 'titulo' => 'Seguridad en redes',
@@ -115,6 +127,7 @@ class UnidadSeeder extends Seeder
 
             // Silabo 4 (Programación I - 2016)
             [
+                'idUnidad' => 13,
                 'idSilabo' => 4,
                 'numero' => 1,
                 'titulo' => 'Introducción a la programación',
@@ -123,6 +136,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'Pensamiento computacional, algoritmos, diagramas de flujo.',
             ],
             [
+                'idUnidad' => 14,
                 'idSilabo' => 4,
                 'numero' => 2,
                 'titulo' => 'Estructuras de control',
@@ -131,6 +145,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'Condicionales, bucles, estructuras de selección.',
             ],
             [
+                'idUnidad' => 15,
                 'idSilabo' => 4,
                 'numero' => 3,
                 'titulo' => 'Manejo de funciones',
@@ -139,6 +154,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'Definición de funciones, recursividad.',
             ],
             [
+                'idUnidad' => 16,
                 'idSilabo' => 4,
                 'numero' => 4,
                 'titulo' => 'Estructuras de datos básicas',
@@ -149,6 +165,7 @@ class UnidadSeeder extends Seeder
 
             // Silabo 5 (Web - 2019)
             [
+                'idUnidad' => 17,
                 'idSilabo' => 5,
                 'numero' => 1,
                 'titulo' => 'Diseño web responsive',
@@ -157,6 +174,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'HTML5, CSS3, media queries, frameworks CSS.',
             ],
             [
+                'idUnidad' => 18,
                 'idSilabo' => 5,
                 'numero' => 2,
                 'titulo' => 'JavaScript moderno',
@@ -165,6 +183,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'ES6+, promesas, async/await, módulos.',
             ],
             [
+                'idUnidad' => 19,
                 'idSilabo' => 5,
                 'numero' => 3,
                 'titulo' => 'Validación de formularios',
@@ -173,6 +192,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'JavaScript, validación de entradas, expresiones regulares.',
             ],
             [
+                'idUnidad' => 20,
                 'idSilabo' => 5,
                 'numero' => 4,
                 'titulo' => 'Consumo de APIs REST',
@@ -183,6 +203,7 @@ class UnidadSeeder extends Seeder
 
             // Silabo 6 (Redes - 2023)
             [
+                'idUnidad' => 21,
                 'idSilabo' => 6,
                 'numero' => 1,
                 'titulo' => 'Principios fundamentales de networking',
@@ -191,6 +212,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'Capas de red, encapsulamiento, protocolos básicos.',
             ],
             [
+                'idUnidad' => 22,
                 'idSilabo' => 6,
                 'numero' => 2,
                 'titulo' => 'Configuración de switches y VLANs',
@@ -199,6 +221,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'Funcionamiento de switches, VLANs, trunking.',
             ],
             [
+                'idUnidad' => 23,
                 'idSilabo' => 6,
                 'numero' => 3,
                 'titulo' => 'Protocolos de enrutamiento',
@@ -207,6 +230,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'RIP, OSPF, EIGRP.',
             ],
             [
+                'idUnidad' => 24,
                 'idSilabo' => 6,
                 'numero' => 4,
                 'titulo' => 'Redes inalámbricas',
@@ -217,6 +241,7 @@ class UnidadSeeder extends Seeder
 
             // Silabo 7 (Lógica de programación - 2017)
             [
+                'idUnidad' => 25,
                 'idSilabo' => 7,
                 'numero' => 1,
                 'titulo' => 'Algoritmos y pensamiento lógico',
@@ -225,6 +250,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'Metodología de solución de problemas, algoritmos, pseudocódigo.',
             ],
             [
+                'idUnidad' => 26,
                 'idSilabo' => 7,
                 'numero' => 2,
                 'titulo' => 'Tipos de datos y expresiones',
@@ -233,6 +259,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'Variables, constantes, operadores aritméticos y lógicos.',
             ],
             [
+                'idUnidad' => 27,
                 'idSilabo' => 7,
                 'numero' => 3,
                 'titulo' => 'Problemas condicionales y bucles',
@@ -241,6 +268,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'if-else, for, while.',
             ],
             [
+                'idUnidad' => 28,
                 'idSilabo' => 7,
                 'numero' => 4,
                 'titulo' => 'Estructuras de datos simples',
@@ -251,6 +279,7 @@ class UnidadSeeder extends Seeder
 
             // Silabo 8 (Aplicaciones Web - 2020)
             [
+                'idUnidad' => 29,
                 'idSilabo' => 8,
                 'numero' => 1,
                 'titulo' => 'Fundamentos de desarrollo web full-stack',
@@ -259,6 +288,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'Frontend vs Backend, herramientas de desarrollo, git.',
             ],
             [
+                'idUnidad' => 30,
                 'idSilabo' => 8,
                 'numero' => 2,
                 'titulo' => 'Programación del lado servidor',
@@ -267,6 +297,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'PHP, manejo de peticiones, persistencia de datos.',
             ],
             [
+                'idUnidad' => 31,
                 'idSilabo' => 8,
                 'numero' => 3,
                 'titulo' => 'Autenticación de usuarios',
@@ -275,6 +306,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'Manejo de sesiones, cookies, login seguro.',
             ],
             [
+                'idUnidad' => 32,
                 'idSilabo' => 8,
                 'numero' => 4,
                 'titulo' => 'Despliegue de aplicaciones web',
@@ -285,6 +317,7 @@ class UnidadSeeder extends Seeder
 
             // Silabo 9 (Fundamentos de redes - 2024)
             [
+                'idUnidad' => 33,
                 'idSilabo' => 9,
                 'numero' => 1,
                 'titulo' => 'Introducción a las redes de computadoras',
@@ -293,6 +326,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'Tipos de redes, dispositivos de red, estándares.',
             ],
             [
+                'idUnidad' => 34,
                 'idSilabo' => 9,
                 'numero' => 2,
                 'titulo' => 'Modelo OSI y TCP/IP',
@@ -301,6 +335,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'Capas OSI, suite de protocolos TCP/IP, encapsulamiento.',
             ],
             [
+                'idUnidad' => 35,
                 'idSilabo' => 9,
                 'numero' => 3,
                 'titulo' => 'Configuración de redes LAN',
@@ -309,6 +344,7 @@ class UnidadSeeder extends Seeder
                 'temas' => 'Switches, VLANs, direccionamiento IP.',
             ],
             [   
+                'idUnidad' => 36,
                 'idSilabo' => 9,
                 'numero' => 4,
                 'titulo' => 'Seguridad básica en redes',
@@ -316,7 +352,7 @@ class UnidadSeeder extends Seeder
                 'aprendizajes' => 'Aplicar medidas de seguridad en redes.',
                 'temas' => 'Firewall, antivirus, buenas prácticas.',
             ],
-            // Curso de prueba
+            // Silabo 10 (Curso de prueba)
             [   
                 'idUnidad' => 37,
                 'idSilabo' => 10,

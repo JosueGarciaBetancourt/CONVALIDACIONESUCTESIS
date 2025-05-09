@@ -28,10 +28,7 @@ class CreateSolicitudRequest extends FormRequest
             $idCarreraDestino = $this->input('idCarreraDestino');
             $mallaConvalidar = Malla::find($this->input('idMallaConvalidar'));
 
-            if (!$mallaConvalidar) {
-                // Esto realmente no es necesario porque ya lo validas en `rules`, pero lo puedes dejar si deseas.
-                $validator->errors()->add('idMallaConvalidar', 'La malla no existe.');
-            } elseif ($mallaConvalidar->idCarrera !== (int)$idCarreraDestino) {
+            if ($mallaConvalidar->idCarrera !== (int)$idCarreraDestino) {
                 $validator->errors()->add('idMallaConvalidar', 'La malla a convalidar no pertenece a la carrera destino ingresada.');
             }
         });

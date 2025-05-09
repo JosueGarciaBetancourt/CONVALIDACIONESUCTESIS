@@ -14,7 +14,7 @@ return new class extends Migration
             $table->unsignedInteger('numero');
             $table->string('titulo');
             // Estandarizar → 24h ó Inicio: 2015-08-24 Termino: 2015-09-25 ó Semana 1, 2, 3, 4 y 5
-            $table->string('duracion_semanas'); 
+            $table->string('duracion_semanas')->nullable(); 
             $table->text('aprendizajes');
             $table->text('temas');
 

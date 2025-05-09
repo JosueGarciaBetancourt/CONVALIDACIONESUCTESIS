@@ -12,6 +12,7 @@ class SilaboSeeder extends Seeder
     {
         $silabos = [
             [
+                'idSilabo' => 1,
                 'idCurso' => 1,
                 'codigo' => 'ASUC00687',
                 'anio' => 2015,
@@ -24,6 +25,7 @@ class SilaboSeeder extends Seeder
                 'aprendizaje_general' => 'El estudiante será capaz de aplicar conceptos básicos de programación para el desarrollo de algoritmos que resuelvan problemas sencillos utilizando estructuras de control.',
             ],
             [
+                'idSilabo' => 2,
                 'idCurso' => 2,
                 'codigo' => 'ASUC00469',
                 'caracter' => 'Obligatorio',
@@ -36,6 +38,7 @@ class SilaboSeeder extends Seeder
                 'aprendizaje_general' => 'El estudiante será capaz de diseñar e implementar sitios web dinámicos aplicando tecnologías modernas y buenas prácticas de desarrollo web.',
             ],
             [
+                'idSilabo' => 3,
                 'idCurso' => 3,
                 'codigo' => 'F00050134',
                 'anio' => 2024,
@@ -48,6 +51,7 @@ class SilaboSeeder extends Seeder
                 'aprendizaje_general' => 'El estudiante será capaz de identificar, implementar y gestionar componentes de una red de computadoras en diversos entornos.',
             ],
             [
+                'idSilabo' => 4,
                 'idCurso' => 4,
                 'codigo' => '100000Z106',
                 'anio' => 2016,
@@ -59,6 +63,7 @@ class SilaboSeeder extends Seeder
                 'aprendizaje_general' => 'El estudiante desarrollará algoritmos y los implementará en un lenguaje de programación para resolver problemas básicos.',
             ],
             [
+                'idSilabo' => 5,
                 'idCurso' => 5,
                 'codigo' => '100000Z107',
                 'anio' => 2019,
@@ -70,6 +75,7 @@ class SilaboSeeder extends Seeder
                 'aprendizaje_general' => 'El estudiante será capaz de diseñar e implementar sitios web modernos, interactivos y funcionales.',
             ],
             [
+                'idSilabo' => 6,
                 'idCurso' => 6,
                 'codigo' => '100000Z108',
                 'anio' => 2023,
@@ -81,6 +87,7 @@ class SilaboSeeder extends Seeder
                 'aprendizaje_general' => 'El estudiante podrá instalar, configurar y administrar redes de pequeña y mediana escala usando protocolos estándar.',
             ],
             [
+                'idSilabo' => 7,
                 'idCurso' => 7,
                 'codigo' => 'EGI14B',
                 'anio' => 2017,
@@ -92,6 +99,7 @@ class SilaboSeeder extends Seeder
                 'aprendizaje_general' => 'El estudiante desarrollará algoritmos y programas básicos utilizando un lenguaje de programación estructurado.',
             ],
             [
+                'idSilabo' => 8,
                 'idCurso' => 8,
                 'codigo' => 'EGI14C',
                 'anio' => 2020,
@@ -103,6 +111,7 @@ class SilaboSeeder extends Seeder
                 'aprendizaje_general' => 'El estudiante será capaz de diseñar, implementar y mantener sitios web dinámicos y seguros.',
             ],
             [
+                'idSilabo' => 9,
                 'idCurso' => 9,
                 'codigo' => 'EGI14D',
                 'anio' => 2024,

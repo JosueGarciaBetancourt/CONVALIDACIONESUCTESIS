@@ -31,6 +31,15 @@ class DetalleComparacionSeeder extends Seeder
             ],
             [
                 'idDetalleComparacion' => 3,
+                'idComparacion' => 3,
+                //0.30 de similitud general
+                'similitud_sumilla' => 0.843, // peso: 30%
+                'similitud_aprendizajes' => 0.792, // peso: 25%
+                'similitud_unidades' => 0.783, // peso: 30%
+                'similitud_bibliografia' => 0.625, // peso: 15%
+            ],
+            [
+                'idDetalleComparacion' => 4,
                 'idComparacion' => 4,
                 //0.30 de similitud general
                 'similitud_sumilla' => 0.3245, // peso: 30%
