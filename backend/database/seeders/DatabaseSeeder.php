@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
+use App\Models\EstadisticasComparacion;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -27,6 +28,10 @@ class DatabaseSeeder extends Seeder
         $this->call(DetalleComparacionSeeder::class);
         $this->call(ResultadoSeeder::class);
         $this->call(UnidadesComparadasSeeder::class);
+        $this->call(TemasComunesSeeder::class);
+        $this->call(UnidadesSinParOrigenSeeder::class);
+        $this->call(UnidadesSinParDestinoSeeder::class);
+        $this->call(EstadisticasDetalleComparacionSeeder::class);
 
         $endTime = microtime(true);
         $totalTime = $endTime - $startTime;

@@ -22,6 +22,7 @@ class ComparacionSeeder extends Seeder
                 'porcentaje_similitud' => 0.72,
                 'resultado' => 0, // 1 (aprobado) ó 0 (rechazado)
                 'justificacion' => 'El porcentaje de similitud no supera el 75% para aprobar la convalidación de este curso',
+                'requirio_revision_manual' => false,
             ],
             [   
                 'idComparacion' => 2,
@@ -31,16 +32,19 @@ class ComparacionSeeder extends Seeder
                 'porcentaje_similitud' => 0.78,
                 'resultado' => 1, // 1 (aprobado) ó 0 (rechazado)
                 'justificacion' => 'El porcentaje de similitud supera el 75% para aprobar la convalidación de este curso',
+                'requirio_revision_manual' => false,
             ],
             [   
                 'idComparacion' => 3,
                 'idSolicitud' => 3,
-                'idCursoOrigen' => 8,
-                'idCursoDestino' => 2,
+                'idCursoOrigen' => 7,
+                'idCursoDestino' => 1,
                 'porcentaje_similitud' => 0.78,
                 'resultado' => 1, // 1 (aprobado) ó 0 (rechazado)
                 'justificacion' => 'El porcentaje de similitud supera el 75% para aprobar la convalidación de este curso',
+                'requirio_revision_manual' => false,
             ],
+            
             // Comparación de prueba
             [   
                 'idComparacion' => 4,
@@ -50,6 +54,7 @@ class ComparacionSeeder extends Seeder
                 'porcentaje_similitud' => 0.30,
                 'resultado' => 1, // 1 (aprobado) ó 0 (rechazado)
                 'justificacion' => 'El porcentaje de similitud no supera el 75% para aprobar la convalidación de este curso',
+                'requirio_revision_manual' => true,
             ],
         ];
 

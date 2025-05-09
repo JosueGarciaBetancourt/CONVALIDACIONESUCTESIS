@@ -77,7 +77,7 @@ class UnidadSeeder extends Seeder
                 'aprendizajes' => 'Procesar formularios y validar entradas.',
                 'temas' => 'Formularios HTML, validación, métodos GET y POST.',
             ],
-            [
+            /* [
                 'idUnidad' => 8,
                 'idSilabo' => 2,
                 'numero' => 4,
@@ -85,7 +85,7 @@ class UnidadSeeder extends Seeder
                 'duracion_semanas' => '13-16',
                 'aprendizajes' => 'Conectar aplicaciones web a bases de datos.',
                 'temas' => 'PHP y MySQL, sentencias SQL básicas.',
-            ],
+            ], */
 
             // Silabo 3 (Redes - 2024)
             [
@@ -267,6 +267,7 @@ class UnidadSeeder extends Seeder
                 'aprendizajes' => 'Solucionar problemas usando decisiones y repeticiones.',
                 'temas' => 'if-else, for, while.',
             ],
+            /* 
             [
                 'idUnidad' => 28,
                 'idSilabo' => 7,
@@ -276,6 +277,7 @@ class UnidadSeeder extends Seeder
                 'aprendizajes' => 'Implementar soluciones usando arreglos.',
                 'temas' => 'Vectores, matrices, algoritmos de búsqueda y ordenamiento.',
             ],
+            */
 
             // Silabo 8 (Aplicaciones Web - 2020)
             [
