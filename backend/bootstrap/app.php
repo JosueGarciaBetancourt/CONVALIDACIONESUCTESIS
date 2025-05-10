@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Illuminate\Auth\AuthenticationException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -30,6 +31,14 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json([
                     'message' => 'Token inválido o expirado. Por favor, inicia sesión nuevamente.'
                 ], 401);
+            }
+        });
+
+        $exceptions->renderable(function (NotFoundHttpException $e, $request) {
+            if ($request->is('api/*') && $request->expectsJson()) {
+                return response()->json([
+                    'message' => 'La ruta solicitada no existe o no está disponible.'
+                ], 404);
             }
         });
     })->create();

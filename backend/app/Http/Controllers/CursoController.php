@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Curso;
 use App\Models\Malla;
 use App\Models\Carrera;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\curso\CreateCursoRequest;
 use App\Http\Requests\curso\UpdateCursoRequest;
@@ -62,6 +63,11 @@ class CursoController extends Controller
     public function getCoursePairForComparison($idCurso1, $idCurso2)
     {
         try {
+            if (!$idCurso1 || !$idCurso2) {
+                throw new \Exception("Debe proporcionar ambos ID de cursos para la comparación.");
+            }
+
+            // Traemos los cursos con sus relaciones
             $cursos = Curso::select('idCurso', 'nombre')
                 ->whereIn('idCurso', [$idCurso1, $idCurso2])
                 ->with([
@@ -76,12 +82,125 @@ class CursoController extends Controller
                     }
                 ])
                 ->get();
-    
-            return response()->json($cursos);
-            
+
+            // Validamos que existan ambos cursos
+            if ($cursos->count() != 2) {
+                return response()->json([
+                    'message' => 'Uno o ambos cursos no existen.'
+                ], 404);
+            }
+
+            // Ahora asignamos el curso origen y destino según su id
+            $cursoOrigen = $cursos->firstWhere('idCurso', $idCurso1);
+            $cursoDestino = $cursos->firstWhere('idCurso', $idCurso2);
+
+            // Armamos el arreglo personalizado siguiendo la estructura del JSON proporcionado
+            $resultado = [
+                'comparaciones' => [
+                    [
+                        'cursoOrigen' => [
+                            'idCurso' => $cursoOrigen->idCurso,
+                            'nombre' => $cursoOrigen->nombre,
+                            'silabo' => $cursoOrigen->silabo
+                        ],
+                        'cursoDestino' => [
+                            'idCurso' => $cursoDestino->idCurso,
+                            'nombre' => $cursoDestino->nombre,
+                            'silabo' => $cursoDestino->silabo
+                        ]
+                    ]
+                ]
+            ];
+
+            // Retornamos el JSON
+            return response()->json($resultado);
+
         } catch (\Exception $e) {
             return response()->json([
-                'message' => "Error al obtener los cursos. " . $e->getMessage()
+                'message' => "Error al obtener el par de cursos. " . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getSomeCoursesForComparison(Request $request)
+    {
+        try {
+            // Validamos que lleguen los pares correctamente
+            $validatedData = $request->validate([
+                'comparaciones' => 'required|array|min:1',
+                'comparaciones.*.origen' => 'required|integer|distinct',
+                'comparaciones.*.destino' => 'required|integer|distinct'
+            ]);
+
+            $comparaciones = $validatedData['comparaciones'];
+
+            // Obtenemos todos los IDs únicos de cursos involucrados
+            $idsCursos = collect($comparaciones)->pluck('origen')
+                ->merge(collect($comparaciones)->pluck('destino'))
+                ->unique()
+                ->toArray();
+
+            // Traemos los cursos con sus relaciones
+            $cursos = Curso::select('idCurso', 'nombre')
+                ->whereIn('idCurso', $idsCursos)
+                ->with([
+                    'silabo' => function($query) {
+                        $query->select('idSilabo', 'idCurso', 'sumilla', 'aprendizaje_general');
+                    },
+                    'silabo.unidades' => function($query) {
+                        $query->select('idUnidad', 'idSilabo', 'numero', 'titulo', 'duracion_semanas', 'aprendizajes', 'temas');
+                    },
+                    'silabo.bibliografias' => function($query) {
+                        $query->select('idBibliografia', 'idSilabo', 'referencia', 'url');
+                    }
+                ])
+                ->get();
+
+            // Verificamos si encontramos todos los cursos requeridos
+            if ($cursos->count() != count($idsCursos)) {
+                return response()->json([
+                    'message' => 'Uno o más cursos no existen.'
+                ], 404);
+            }
+
+            // Construimos las comparaciones siguiendo la estructura del JSON mostrado
+            $resultadoComparaciones = [];
+
+            foreach ($comparaciones as $par) {
+                $cursoOrigen = $cursos->firstWhere('idCurso', $par['origen']);
+                $cursoDestino = $cursos->firstWhere('idCurso', $par['destino']);
+
+                if (!$cursoOrigen || !$cursoDestino) {
+                    return response()->json([
+                        'message' => "No se encontró uno de los cursos para la comparación."
+                    ], 404);
+                }
+
+                $resultadoComparaciones[] = [
+                    'cursoOrigen' => [
+                        'idCurso' => $cursoOrigen->idCurso,
+                        'nombre' => $cursoOrigen->nombre,
+                        'silabo' => $cursoOrigen->silabo
+                    ],
+                    'cursoDestino' => [
+                        'idCurso' => $cursoDestino->idCurso,
+                        'nombre' => $cursoDestino->nombre,
+                        'silabo' => $cursoDestino->silabo
+                    ]
+                ];
+            }
+
+            // Empaquetamos en la estructura final
+            $resultado = [
+                'comparaciones' => $resultadoComparaciones
+            ];
+
+            // Retornamos el JSON completo con todas las comparaciones
+            return response()->json($resultado);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Error al obtener los pares de cursos. " . $e->getMessage()
             ], 500);
         }
     }
