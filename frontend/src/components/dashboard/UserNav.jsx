@@ -44,12 +44,9 @@ export function UserNav() {
   }, [])
 
   const handleLogout = async (e) => {
-    /* e.preventDefault() */
-
     try {
       const res = await logout();
       console.log(res);
-      localStorage.removeItem('token');
       navigate('/login');
     } catch (err) {
       console.error(err)

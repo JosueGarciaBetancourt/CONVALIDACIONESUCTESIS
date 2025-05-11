@@ -3,7 +3,7 @@ import api from './api'
 const handleError = (error) => {
 	console.error(error);
 	throw error;
-  }
+}
 
 export const getUsers = async () => {
 	try {

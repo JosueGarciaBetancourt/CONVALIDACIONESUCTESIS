@@ -1,101 +1,96 @@
-import React, { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { login } from '../services/auth'
+import { useAuth } from '../contexts/AuthContext'
+import routes from '../routes'
 
 function Login() {
-  const [email, setEmail] = useState('admin@example.com')
-  const [password, setPassword] = useState('12345678')
-  const [error, setError] = useState('')
-  const [response, setResponse] = useState(null)
+  const [credentials, setCredentials] = useState({
+    email: 'admin@example.com',
+    password: '12345678'
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [loginError, setLoginError] = useState('')
+  
+  const { login } = useAuth()
   const navigate = useNavigate()
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-
-  useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      setIsLoggedIn(true)
-    }
-  }, [])
-
-  const handleLogin = async (e) => {
+  
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setCredentials(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+  
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setIsLoading(true)
-
-    const data = { email, password }
-
+    setIsSubmitting(true)
+    setLoginError('')
+    
     try {
-      const token = localStorage.getItem('token')
-      if (token) {
-        setError('')
-        navigate('/dashboard/inicio')
+      const result = await login(credentials)
+      if (result.success) {
+        navigate(routes.dashboard+routes.convalidaciones)
       } else {
-        const res = await login(data)
-        setError('')
-        console.log(res.data)
-        localStorage.setItem('token', res.data.token)
-        navigate('/dashboard/inicio')
+        setLoginError(result.error || 'Error de autenticación')
       }
-    } catch (err) {
-      console.error(err)
-      setError('Credenciales inválidas o error en el servidor.')
+    } catch (error) {
+      setLoginError('Error al conectar con el servidor')
     } finally {
-      setIsLoading(false)
+      setIsSubmitting(false)
     }
   }
-
+  
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950">
-      <div className="bg-gray-700 p-8 rounded-2xl shadow-xl w-full max-w-lg">
-        <h2 className="text-2xl font-bold mb-6 text-center text-white">Sistema de Convalidaciones UC-ISI</h2>
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-200 mb-1">Email:</label>
+    <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="bg-gray-800 p-8 rounded-lg shadow-md w-full max-w-md">
+        <h1 className="text-2xl font-bold mb-6 text-center text-white">Iniciar sesión</h1>
+        
+        {loginError && (
+          <div className="bg-red-600 border border-red-800 text-red-200 px-4 py-3 rounded mb-4">
+            {loginError}
+          </div>
+        )}
+        
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-gray-300 mb-2" htmlFor="email">
+              Correo electrónico
+            </label>
             <input
+              id="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              value={credentials.email}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-700 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
-              className="text-white w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-200 mb-1">Contraseña:</label>
+          
+          <div className="mb-6">
+            <label className="block text-gray-300 mb-2" htmlFor="password">
+              Contraseña
+            </label>
             <input
+              id="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
+              value={credentials.password}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-700 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
-              className="text-white w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
+          
           <button
             type="submit"
-            disabled={isLoading}
-            className={`w-full flex items-center justify-center gap-2 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition duration-200 cursor-pointer ${
-              isLoading ? 'opacity-70 cursor-not-allowed' : ''
-            }`}
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors cursor-pointer"
+            disabled={isSubmitting}
           >
-            {isLoading && (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            )}
-            {isLoading
-              ? 'Iniciando sesión...'
-              : isLoggedIn
-              ? 'Ingresar'
-              : 'Iniciar Sesión'}
+            {isSubmitting ? 'Iniciando sesión...' : 'Iniciar sesión'}
           </button>
         </form>
-
-        {error && (
-          <p className="mt-4 text-center text-red-400 text-sm font-medium">{error}</p>
-        )}
-
-        {response && (
-          <pre className="mt-4 p-2 bg-gray-50 border border-gray-200 rounded text-sm overflow-x-auto">
-            {JSON.stringify(response, null, 2)}
-          </pre>
-        )}
       </div>
     </div>
   )

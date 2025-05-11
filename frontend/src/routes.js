@@ -6,14 +6,12 @@ const routes = {
 	// RUTAS PRIVADAS
 	dashboard: "/dashboard",
 		// Rutas hijas de dashboard
-		inicio: "inicio",
-		convalidaciones: "convalidaciones",
-		universidades: "universidades",
-		cursos: "cursos",
-		configuracion: "configuracion",
-		ayuda: "ayuda",
-
-	//
+		inicio: "/inicio",
+		convalidaciones: "/convalidaciones",
+		universidades: "/universidades",
+		cursos: "/cursos",
+		configuracion: "/configuracion",
+		ayuda: "/ayuda",
   };
   
   export default routes;

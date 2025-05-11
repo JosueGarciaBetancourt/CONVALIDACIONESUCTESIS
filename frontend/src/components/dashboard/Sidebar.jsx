@@ -8,8 +8,7 @@ const Sidebar = ({ sidebarHidden }) => {  // Recibiendo el prop 'sidebarHidden'
 
   // Construir rutas completas para las rutas hijas del dashboard
   const getFullPath = (childRoute) => {
-    if (childRoute.startsWith('/')) return childRoute;
-    return `${routes.dashboard}/${childRoute}`;
+    return `${routes.dashboard}${childRoute}`;
   };
 
   // Menú principal
