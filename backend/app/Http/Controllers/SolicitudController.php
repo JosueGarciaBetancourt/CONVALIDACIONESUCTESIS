@@ -114,67 +114,54 @@ class SolicitudController extends Controller
         DB::beginTransaction();
 
         try {
+            // Cargar la solicitud con las relaciones necesarias
             $solicitud = Solicitud::with([
-                'comparaciones.detalleComparacion',
+                'comparaciones.detalleComparacion.estadisticas',
+                'comparaciones.detalleComparacion.unidadesComparadas.temasComunes',
+                'comparaciones.detalleComparacion.unidadesSinParOrigen',
+                'comparaciones.detalleComparacion.unidadesSinParDestino',
                 'resultado'
             ])->findOrFail($idSolicitud);
 
-            // Deshabilitar también las tablas que se relacionan con detalle comparacion
-            foreach ($solicitud->comparaciones as $comparacion) {
-                $detalle = $comparacion->detalleComparacion;
-                if ($detalle instanceof DetalleComparacion) {
-                    $estadisticas = $detalle->estadisticas;
-                    $unidadesComparadas = $detalle->unidadesComparadas;
-                    $unidadesSinParOrigen = $detalle->unidadesSinParOrigen;
-                    $unidadesSinParDestino = $detalle->unidadesSinParDestino;
+            // Usar colecciones y encadenamiento de métodos para eliminar registros relacionados
+            $solicitud->comparaciones->each(function ($comparacion) {
+                if ($detalle = $comparacion->detalleComparacion) {
+                    // Eliminar estadísticas
+                    optional($detalle->estadisticas)->delete();
                     
-                    if ($estadisticas instanceof EstadisticasDetalleComparacion) {
-                        $estadisticas->delete();
-                    }
-
-                    foreach ($unidadesComparadas as $unidComp) {
-                        if ($unidComp instanceof UnidadesComparadas) {
-                            foreach ($unidComp->temasComunes as $temaComun) {
-                                if ($temaComun instanceof TemasComunes) {
-                                    $temaComun->delete();
-                                }
-                            }
-                            $unidComp->delete();
-                        }
-                    }
-
-                    foreach ($unidadesSinParOrigen as $uspo) {
-                        if ($uspo instanceof UnidadesSinParOrigen) {
-                            $uspo->delete();
-                        }
-                    }
-
-                    foreach ($unidadesSinParDestino as $uspd) {
-                        if ($uspd instanceof UnidadesSinParDestino) {
-                            $uspd->delete();
-                        }
-                    }
-                  
+                    // Eliminar temas comunes y unidades comparadas
+                    $detalle->unidadesComparadas->each(function ($unidadComparada) {
+                        $unidadComparada->temasComunes->each->delete();
+                        $unidadComparada->delete();
+                    });
+                    
+                    // Eliminar unidades sin par
+                    $detalle->unidadesSinParOrigen->each->delete();
+                    $detalle->unidadesSinParDestino->each->delete();
+                    
+                    // Eliminar el detalle
                     $detalle->delete();
                 }
+                // Eliminar la comparación
                 $comparacion->delete();
-            }
+            });
 
-            if ($solicitud->resultado) {
-                $solicitud->resultado->delete();
-            }
-
+            // Eliminar el resultado
+            optional($solicitud->resultado)->delete();
+            
+            // Eliminar la solicitud
             $solicitud->delete();
 
             DB::commit();
 
             return response()->json([
-                'message' => 'Solicitud, comparaciones, detalles (y otros más) y resultado deshabilitados correctamente'
+                'message' => 'Solicitud y todos sus datos relacionados eliminados correctamente'
             ], 200);
+            
         } catch (\Exception $e) {
             DB::rollBack(); 
             return response()->json([
-                'message' => "Error al deshabilitar la solicitud con ID  $idSolicitud. " . $e->getMessage()
+                'message' => "Error al eliminar la solicitud con ID $idSolicitud: " . $e->getMessage()
             ], 500); 
         }
     }
@@ -184,46 +171,78 @@ class SolicitudController extends Controller
         DB::beginTransaction();
 
         try {
+            // Cargar la solicitud con las mismas relaciones que en disableSolicitud
             $solicitud = Solicitud::onlyTrashed()
-            ->with([
-                'comparaciones' => function ($query) {
-                    $query->withTrashed()->with([
-                        'detalleComparacion' => function ($subQuery) {
-                            $subQuery->withTrashed();
-                        }
-                    ]);
-                },
-                'resultado' => function ($query) {
-                    $query->withTrashed();
-                }
-            ])
-            ->findOrFail($idSolicitud);
-        
-            Controller::printJSON($solicitud);
+                ->with([
+                    'comparaciones' => function ($query) {
+                        $query->withTrashed()->with([
+                            'detalleComparacion' => function ($subQuery) {
+                                $subQuery->withTrashed()->with([
+                                    'estadisticas' => function ($q) {
+                                        $q->withTrashed();
+                                    },
+                                    'unidadesComparadas' => function ($q) {
+                                        $q->withTrashed()->with([
+                                            'temasComunes' => function ($q) {
+                                                $q->withTrashed();
+                                            }
+                                        ]);
+                                    },
+                                    'unidadesSinParOrigen' => function ($q) {
+                                        $q->withTrashed();
+                                    },
+                                    'unidadesSinParDestino' => function ($q) {
+                                        $q->withTrashed();
+                                    }
+                                ]);
+                            }
+                        ]);
+                    },
+                    'resultado' => function ($query) {
+                        $query->withTrashed();
+                    }
+                ])
+                ->findOrFail($idSolicitud);
 
-            foreach ($solicitud->comparaciones as $comparacion) {
-                $detalle = $comparacion->detalleComparacion;
-                if ($detalle instanceof DetalleComparacion && $detalle->trashed()) {
+            // Restaurar todas las relaciones recursivamente
+            $solicitud->comparaciones->each(function ($comparacion) {
+                if ($detalle = $comparacion->detalleComparacion) {
+                    // Restaurar estadísticas
+                    optional($detalle->estadisticas)->restore();
+                    
+                    // Restaurar unidades comparadas y sus temas comunes
+                    $detalle->unidadesComparadas->each(function ($unidadComparada) {
+                        $unidadComparada->temasComunes->each->restore();
+                        $unidadComparada->restore();
+                    });
+                    
+                    // Restaurar unidades sin par
+                    $detalle->unidadesSinParOrigen->each->restore();
+                    $detalle->unidadesSinParDestino->each->restore();
+                    
+                    // Restaurar el detalle
                     $detalle->restore();
                 }
+                // Restaurar la comparación
                 $comparacion->restore();
-            }
+            });
 
-            if ($solicitud->resultado && $solicitud->resultado->trashed()) {
-                $solicitud->resultado->restore();
-            }
-
+            // Restaurar el resultado
+            optional($solicitud->resultado)->restore();
+            
+            // Restaurar la solicitud
             $solicitud->restore();
 
             DB::commit();
 
             return response()->json([
-                'message' => 'Solicitud, comparaciones, detalles y resultado habilitados correctamente'
+                'message' => 'Solicitud y todos sus datos relacionados restaurados correctamente'
             ], 200);
+            
         } catch (\Exception $e) {
             DB::rollBack(); 
             return response()->json([
-                'message' => "Error al habilitar la solicitud con ID  $idSolicitud. " . $e->getMessage()
+                'message' => "Error al restaurar la solicitud con ID $idSolicitud: " . $e->getMessage()
             ], 500); 
         }
     }
