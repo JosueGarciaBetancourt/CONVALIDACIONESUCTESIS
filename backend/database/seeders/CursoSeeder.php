@@ -95,12 +95,19 @@ class CursoSeeder extends Seeder
                 'nombre' => 'Redes de Computadoras',
                 'fueComparado' => false,
             ],
-            // Curso de prueba
+            // Cursos de prueba
             [   
                 'idCurso' => 10,
                 'idMalla' =>  9, // Malla de Prueba 2024
                 'codigo' => null,
                 'nombre' => 'Curso de prueba',
+                'fueComparado' => true,
+            ],
+            [   
+                'idCurso' => 11,
+                'idMalla' =>  9, // Malla de Prueba 2024
+                'codigo' => null,
+                'nombre' => 'Curso de prueba 2',
                 'fueComparado' => true,
             ]
         ];

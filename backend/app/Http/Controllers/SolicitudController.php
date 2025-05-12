@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\solicitud\CreateSolicitudRequest;
+use App\Models\EstadisticasDetalleComparacion;
+use App\Models\TemasComunes;
+use App\Models\UnidadesComparadas;
+use App\Models\UnidadesSinParDestino;
+use App\Models\UnidadesSinParOrigen;
 
 class SolicitudController extends Controller
 {
@@ -114,9 +119,42 @@ class SolicitudController extends Controller
                 'resultado'
             ])->findOrFail($idSolicitud);
 
+            // Deshabilitar también las tablas que se relacionan con detalle comparacion
             foreach ($solicitud->comparaciones as $comparacion) {
                 $detalle = $comparacion->detalleComparacion;
                 if ($detalle instanceof DetalleComparacion) {
+                    $estadisticas = $detalle->estadisticas;
+                    $unidadesComparadas = $detalle->unidadesComparadas;
+                    $unidadesSinParOrigen = $detalle->unidadesSinParOrigen;
+                    $unidadesSinParDestino = $detalle->unidadesSinParDestino;
+                    
+                    if ($estadisticas instanceof EstadisticasDetalleComparacion) {
+                        $estadisticas->delete();
+                    }
+
+                    foreach ($unidadesComparadas as $unidComp) {
+                        if ($unidComp instanceof UnidadesComparadas) {
+                            foreach ($unidComp->temasComunes as $temaComun) {
+                                if ($temaComun instanceof TemasComunes) {
+                                    $temaComun->delete();
+                                }
+                            }
+                            $unidComp->delete();
+                        }
+                    }
+
+                    foreach ($unidadesSinParOrigen as $uspo) {
+                        if ($uspo instanceof UnidadesSinParOrigen) {
+                            $uspo->delete();
+                        }
+                    }
+
+                    foreach ($unidadesSinParDestino as $uspd) {
+                        if ($uspd instanceof UnidadesSinParDestino) {
+                            $uspd->delete();
+                        }
+                    }
+                  
                     $detalle->delete();
                 }
                 $comparacion->delete();
@@ -131,7 +169,7 @@ class SolicitudController extends Controller
             DB::commit();
 
             return response()->json([
-                'message' => 'Solicitud, comparaciones, detalles y resultado deshabilitados correctamente'
+                'message' => 'Solicitud, comparaciones, detalles (y otros más) y resultado deshabilitados correctamente'
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack(); 

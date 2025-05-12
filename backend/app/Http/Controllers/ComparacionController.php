@@ -77,7 +77,6 @@ class ComparacionController extends Controller
         }
     }
 
-    
     public function updateComparacion(UpdateComparacionRequest $request, $idComparacion)
     {
         try {

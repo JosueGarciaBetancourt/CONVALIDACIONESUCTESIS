@@ -53,8 +53,6 @@ class AuthController extends Controller
             // Crear el token de acceso
             $token = $user->createToken('api-token')->plainTextToken;
 
-            Log::info($token);
-
             return response()->json([
                 'user' => $user,
                 'token' => $token

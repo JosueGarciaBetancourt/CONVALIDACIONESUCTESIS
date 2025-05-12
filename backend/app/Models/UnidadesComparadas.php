@@ -30,10 +30,15 @@ class UnidadesComparadas extends BaseModel
 		return $this->belongsTo(Unidad::class, 'idUnidadDestino', 'idUnidad');
 	}
 
+	// Requiere un detalle de comparación
+	public function detalleComparacion()
+	{
+		return $this->belongsTo(DetalleComparacion::class, 'idDetalleComparacion', 'idDetalleComparacion');
+	}
+
 	// Incluye muchos temas comunes
     public function temasComunes()
     {
         return $this->hasMany(TemasComunes::class, 'idUnidadesComparadas', 'idUnidadesComparadas');
     }
-
 }

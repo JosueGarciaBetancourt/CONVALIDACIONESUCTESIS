@@ -96,6 +96,8 @@ class SilaboController extends Controller
             $hasComparacionesComoOrigen = $curso->comparacionesComoOrigen()->exists();
             $hasComparacionesComoDestino = $curso->comparacionesComoDestino()->exists();
 
+            //Controller::printJSON($curso->comparacionesComoOrigen()->get());
+
             if ($hasComparacionesComoOrigen || $hasComparacionesComoDestino) {
 
                 $motivos = [];

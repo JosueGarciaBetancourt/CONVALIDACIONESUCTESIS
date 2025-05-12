@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id('idBibliografia');
             $table->unsignedBigInteger('idSilabo');
             $table->string('referencia');
-            $table->string('url');
+            $table->string('url')->nullable();
 
             $table->foreign('idSilabo')->references('idSilabo')
                     ->on('Silabos')->onDelete('cascade');

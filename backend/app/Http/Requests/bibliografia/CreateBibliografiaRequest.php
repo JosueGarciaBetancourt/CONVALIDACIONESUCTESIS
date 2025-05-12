@@ -26,7 +26,7 @@ class CreateBibliografiaRequest extends FormRequest
                 }),
             ],
             'url' => [
-                'required',
+                'nullable',
                 'string',
                 Rule::unique('bibliografias')->where(function ($query) {
                     return $query->where('idSilabo', $this->idSilabo);

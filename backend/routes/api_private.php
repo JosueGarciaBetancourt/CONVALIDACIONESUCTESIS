@@ -6,18 +6,23 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CursoController;
 use App\Http\Controllers\MallaController;
-use App\Http\Controllers\CarreraController;
-use App\Http\Controllers\CarreraCursoController;
 use App\Http\Controllers\SilaboController;
-use App\Http\Controllers\TestApiController;
-use App\Http\Controllers\EstudianteController;
-use App\Http\Controllers\UniversidadController;
 use App\Http\Controllers\UnidadController;
-use App\Http\Controllers\BibliografiaController;
-use App\Http\Controllers\SolicitudController;
-use App\Http\Controllers\ComparacionController;
-use App\Http\Controllers\DetalleComparacionController;
+use App\Http\Controllers\CarreraController;
+use App\Http\Controllers\TestApiController;
 use App\Http\Controllers\ResultadoController;
+use App\Http\Controllers\SolicitudController;
+use App\Http\Controllers\EstudianteController;
+use App\Http\Controllers\ComparacionController;
+use App\Http\Controllers\UniversidadController;
+use App\Http\Controllers\BibliografiaController;
+use App\Http\Controllers\CarreraCursoController;
+use App\Http\Controllers\DetalleComparacionController;
+use App\Http\Controllers\EstadisticasDetalleComparacionController;
+use App\Http\Controllers\UnidadesComparadasController;
+use App\Http\Controllers\TemaComunController;
+use App\Http\Controllers\UnidadSinParOrigenController;
+use App\Http\Controllers\UnidadSinParDestinoController;
 
 // ==============================
 // 🔒 RUTAS PROTEGIDAS (requieren token Sanctum)
@@ -25,6 +30,7 @@ use App\Http\Controllers\ResultadoController;
 
 // Logout
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
 
 // Users
 Route::get('/users', [UserController::class, 'getUsers'])->name('getUsers');
@@ -38,6 +44,7 @@ Route::delete('/users/{id}/disable', [UserController::class, 'disableUser'])->na
 Route::post('/users/{id}/enable', [UserController::class, 'enableUser'])->name('enableUser');
 Route::delete('/users/{id}/delete', [UserController::class, 'deleteUser'])->name('deleteUser');
 
+
 // Universidades
 Route::get('/universidades', [UniversidadController::class, 'getUniversidades'])->name('getUniversidades');
 Route::get('/universidades/{idUniversidad}', [UniversidadController::class, 'getUniversidad'])->name('getUniversidad');
@@ -48,6 +55,7 @@ Route::put('/universidades/{idUniversidad}', [UniversidadController::class, 'upd
 Route::delete('/universidades/{idUniversidad}/disable', [UniversidadController::class, 'disableUniversidad'])->name('disableUniversidad');
 Route::post('/universidades/{idUniversidad}/enable', [UniversidadController::class, 'enableUniversidad'])->name('enableUniversidad');
 Route::delete('/universidades/{idUniversidad}/delete', [UniversidadController::class, 'deleteUniversidad'])->name('deleteUniversidad');
+
 
 // Carreras
 Route::get('/carreras', [CarreraController::class, 'getCarreras'])->name('getCarreras');
@@ -60,6 +68,7 @@ Route::delete('/carreras/{idCarrera}/disable', [CarreraController::class, 'disab
 Route::post('/carreras/{idCarrera}/enable', [CarreraController::class, 'enableCarrera'])->name('enableCarrera');
 Route::delete('/carreras/{idCarrera}/delete', [CarreraController::class, 'deleteCarrera'])->name('deleteCarrera');
 
+
 // Estudiantes
 Route::get('/estudiantes', [EstudianteController::class, 'getEstudiantes'])->name('getEstudiantes');
 Route::get('/estudiantes/{idEstudiante}', [EstudianteController::class, 'getEstudiante'])->name('getEstudiante');
@@ -71,6 +80,7 @@ Route::delete('/estudiantes/{idEstudiante}/disable', [EstudianteController::clas
 Route::post('/estudiantes/{idEstudiante}/enable', [EstudianteController::class, 'enableEstudiante'])->name('enableEstudiante');
 Route::delete('/estudiantes/{idEstudiante}/delete', [EstudianteController::class, 'deleteEstudiante'])->name('deleteEstudiante');
 
+
 // Mallas
 Route::get('/mallas', [MallaController::class, 'getMallas'])->name('getMallas');
 Route::get('/mallas/{idMalla}', [MallaController::class, 'getMalla'])->name('getMalla');
@@ -81,6 +91,7 @@ Route::put('/mallas/{idMalla}', [MallaController::class, 'updateMalla'])->name('
 Route::delete('/mallas/{idMalla}/disable', [MallaController::class, 'disableMalla'])->name('disableMalla');
 Route::post('/mallas/{idMalla}/enable', [MallaController::class, 'enableMalla'])->name('enableMalla');
 Route::delete('/mallas/{idMalla}/delete', [MallaController::class, 'deleteMalla'])->name('deleteMalla');
+
 
 // Cursos
 Route::get('/cursos', [CursoController::class, 'getCursos'])->name('getCursos');
@@ -96,6 +107,7 @@ Route::delete('/cursos/{idCurso}/disable', [CursoController::class, 'disableCurs
 Route::post('/cursos/{idCurso}/enable', [CursoController::class, 'enableCurso'])->name('enableCurso');
 Route::delete('/cursos/{idCurso}/delete', [CursoController::class, 'deleteCurso'])->name('deleteCurso');
 
+
 // Carreras Cursos
 Route::get('/carrerasCursos', [CarreraCursoController::class, 'getCarrerasCursos'])->name('getCarreraCursos');
 Route::get('/carrerasCursos/{idCarreraCurso}', [CarreraCursoController::class, 'getCarreraCurso'])->name('getCarreraCurso');
@@ -106,6 +118,7 @@ Route::put('/carrerasCursos/{idCarreraCurso}', [CarreraCursoController::class, '
 Route::delete('/carrerasCursos/{idCarreraCurso}/disable', [CarreraCursoController::class, 'disableCarreraCurso'])->name('disableCarreraCurso');
 Route::post('/carrerasCursos/{idCarreraCurso}/enable', [CarreraCursoController::class, 'enableCarreraCurso'])->name('enableCarreraCurso');
 Route::delete('/carrerasCursos/{idCarreraCurso}/delete', [CarreraCursoController::class, 'deleteCarreraCurso'])->name('deleteCarreraCurso');
+
 
 // Silabos
 Route::get('/silabos', [SilaboController::class, 'getSilabos'])->name('getSilaboss');
@@ -118,6 +131,7 @@ Route::delete('/silabos/{idSilabo}/disable', [SilaboController::class, 'disableS
 Route::post('/silabos/{idSilabo}/enable', [SilaboController::class, 'enableSilabo'])->name('enableSilabo');
 Route::delete('/silabos/{idSilabo}/delete', [SilaboController::class, 'deleteSilabo'])->name('deleteSilabo');
 
+
 // Unidades
 Route::get('/unidades', [UnidadController::class, 'getUnidades'])->name('getUnidades');
 Route::get('/unidades/{idUnidad}', [UnidadController::class, 'getUnidad'])->name('getUnidad');
@@ -128,6 +142,7 @@ Route::put('/unidades/{idUnidad}', [UnidadController::class, 'updateUnidad'])->n
 Route::delete('/unidades/{idUnidad}/disable', [UnidadController::class, 'disableUnidad'])->name('disableUnidad');
 Route::post('/unidades/{idUnidad}/enable', [UnidadController::class, 'enableUnidad'])->name('enableUnidad');
 Route::delete('/unidades/{idUnidad}/delete', [UnidadController::class, 'deleteUnidad'])->name('deleteUnidad');
+
 
 // Bibliografías
 Route::get('/bibliografias', [BibliografiaController::class, 'getBibliografias'])->name('getBibliografias');
@@ -140,6 +155,7 @@ Route::delete('/bibliografias/{idBibliografia}/disable', [BibliografiaController
 Route::post('/bibliografias/{idBibliografia}/enable', [BibliografiaController::class, 'enableBibliografia'])->name('enableBibliografia');
 Route::delete('/bibliografias/{idBibliografia}/delete', [BibliografiaController::class, 'deleteBibliografia'])->name('deleteBibliografia');
 
+
 // Solicitudes
 Route::get('/solicitudes', [SolicitudController::class, 'getSolicitudes'])->name('getSolicitudes');
 Route::get('/solicitudes/{idSolicitud}', [SolicitudController::class, 'getSolicitud'])->name('getSolicitud');
@@ -149,6 +165,7 @@ Route::post('/solicitudes', [SolicitudController::class, 'createSolicitud'])->na
 Route::delete('/solicitudes/{idSolicitud}/disable', [SolicitudController::class, 'disableSolicitud'])->name('disableSolicitud');
 Route::post('/solicitudes/{idSolicitud}/enable', [SolicitudController::class, 'enableSolicitud'])->name('enableSolicitud');
 
+
 // Comparaciones
 Route::get('/comparaciones', [ComparacionController::class, 'getComparaciones'])->name('getComparaciones');
 Route::get('/comparaciones/{idComparacion}', [ComparacionController::class, 'getComparacion'])->name('getComparacion');
@@ -156,6 +173,7 @@ Route::get('/comparaciones-trashed', [ComparacionController::class, 'getTrashedC
 Route::get('/comparaciones/{idComparacion}/trashed', [ComparacionController::class, 'getTrashedComparacion'])->name('getTrashedComparacion');
 Route::post('/comparaciones', [ComparacionController::class, 'createComparacion'])->name('createComparacion');
 Route::put('/comparaciones/{idComparacion}', [ComparacionController::class, 'updateComparacion'])->name('updateComparacion');
+
 
 // Detalles de Comparaciones
 Route::get('/detallesComparaciones', [DetalleComparacionController::class, 'getDetallesComparaciones'])->name('getDetallesComparaciones');
@@ -165,13 +183,45 @@ Route::get('/detallesComparaciones/{idDetalleComparacion}/trashed', [DetalleComp
 Route::post('/detallesComparaciones', [DetalleComparacionController::class, 'createDetalleComparacion'])->name('createDetalleComparacion');
 Route::put('/detallesComparaciones/{idDetalleComparacion}', [DetalleComparacionController::class, 'updateDetalleComparacion'])->name('updateDetalleComparacion');
 
+
+// Estadisticas Detalle Comparacion
+Route::get('/estadisticasDetalleComparacion', [EstadisticasDetalleComparacionController::class, 'getAllEstadisticasDetalleComparacion'])->name('getAllEstadisticasDetalleComparacion');
+Route::get('/estadisticasDetalleComparacion/{idUnidadComparada}', [EstadisticasDetalleComparacionController::class, 'getEstadisticasDetalleComparacion'])->name('getEstadisticasDetalleComparacion');
+Route::get('/estadisticasDetalleComparacion-trashed', [EstadisticasDetalleComparacionController::class, 'getTrashedAllEstadisticasDetalleComparacion'])->name('getTrashedAllEstadisticasDetalleComparacion');
+Route::get('/estadisticasDetalleComparacion/{idUnidadComparada}/trashed', [EstadisticasDetalleComparacionController::class, 'getTrashedEstadisticasDetalleComparacion'])->name('getTrashedEstadisticasDetalleComparacion');
+
+
+// Unidades Comparadas
+Route::get('/unidadesComparadas', [UnidadesComparadasController::class, 'getAllUnidadesComparadas'])->name('getAllUnidadesComparadas');
+Route::get('/unidadesComparadas/{idUnidadComparada}', [UnidadesComparadasController::class, 'getUnidadesComparadas'])->name('getUnidadesComparadas');
+Route::get('/unidadesComparadas-trashed', [UnidadesComparadasController::class, 'getTrashedAllUnidadesComparadas'])->name('getTrashedAllUnidadesComparadas');
+Route::get('/unidadesComparadas/{idUnidadComparada}/trashed', [UnidadesComparadasController::class, 'getTrashedUnidadesComparadas'])->name('getTrashedUnidadesComparadas');
+
+
+// Temas Comunes
+Route::get('/temasComunes', [TemaComunController::class, 'getTemasComunes'])->name('getTemasComunes');
+Route::get('/temasComunes/{idTemaComun}', [TemaComunController::class, 'getTemaComun'])->name('getTemaComun');
+Route::get('/temasComunes-trashed', [TemaComunController::class, 'getTrashedTemasComunes'])->name('getTrashedTemasComunes');
+Route::get('/temasComunes/{idTemaComun}/trashed', [TemaComunController::class, 'getTrashedTemaComun'])->name('getTrashedTemaComun');
+
+
+// Unidades Sin Par Origen
+Route::get('/unidadesSinParOrigen', [UnidadSinParOrigenController::class, 'getUnidadesSinParOrigen'])->name('getUnidadesSinParOrigen');
+Route::get('/unidadesSinParOrigen/{idUnidadSinParOrigen}', [UnidadSinParOrigenController::class, 'getUnidadSinParOrigen'])->name('getUnidadSinParOrigen');
+Route::get('/unidadesSinParOrigen-trashed', [UnidadSinParOrigenController::class, 'getTrashedUnidadesSinParOrigen'])->name('getTrashedUnidadesSinParOrigen');
+Route::get('/unidadesSinParOrigen/{idUnidadSinParOrigen}/trashed', [UnidadSinParOrigenController::class, 'getTrashedUnidadSinParOrigen'])->name('getTrashedUnidadSinParOrigen');
+
+
+// Unidades Sin Par Destino
+Route::get('/unidadesSinParDestino', [UnidadSinParDestinoController::class, 'getUnidadesSinParDestino'])->name('getUnidadesSinParDestino');
+Route::get('/unidadesSinParDestino/{idUnidadSinParDestino}', [UnidadSinParDestinoController::class, 'getUnidadSinParDestino'])->name('getUnidadSinParDestino');
+Route::get('/unidadesSinParDestino-trashed', [UnidadSinParDestinoController::class, 'getTrashedUnidadesSinParDestino'])->name('getTrashedUnidadesSinParDestino');
+Route::get('/unidadesSinParDestino/{idUnidadSinParDestino}/trashed', [UnidadSinParDestinoController::class, 'getTrashedUnidadSinParDestino'])->name('getTrashedUnidadSinParDestino');
+
+
 // Resultados
 Route::get('/resultados', [ResultadoController::class, 'getResultados'])->name('getResultados');
 Route::get('/resultados/{idResultado}', [ResultadoController::class, 'getResultado'])->name('getResultado');
 Route::get('/resultados-trashed', [ResultadoController::class, 'getTrashedResultados'])->name('getTrashedResultados');
 Route::get('/resultados/{idResultado}/trashed', [ResultadoController::class, 'getTrashedResultado'])->name('getTrashedResultado');
 Route::post('/resultados', [ResultadoController::class, 'createResultado'])->name('createResultado');
-
-
-
-
