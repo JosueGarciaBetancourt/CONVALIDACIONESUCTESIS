@@ -3,9 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Malla;
-use App\Models\Solicitud;
-use App\Models\Estudiante;
-use App\Models\Universidad;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\malla\CreateMallaRequest;
 use App\Http\Requests\malla\UpdateMallaRequest;
@@ -35,7 +32,7 @@ class MallaController extends Controller
             ], 500);
         }
     }
-
+    
     public function getTrashedMallas() {
         try {
             $mallas = Malla::onlyTrashed()->get();

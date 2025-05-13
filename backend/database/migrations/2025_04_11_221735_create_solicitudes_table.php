@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('idCarreraDestino'); 
             $table->unsignedBigInteger('idMallaConvalidar'); 
             $table->datetime('fechaHora')->useCurrent(); 
+            $table->enum('estado', ['En Proceso', 'Finalizado'])->default('En Proceso');
             $table->unsignedBigInteger('idUsuarioEvaluador'); 
 
             $table->foreign('idEstudiante')->references('idEstudiante')->on('Estudiantes');

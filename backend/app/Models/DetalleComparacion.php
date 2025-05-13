@@ -39,12 +39,12 @@ class DetalleComparacion extends BaseModel
 	// Tiene muchas unidades sin par origen
 	public function unidadesSinParOrigen()
 	{
-		return $this->hasMany(UnidadesSinParOrigen::class, 'idDetalleComparacion', 'idDetalleComparacion');
+		return $this->hasMany(UnidadSinParOrigen::class, 'idDetalleComparacion', 'idDetalleComparacion');
 	}
 
 	// Tiene muchas unidades sin par destino
 	public function unidadesSinParDestino()
 	{
-		return $this->hasMany(UnidadesSinParDestino::class, 'idDetalleComparacion', 'idDetalleComparacion');
+		return $this->hasMany(UnidadSinParDestino::class, 'idDetalleComparacion', 'idDetalleComparacion');
 	}
 }

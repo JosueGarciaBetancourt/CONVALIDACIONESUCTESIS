@@ -12,17 +12,18 @@ use App\Http\Controllers\CarreraController;
 use App\Http\Controllers\TestApiController;
 use App\Http\Controllers\ResultadoController;
 use App\Http\Controllers\SolicitudController;
+use App\Http\Controllers\TemaComunController;
 use App\Http\Controllers\EstudianteController;
 use App\Http\Controllers\ComparacionController;
 use App\Http\Controllers\UniversidadController;
 use App\Http\Controllers\BibliografiaController;
 use App\Http\Controllers\CarreraCursoController;
+use App\Http\Controllers\GrupoTematicoController;
 use App\Http\Controllers\DetalleComparacionController;
-use App\Http\Controllers\EstadisticasDetalleComparacionController;
 use App\Http\Controllers\UnidadesComparadasController;
-use App\Http\Controllers\TemaComunController;
 use App\Http\Controllers\UnidadSinParOrigenController;
 use App\Http\Controllers\UnidadSinParDestinoController;
+use App\Http\Controllers\EstadisticasDetalleComparacionController;
 
 // ==============================
 // 🔒 RUTAS PROTEGIDAS (requieren token Sanctum)
@@ -69,6 +70,17 @@ Route::post('/carreras/{idCarrera}/enable', [CarreraController::class, 'enableCa
 Route::delete('/carreras/{idCarrera}/delete', [CarreraController::class, 'deleteCarrera'])->name('deleteCarrera');
 
 
+// Grupos Tematicos
+Route::get('/gruposTematicos', [GrupoTematicoController::class, 'getGruposTematicos'])->name('getGruposTematicos');
+Route::get('/gruposTematicos/{idGrupoTematico}', [GrupoTematicoController::class, 'getGrupoTematico'])->name('getGrupoTematico');
+Route::get('/gruposTematicos-trashed', [GrupoTematicoController::class, 'getTrashedGruposTematicos'])->name('getTrashedGruposTematicos');
+Route::get('/gruposTematicos/{idGrupoTematico}/trashed', [GrupoTematicoController::class, 'getTrashedGrupoTematico'])->name('getTrashedGrupoTematico');
+Route::post('/gruposTematicos', [GrupoTematicoController::class, 'createGrupoTematico'])->name('createGrupoTematico');
+Route::put('/gruposTematicos/{idGrupoTematico}', [GrupoTematicoController::class, 'updateGrupoTematico'])->name('updateGrupoTematico');
+Route::delete('/gruposTematicos/{idGrupoTematico}/disable', [GrupoTematicoController::class, 'disableGrupoTematico'])->name('disableGrupoTematico');
+Route::post('/gruposTematicos/{idGrupoTematico}/enable', [GrupoTematicoController::class, 'enableGrupoTematico'])->name('enableGrupoTematico');
+Route::delete('/gruposTematicos/{idGrupoTematico}/delete', [GrupoTematicoController::class, 'deleteGrupoTematico'])->name('deleteGrupoTematico');
+
 // Estudiantes
 Route::get('/estudiantes', [EstudianteController::class, 'getEstudiantes'])->name('getEstudiantes');
 Route::get('/estudiantes/{idEstudiante}', [EstudianteController::class, 'getEstudiante'])->name('getEstudiante');
@@ -84,6 +96,8 @@ Route::delete('/estudiantes/{idEstudiante}/delete', [EstudianteController::class
 // Mallas
 Route::get('/mallas', [MallaController::class, 'getMallas'])->name('getMallas');
 Route::get('/mallas/{idMalla}', [MallaController::class, 'getMalla'])->name('getMalla');
+Route::get('/mallas/{idMalla}/curso', [CursoController::class, 'getCoursesByMallaAndName'])->name('getCoursesByMallaAndName');
+Route::post('/mallas/{idMalla}/cursos', [CursoController::class, 'getCoursesByMallaAndManyNames'])->name('getCoursesByMallaAndManyNames');
 Route::get('/mallas-trashed', [MallaController::class, 'getTrashedmallas'])->name('getTrashedmallas');
 Route::get('/mallas/{idMalla}/trashed', [MallaController::class, 'getTrashedMalla'])->name('getTrashedMalla');
 Route::post('/mallas', [MallaController::class, 'createMalla'])->name('createMalla');

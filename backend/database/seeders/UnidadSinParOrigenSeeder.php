@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\UnidadesSinParOrigen;
+use App\Models\UnidadSinParOrigen;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class UnidadesSinParOrigenSeeder extends Seeder
+class UnidadSinParOrigenSeeder extends Seeder
 {
     public function run(): void
     {   
@@ -19,7 +19,7 @@ class UnidadesSinParOrigenSeeder extends Seeder
         ];
 
         foreach ($unidadesSinParOrigen as $uspo) {
-            UnidadesSinParOrigen::create($uspo);
+            UnidadSinParOrigen::create($uspo);
         }
     }
 }

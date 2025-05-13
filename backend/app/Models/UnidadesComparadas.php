@@ -39,6 +39,6 @@ class UnidadesComparadas extends BaseModel
 	// Incluye muchos temas comunes
     public function temasComunes()
     {
-        return $this->hasMany(TemasComunes::class, 'idUnidadesComparadas', 'idUnidadesComparadas');
+        return $this->hasMany(TemaComun::class, 'idUnidadesComparadas', 'idUnidadesComparadas');
     }
 }

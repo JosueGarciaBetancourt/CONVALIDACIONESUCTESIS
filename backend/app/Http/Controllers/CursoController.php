@@ -6,7 +6,9 @@ use App\Models\Curso;
 use App\Models\Malla;
 use App\Models\Carrera;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\curso\CreateCursoRequest;
 use App\Http\Requests\curso\UpdateCursoRequest;
 
@@ -60,6 +62,116 @@ class CursoController extends Controller
         }
     }
 
+    public function getCoursesByMallaAndName(Request $request, $idMalla)
+    {
+        try {
+            // Validar que la malla exista
+           // Validar que el ID sea numérico
+            $validator = Validator::make(['idMalla' => $idMalla], [
+                'idMalla' => 'required|integer|exists:mallas,idMalla',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Malla no encontrada',
+                    'errors' => $validator->errors()
+                ], 404); // 404 es más apropiado para recursos no encontrados
+            }
+
+            // Query con filtro opcional
+            $query = Curso::where('idMalla', $idMalla);
+
+            if ($request->has('search')) {
+                $search = $request->input('search');
+                $query->whereRaw('LOWER(nombre) LIKE ?', ['%' . strtolower($search) . '%']);
+            }
+
+            $cursos = $query->paginate(15);
+
+            return response()->json([
+                'data' => $cursos->items(),
+                'pagination' => [
+                    'total' => $cursos->total(),
+                    'current_page' => $cursos->currentPage(),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Error al obtener la malla con ID $idMalla. " . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    public function getCoursesByMallaAndManyNames(Request $request, $idMalla)
+    {
+        try {
+            // Validar existencia de la malla de una vez
+            if (!Malla::where('idMalla', $idMalla)->exists()) {
+                return response()->json(['error' => 'Malla no encontrada'], 404);
+            }
+    
+            // Validar nombres con Validator manual
+            $validator = Validator::make($request->all(), [
+                'nombres' => 'required|array|min:1',
+                'nombres.*' => 'string|max:150'
+            ]);
+    
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Error de validación',
+                    'errors'  => $validator->errors()
+                ], 422);
+            }
+    
+            $nombres = $request->input('nombres');
+    
+            // Si no hay nombres válidos, devolvemos vacío
+            if (empty($nombres)) {
+                return response()->json([
+                    'data' => [],
+                    'meta' => ['total' => 0]
+                ]);
+            }
+    
+            // Construcción de las queries con UNION ALL
+            $unionQuery = null;
+            foreach ($nombres as $nombre) {
+                $query = Curso::where('idMalla', $idMalla)
+                    ->where('nombre', 'LIKE', "%{$nombre}%")
+                    ->limit(3)
+                    ->getQuery();
+    
+                $unionQuery = $unionQuery ? $unionQuery->unionAll($query) : $query;
+            }
+    
+            // Si no se generó ninguna query
+            if (!$unionQuery) {
+                return response()->json([
+                    'data' => [],
+                    'meta' => ['total' => 0]
+                ]);
+            }
+    
+            // Ejecutar consulta final
+            $result = DB::table(DB::raw("({$unionQuery->toSql()}) as sub"))
+                ->mergeBindings($unionQuery)
+                ->get();
+    
+            return response()->json([
+                'data' => $result,
+                'meta' => [
+                    'total' => $result->count(),
+                    'nombres_buscados' => $nombres
+                ]
+            ]);
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Error en la búsqueda: " . $e->getMessage()
+            ], 500);
+        }
+    }
+    
     public function getCoursePairForComparison($idCurso1, $idCurso2)
     {
         try {
@@ -229,6 +341,7 @@ class CursoController extends Controller
         }
     }
 
+    /* 
     public function createCurso(CreateCursoRequest $request)
     {
         try {
@@ -245,6 +358,53 @@ class CursoController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "Error al crear el curso. " . $e->getMessage()
+            ], 500);
+        }
+    } 
+    */
+
+    public function createCurso(CreateCursoRequest $request)
+    {
+
+        DB::beginTransaction();
+        
+        try {
+            // Después de recibir los datos de los cursos y sus sílabos...
+        
+            $msg = 'Cursos creados';
+
+            $cursosData = $request->validated(); // Esperamos un array de cursos
+            
+            // Si recibimos un solo curso (no array), lo convertimos a array
+            if (isset($cursosData['idMalla'])) {
+                $msg = 'Curso creado';
+                $cursosData = [$cursosData];
+            }
+            
+            $cursosCreados = [];
+            
+            foreach ($cursosData as $cursoData) {
+                $curso = Curso::create([
+                    'idMalla' => $cursoData['idMalla'],
+                    'nombre' => $cursoData['nombre'],
+                ]);
+                
+                $cursosCreados[] = $curso;
+            }
+            
+            DB::commit();
+            
+            return response()->json([
+                'message' => "$msg correctamente",
+                //'data' => $cursosCreados,
+                //'count' => count($cursosCreados)
+            ], 201);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'message' => "Error al crear los cursos. " . $e->getMessage()
             ], 500);
         }
     }
@@ -358,9 +518,9 @@ class CursoController extends Controller
     {
         try {
             $curso = Curso::onlyTrashed()->findOrFail($idCurso); // Buscar cursos eliminados lógicamente
-          
+        
             $curso->restore();
-          
+        
             return response()->json([
                 'message' => 'Curso habilitado correctamente'
             ], 200);

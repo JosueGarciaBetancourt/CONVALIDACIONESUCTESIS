@@ -48,6 +48,11 @@ class Curso extends BaseModel
         return $this->hasMany(Comparacion::class, 'idCursoDestino', 'idCurso');
     }
     
+    public function cursosGruposTematicos()
+    {
+        return $this->hasMany(CursoGrupoTematico::class, 'idCurso', 'idCurso');
+    }
+
     protected static function booted()
     {
         // Eliminación de registros en la tabla CarrerasCursos
@@ -68,5 +73,4 @@ class Curso extends BaseModel
                 ->restore();
         });
     }
-
 }

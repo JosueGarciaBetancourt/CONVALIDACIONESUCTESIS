@@ -80,9 +80,20 @@ class SolicitudController extends Controller
         return $newCodigoSolicitud;
     }
 
+    public function procesarRespuestaModeloNLP() {
+        return;
+    }
+
+    public function procesarComparacionCursos($inputJson) {
+        $response = $this->procesarRespuestaModeloNLP($inputJson);
+        return;
+    }
+
     public function createSolicitud(CreateSolicitudRequest $request)
     {
         try {
+            // Después de seleccionar al estudiante...
+
             $data = $request->validated();
             $codigo = $this::returnNuevoCodigoSolicitud();
 

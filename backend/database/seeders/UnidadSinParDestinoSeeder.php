@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\UnidadesSinParDestino;
+use App\Models\UnidadSinParDestino;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class UnidadesSinParDestinoSeeder extends Seeder
+class UnidadSinParDestinoSeeder extends Seeder
 {
     public function run(): void
     {   
@@ -19,7 +19,7 @@ class UnidadesSinParDestinoSeeder extends Seeder
         ];
 
         foreach ($unidadesSinParDestino as $uspd) {
-            UnidadesSinParDestino::create($uspd);
+            UnidadSinParDestino::create($uspd);
         }
     }
 }

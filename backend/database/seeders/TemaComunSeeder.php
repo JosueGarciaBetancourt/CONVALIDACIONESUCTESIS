@@ -2,12 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\DetalleComparacion;
-use App\Models\TemasComunes;
+use App\Models\TemaComun;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class TemasComunesSeeder extends Seeder
+class TemaComunSeeder extends Seeder
 {
     public function run(): void
     {
@@ -230,7 +229,7 @@ class TemasComunesSeeder extends Seeder
         ];
 
         foreach ($temasComunes as $temaComun) {
-            TemasComunes::create($temaComun);
+            TemaComun::create($temaComun);
         }
     }
 }

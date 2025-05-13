@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class TemasComunes extends BaseModel
+class TemaComun extends BaseModel
 {
 	use SoftDeletes;
 
