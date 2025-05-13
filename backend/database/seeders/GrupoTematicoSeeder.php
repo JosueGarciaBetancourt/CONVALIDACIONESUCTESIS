@@ -85,6 +85,11 @@ class GrupoTematicoSeeder extends Seeder
                 'nombre' => 'Innovación y Transformación Digital', 
                 'descripcion' => 'Tendencias tecnológicas y adopción digital en empresas y organizaciones.'
             ],
+            [
+                'idGrupoTematico' => 16, 
+                'nombre' => 'GRUPO TEMÁTICO DE PRUEBA', 
+                'descripcion' => 'DESCRIPCIÓN DE GRUPO TEMÁTICO DE PRUEBA.'
+            ],
         ];
 
         foreach ($gruposTematicos as $grupoTematico) {

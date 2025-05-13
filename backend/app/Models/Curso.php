@@ -71,6 +71,24 @@ class Curso extends BaseModel
             $curso->carrerasCursos()
                 ->onlyTrashed()
                 ->restore();
+        }); 
+
+        // Eliminación de registros en la tabla Cursos_GruposTematicos
+        static::deleting(function ($curso) {
+            if ($curso->isForceDeleting()) {
+                $curso->cursosGruposTematicos()->forceDelete();
+            } else {
+                $curso->cursosGruposTematicos()->each(function ($relacion) {
+                    $relacion->delete();
+                });
+            }
         });
+
+        // Restauración de registros en la tabla Cursos_GruposTematicos
+        static::restoring(function ($curso) {
+            $curso->cursosGruposTematicos()
+                ->onlyTrashed()
+                ->restore();
+        }); 
     }
 }

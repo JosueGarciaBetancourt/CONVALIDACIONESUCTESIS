@@ -79,37 +79,31 @@ class GrupoTematicoController extends Controller
     {
         try {
             $data = $request->validated();
-            $GrupoTematico = GrupoTematico::findOrFail($idGrupoTematico);
-
-            // Actualizar campos
-            if (isset($data['nombre'])) $GrupoTematico->nombre = $data['nombre'];
-            if (isset($data['abreviatura'])) $GrupoTematico->abreviatura = $data['abreviatura'];
-            if (isset($data['idUniversidad'])) $GrupoTematico->idUniversidad = $data['idUniversidad'];
-
-            // Si no se proporciona código, lo generamos automáticamente
-            if (empty($data['codigo'])) {
-                $idUni = $data['idUniversidad'] ?? $GrupoTematico->idUniversidad;
-                $abreviaturaUniversidad = Universidad::where('idUniversidad', $idUni)->value('abreviatura');
-                $data['codigo'] = $abreviaturaUniversidad . '-' . $data['abreviatura'];
-            }
-
-            // Verificamos que no exista otro registro con ese mismo código
-            if (GrupoTematico::where('codigo', $data['codigo'])->where('idGrupoTematico', '!=', $idGrupoTematico)->exists()) {
+            
+            if (empty($data)) {
                 return response()->json([
-                    'message' => "Ya existe una GrupoTematico con el código {$data['codigo']}. Intenta usar una abreviatura distinta.",
-                ], 422);
+                    'message' => 'No se enviaron datos para actualizar.'
+                ], 400);
             }
 
-            $GrupoTematico->codigo = $data['codigo'];
-            $GrupoTematico->save();
+            $grupoTematico = GrupoTematico::findOrFail($idGrupoTematico);
+            $hasCursos = $grupoTematico->cursosGruposTematicos()->exists();
+
+            if ($hasCursos) {
+                return response()->json([
+                    'message' => "No se puede actualizar el Grupo Temático porque tiene cursos asociados"
+                ], 403);
+            }
+
+            $grupoTematico->update($data);
 
             return response()->json([
-                'message' => 'GrupoTematico actualizada correctamente'
+                'message' => 'Grupo Temático actualizado correctamente'
             ], 200);
             
         } catch (\Exception $e) {
             return response()->json([
-                'message' => "Error al actualizar la GrupoTematico con ID $idGrupoTematico. " . $e->getMessage()
+                'message' => "Error al actualizar el Grupo Temático con ID $idGrupoTematico. " . $e->getMessage()
             ], 500);
         }
     }
@@ -117,49 +111,16 @@ class GrupoTematicoController extends Controller
     public function disableGrupoTematico($idGrupoTematico)
     {
         try {
-            $GrupoTematico = GrupoTematico::findOrFail($idGrupoTematico); // Solo GruposTematicos activas (no eliminadas lógicamente)
+            $grupoTematico = GrupoTematico::findOrFail($idGrupoTematico);
             
-            $hasEstudiantes = Estudiante::where('idGrupoTematicoOrigen', $GrupoTematico->idGrupoTematico)->exists();
-            $hasMallas = $GrupoTematico->mallas()->exists();
-            $hasSolicitudes = Solicitud::where('idGrupoTematicoDestino', $GrupoTematico->idGrupoTematico)->exists();
-    
-            if ($hasEstudiantes || $hasMallas || $hasSolicitudes) {
-                $motivos = [];
-    
-                if ($hasEstudiantes) {
-                    $motivos[] = 'estudiantes registrados';
-                }
-    
-                if ($hasMallas) {
-                    $motivos[] = 'mallas curriculares asociadas';
-                }
-    
-                if ($hasSolicitudes) {
-                    $motivos[] = 'solicitudes de convalidación vinculadas';
-                }
-    
-                // Construcción natural del mensaje (coma entre elementos y "y" antes del último)
-                $motivoTexto = implode(', ', array_slice($motivos, 0, -1));
-                
-                if (count($motivos) > 1) {
-                    $motivoTexto .= ' y ' . end($motivos);
-                } else {
-                    $motivoTexto = $motivos[0];
-                }
-    
-                return response()->json([
-                    'message' => "No se puede deshabilitar la GrupoTematico porque tiene $motivoTexto."
-                ], 403);
-            }
-    
-            $GrupoTematico->delete(); // Soft delete
+            $grupoTematico->delete(); // Soft delete
     
             return response()->json([
-                'message' => 'GrupoTematico deshabilitada correctamente'
+                'message' => 'Grupo Temático deshabilitado correctamente'
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => "Error al deshabilitar la GrupoTematico con ID $idGrupoTematico. " . $e->getMessage()
+                'message' => "Error al deshabilitar el Grupo Temático con ID $idGrupoTematico. " . $e->getMessage()
             ], 500);
         }
     }
@@ -167,66 +128,33 @@ class GrupoTematicoController extends Controller
     public function enableGrupoTematico($idGrupoTematico)
     {
         try {
-            $GrupoTematico = GrupoTematico::onlyTrashed()->findOrFail($idGrupoTematico); // Buscar GrupoTematicoes eliminadas lógicamente
+            $grupoTematico = GrupoTematico::onlyTrashed()->findOrFail($idGrupoTematico); 
           
-            $GrupoTematico->restore();
+            $grupoTematico->restore();
           
             return response()->json([
-                'message' => 'GrupoTematico habilitada correctamente'
+                'message' => 'Grupo Temático habilitado correctamente'
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => "Error al habilitar la GrupoTematico con ID  $idGrupoTematico. " . $e->getMessage()
-            ], 500);  // Código de estado 500 para "Error interno del servidor"
+                'message' => "Error al habilitar el Grupo Temático con ID  $idGrupoTematico. " . $e->getMessage()
+            ], 500); 
         }
     }
 
     public function deleteGrupoTematico($idGrupoTematico)
     {
         try {
-            $GrupoTematico = GrupoTematico::withTrashed()->findOrFail($idGrupoTematico); // Buscar incluso si está eliminado lógicamente
+            $grupoTematico = GrupoTematico::withTrashed()->findOrFail($idGrupoTematico); 
             
-            $hasEstudiantes = Estudiante::where('idGrupoTematicoOrigen', $GrupoTematico->idGrupoTematico)->exists();
-            $hasMallas = $GrupoTematico->mallas()->exists();
-            $hasSolicitudes = Solicitud::where('idGrupoTematicoDestino', $GrupoTematico->idGrupoTematico)->exists();
-    
-            if ($hasEstudiantes || $hasMallas || $hasSolicitudes) {
-                $motivos = [];
-    
-                if ($hasEstudiantes) {
-                    $motivos[] = 'estudiantes registrados';
-                }
-    
-                if ($hasMallas) {
-                    $motivos[] = 'mallas curriculares asociadas';
-                }
-    
-                if ($hasSolicitudes) {
-                    $motivos[] = 'solicitudes de convalidación vinculadas';
-                }
-    
-                // Construcción natural del mensaje (coma entre elementos y "y" antes del último)
-                $motivoTexto = implode(', ', array_slice($motivos, 0, -1));
-                
-                if (count($motivos) > 1) {
-                    $motivoTexto .= ' y ' . end($motivos);
-                } else {
-                    $motivoTexto = $motivos[0];
-                }
-    
-                return response()->json([
-                    'message' => "No se puede eliminar la GrupoTematico porque tiene $motivoTexto."
-                ], 403);
-            }
-    
-            $GrupoTematico->forceDelete();
+            $grupoTematico->forceDelete();
     
             return response()->json([
-                'message' => 'GrupoTematico eliminada correctamente'
+                'message' => 'Grupo Temático eliminado correctamente'
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => "Error al eliminar la GrupoTematico con ID $idGrupoTematico. " . $e->getMessage()
+                'message' => "Error al eliminar el Grupo Temático con ID $idGrupoTematico. " . $e->getMessage()
             ], 500);
         }
     }

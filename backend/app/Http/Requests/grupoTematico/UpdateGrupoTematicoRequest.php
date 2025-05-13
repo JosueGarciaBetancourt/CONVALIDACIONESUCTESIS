@@ -16,17 +16,9 @@ class UpdateGrupoTematicoRequest extends FormRequest
     {
         return [
             'nombre' => [
-                'sometimes',
-                'string',
-                Rule::unique('GrupoTematicos', 'nombre')->ignore($this->idGrupoTematico, 'idGrupoTematico'),
+                'sometimes', 'string', Rule::unique('grupostematicos', 'nombre')->ignore($this->idGrupoTematico, 'idGrupoTematico'),
             ],
-            'codigo' => [
-                'sometimes',
-                'string',
-                Rule::unique('GrupoTematicos', 'codigo')->ignore($this->idGrupoTematico, 'idGrupoTematico'),
-            ],
-            'abreviatura' => 'sometimes|string',
-            'idUniversidad' => 'sometimes|exists:universidades,idUniversidad',
+            'descripcion' => 'sometimes|string'
         ];
     }
 }

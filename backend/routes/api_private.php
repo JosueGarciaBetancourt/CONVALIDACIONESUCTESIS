@@ -19,6 +19,7 @@ use App\Http\Controllers\UniversidadController;
 use App\Http\Controllers\BibliografiaController;
 use App\Http\Controllers\CarreraCursoController;
 use App\Http\Controllers\GrupoTematicoController;
+use App\Http\Controllers\CursoGrupoTematicoController;
 use App\Http\Controllers\DetalleComparacionController;
 use App\Http\Controllers\UnidadesComparadasController;
 use App\Http\Controllers\UnidadSinParOrigenController;
@@ -132,6 +133,14 @@ Route::put('/carrerasCursos/{idCarreraCurso}', [CarreraCursoController::class, '
 Route::delete('/carrerasCursos/{idCarreraCurso}/disable', [CarreraCursoController::class, 'disableCarreraCurso'])->name('disableCarreraCurso');
 Route::post('/carrerasCursos/{idCarreraCurso}/enable', [CarreraCursoController::class, 'enableCarreraCurso'])->name('enableCarreraCurso');
 Route::delete('/carrerasCursos/{idCarreraCurso}/delete', [CarreraCursoController::class, 'deleteCarreraCurso'])->name('deleteCarreraCurso');
+
+
+// Cursos Grupos Tematicos
+Route::get('/cursosGruposTematicos', [CursoGrupoTematicoController::class, 'getCursosGruposTematicos'])->name('getCursosruposTematicos');
+Route::get('/cursosGruposTematicos/{idCursoGrupo}', [CursoGrupoTematicoController::class, 'getCursoGrupoTematico'])->name('getCursoGrupoTematico');
+Route::get('/cursosGruposTematicos-trashed', [CursoGrupoTematicoController::class, 'getTrashedCursosGruposTematicos'])->name('getTrashedCursosGruposTematicos');
+Route::get('/cursosGruposTematicos/{idCursoGrupo}/trashed', [CursoGrupoTematicoController::class, 'getTrashedCursoGrupoTematico'])->name('getTrashedCursoGrupoTematico');
+Route::post('/cursosGruposTematicos', [CursoGrupoTematicoController::class, 'createCursoGrupoTematico'])->name('createCursoGrupoTematico');
 
 
 // Silabos

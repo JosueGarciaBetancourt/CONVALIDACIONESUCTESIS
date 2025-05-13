@@ -21,4 +21,25 @@ class GrupoTematico extends BaseModel
     {
         return $this->hasMany(CursoGrupoTematico::class, 'idGrupoTematico', 'idGrupoTematico');
     }
+
+    protected static function booted()
+    {
+        // Eliminación de registros en la tabla Cursos_GruposTematicos
+        static::deleting(function ($grupoTematico) {
+            if ($grupoTematico->isForceDeleting()) {
+                $grupoTematico->cursosGruposTematicos()->forceDelete();
+            } else {
+                $grupoTematico->cursosGruposTematicos()->each(function ($relacion) {
+                    $relacion->delete();
+                });
+            }
+        });
+
+        // Restauración de registros en la tabla Cursos_GruposTematicos
+        static::restoring(function ($grupoTematico) {
+            $grupoTematico->cursosGruposTematicos()
+                ->onlyTrashed()
+                ->restore();
+        }); 
+    }
 }

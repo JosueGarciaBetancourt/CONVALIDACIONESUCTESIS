@@ -4,14 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Curso;
 use App\Models\Comparacion;
-use App\Models\TemasComunes;
+use App\Models\TemaComun;
 
 class TemaComunController extends Controller
 {
     public function getTemasComunes()
     {
         try {
-            $temasComunes = TemasComunes::all();
+            $temasComunes = TemaComun::all();
             return response()->json($temasComunes, 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -23,7 +23,7 @@ class TemaComunController extends Controller
     public function getTemaComun($idTemasComunes)
     {
         try {
-            $temaComun = TemasComunes::findOrFail($idTemasComunes);
+            $temaComun = TemaComun::findOrFail($idTemasComunes);
             return response()->json($temaComun, 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -34,7 +34,7 @@ class TemaComunController extends Controller
 
     public function getTrashedTemasComunes() {
         try {
-            $temasComunes = TemasComunes::onlyTrashed()->get();
+            $temasComunes = TemaComun::onlyTrashed()->get();
             return response()->json($temasComunes, 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -46,7 +46,7 @@ class TemaComunController extends Controller
     public function getTrashedTemaComun($idSilabo)
     {
         try {
-            $temaComun = TemasComunes::onlyTrashed()->findOrFail($idSilabo);
+            $temaComun = TemaComun::onlyTrashed()->findOrFail($idSilabo);
             return response()->json($temaComun, 200);
         } catch (\Exception $e) {
             return response()->json([
