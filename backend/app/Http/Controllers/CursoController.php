@@ -125,10 +125,10 @@ class CursoController extends Controller
                 ], 422);
             }
 
-            $cursoIds = $request->input('cursos');
+            $cursosBuscadosIds = $request->input('cursos');
 
             // Si no hay IDs de cursos, devolvemos vacío
-            if (empty($cursoIds)) {
+            if (empty($cursosBuscadosIds)) {
                 return response()->json([
                     'data' => [],
                     'meta' => ['total' => 0]
@@ -136,7 +136,7 @@ class CursoController extends Controller
             }
 
             // Cargar los cursos por IDs para obtener sus nombres
-            $cursosOriginales = Curso::whereIn('idCurso', $cursoIds)->get();
+            $cursosOriginales = Curso::whereIn('idCurso', $cursosBuscadosIds)->get();
             
             // Si no se encontraron cursos con esos IDs
             if ($cursosOriginales->isEmpty()) {
@@ -157,11 +157,15 @@ class CursoController extends Controller
             // Buscar cursos similares en la malla especificada
             $resultados = AlgoritmosBusquedaController::busquedaPorNombre($idMalla, $cursosInput);
             
+            // Extraer IDs de cursos encontrados
+            $cursosBuscadosIdsEncontrados = array_unique(array_column($resultados, 'idCurso'));
+            
             return response()->json([
-                'data' => $resultados,
+                'data' => $resultados, // Solo los resultados directos
                 'meta' => [
                     'total' => count($resultados),
-                    'curso_ids_buscados' => $cursoIds
+                    'curso_ids_buscados' => $cursosBuscadosIds,
+                    'curso_ids_encontrados' => array_values($cursosBuscadosIdsEncontrados)
                 ]
             ]);
         } catch (\Exception $e) {
@@ -171,70 +175,89 @@ class CursoController extends Controller
         }
     }
 
-    public function getCoursesByMallaAndGrupoTematicoAndManyIdsNLP(Request $request, $idMalla, $idGrupoTematico)
+    public function getCoursesByMallaAndGrupoTematicoAndManyIdsNLP(Request $request, $idMalla)
     {
         try {
-             // Validar existencia de la malla
-             if (!Malla::where('idMalla', $idMalla)->exists()) {
+            // Validar existencia de la malla
+            if (!Malla::where('idMalla', $idMalla)->exists()) {
                 return response()->json(['error' => 'Malla no encontrada'], 404);
             }
 
-            // Validar existencia de grupo temático
-            if (!GrupoTematico::where('idGrupoTematico', $idGrupoTematico)->exists()) {
-                return response()->json(['error' => 'Grupo Temático no encontrado'], 404);
-            }
-
-            // Validar estructura del request, un array de IDs
+            // Validar estructura del request
             $validator = Validator::make($request->all(), [
                 'cursos' => 'required|array|min:1',
-                'cursos.*' => 'required|integer'
+                'cursos.*.idCurso' => 'required|integer|exists:cursos,idCurso',
+                'cursos.*.grupos_tematicos_ids' => 'nullable|array',
+                'cursos.*.grupos_tematicos_ids.*' => 'nullable|integer|exists:grupostematicos,idGrupoTematico',
+                'cursos_ids_encontrados_busqueda_textual' => 'nullable|array',
+                'cursos_ids_encontrados_busqueda_textual.*' => 'nullable|integer|exists:cursos,idCurso',
             ]);
 
             if ($validator->fails()) {
                 return response()->json([
                     'message' => 'Error de validación',
-                    'errors'  => $validator->errors()
+                    'errors' => $validator->errors()
                 ], 422);
             }
 
-            $cursosIds = $request->input('cursos');
-
-            // Si no hay IDs de cursos, devolvemos vacío
-            if (empty($cursosIds)) {
-                return response()->json([
-                    'data' => [],
-                    'meta' => ['total' => 0]
-                ]);
-            }
+            $cursosBuscados = $request->input('cursos');
+            $cursosNoBuscar = $request->input('cursos_ids_encontrados_busqueda_textual', []);
 
             // Cargar los cursos por IDs para obtener sus nombres y sumillas
-            $cursosOriginales = Curso::whereIn('idCurso', $cursosIds)->get();
-            
-            // Si no se encontraron cursos con esos IDs
+            $cursosOriginales = Curso::with('silabo')
+                ->whereIn('idCurso', array_column($cursosBuscados, 'idCurso'))
+                ->get();
+
             if ($cursosOriginales->isEmpty()) {
                 return response()->json([
                     'error' => 'No se encontraron cursos con los IDs proporcionados'
                 ], 404);
             }
-            
+
             // Preparar los cursos para la búsqueda
             $cursosInput = [];
             foreach ($cursosOriginales as $curso) {
                 $cursosInput[] = [
                     'idCurso' => $curso->idCurso,
                     'nombre' => $curso->nombre,
-                    'sumilla' =>  $curso->silabo->sumilla ?? '',
+                    'sumilla' => $curso->silabo->sumilla ?? '',
                 ];
             }
 
-            // Buscar cursos similares en la malla especificada
-            $resultados = AlgoritmosBusquedaController::busquedaSemantica($idMalla, $idGrupoTematico, $cursosInput);
-            
+            // Obtener todos los grupos temáticos únicos de los cursos buscados
+            $gruposTematicosIds = array_unique(
+                array_merge(
+                    ...array_map(
+                        fn($curso) => $curso['grupos_tematicos_ids'] ?? [],
+                        $cursosBuscados
+                    )
+                )
+            );
+
+            // Buscar cursos similares en la malla especificada para cada grupo temático
+            $resultadosPorGrupo = [];
+            foreach ($gruposTematicosIds as $idGrupoTematico) {
+                $resultados = AlgoritmosBusquedaController::busquedaSemantica(
+                    $idMalla,
+                    $idGrupoTematico,
+                    $cursosInput,
+                    $cursosNoBuscar
+                );
+                $resultadosPorGrupo[$idGrupoTematico] = $resultados;
+            }
+
+            // Combinar y ordenar resultados de todos los grupos temáticos
+            $resultadosCombinados = array_merge(...array_values($resultadosPorGrupo));
+            usort($resultadosCombinados, function($a, $b) {
+                return $b['similitud'] <=> $a['similitud'];
+            });
+
             return response()->json([
-                'data' => $resultados,
+                'data' => $resultadosCombinados,
                 'meta' => [
-                    'total' => count($resultados),
-                    'curso_ids_buscados' => $cursosIds
+                    'total' => count($resultadosCombinados),
+                    'curso_ids_buscados' => array_column($cursosBuscados, 'idCurso'),
+                    'grupos_tematicos_buscados' => $gruposTematicosIds
                 ]
             ]);
         } catch (\Exception $e) {

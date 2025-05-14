@@ -265,7 +265,7 @@ class SilaboSeeder extends Seeder
                 'horas_teoria' => 2,
                 'horas_practica' => 4,
                 'horas_teoricoPracticas' => 6,
-                'sumilla' => 'Principios fundamentales de comunicación de datos, protocolos de red y arquitecturas de sistemas distribuidos.',
+                'sumilla' => 'Principios fundamentales de comunicación de datos, redes, protocolos de red y arquitecturas de sistemas distribuidos.',
                 'aprendizaje_general' => 'El estudiante diseñará soluciones de red considerando requisitos de performance y seguridad.',
             ]
         ];

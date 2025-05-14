@@ -165,10 +165,15 @@ class AlgoritmosBusquedaController extends Controller
                 
                 foreach ($resultadosCursoActual as $resultado) {
                     $curso = $resultado['curso'];
-                    $cursoData = $curso->toArray();
-                    $cursoData['id_curso_original'] = $idOriginal;
-                    $cursoData['similitud'] = round($resultado['similitud'], 4);
-                    
+                    $cursoData = [
+                        'idCurso' => $curso->idCurso,
+                        'idMalla' => $curso->idMalla,
+                        'codigo' => $curso->codigo,
+                        'nombre' => $curso->nombre,
+                        'fueComparado' => 0, // Asumo que quieres mantener este campo
+                        'id_curso_original' => $idOriginal,
+                        'similitud' => round($resultado['similitud'], 4)
+                    ];
                     $resultadosPorCursoOriginal[$idOriginal][] = $cursoData;
                 }
             }
@@ -220,26 +225,38 @@ class AlgoritmosBusquedaController extends Controller
      * @param array $cursosInput (id, nombre y sumilla)
      * @return array
     */
-    public static function busquedaSemantica($idMalla, $idGrupoTematico, $cursosInput) 
+    public static function busquedaSemantica($idMalla, $idGrupoTematico, $cursosInput, $cursosNoBuscar = []) 
     {
         try {
-            // 1. Obtener los cursos del grupo temático
-            $cursosPorMallaTema = Curso::with('silabo:idSilabo,idCurso,sumilla')
-                                ->where(['idMalla' => $idMalla])
-                                ->whereHas('cursosGruposTematicos', function($query) use ($idGrupoTematico) {
-                                    $query->where('idGrupoTematico', $idGrupoTematico);
-                                })
-                                ->select('idCurso', 'idMalla', 'codigo', 'nombre')
-                                ->get();    
-
-            if ($cursosPorMallaTema->isEmpty()) {
+            // 1. Validar cursos de entrada
+            if (empty($cursosInput)) {
                 return [];
             }
-            
-            // 2. Preparar datos para el NLP
-            $cursosOrigen = $cursosInput;
 
-            $cursosGrupoTematico = $cursosPorMallaTema->map(function($curso) {
+            // 2. Obtener cursos del grupo temático excluyendo los no buscados
+            $query = Curso::with('silabo:idSilabo,idCurso,sumilla')
+                        ->where('idMalla', $idMalla)
+                        ->whereHas('cursosGruposTematicos', function($query) use ($idGrupoTematico) {
+                            $query->where('idGrupoTematico', $idGrupoTematico);
+                        });
+
+            if (!empty($cursosNoBuscar)) {
+                $query->whereNotIn('idCurso', $cursosNoBuscar);
+            }
+
+            $cursosPorMallaTema = $query->select('idCurso', 'idMalla', 'codigo', 'nombre', 'fueComparado')
+                                    ->get();
+
+            // 3. Preparar datos para NLP
+            $cursosOrigen = array_map(function($curso) {
+                return [
+                    'idCurso' => $curso['idCurso'],
+                    'nombre' => $curso['nombre'],
+                    'sumilla' => $curso['sumilla'] ?? ''
+                ];
+            }, $cursosInput);
+
+            $cursosDestino = $cursosPorMallaTema->map(function($curso) {
                 return [
                     'idCurso' => $curso->idCurso,
                     'nombre' => $curso->nombre,
@@ -247,69 +264,43 @@ class AlgoritmosBusquedaController extends Controller
                 ];
             })->toArray();
 
-            /* Log::info("CURSOS ORIGEN (input):");
-            Controller::printJson($cursosOrigen);
-            Log::info("POSIBLES CURSOS DESTINO:");
-            Controller::printJson($cursosGrupoTematico); */
-
-            Controller::printJson([
+            // 4. Llamar al endpoint NLP
+            $resultadosNLP = self::NLPEndpoint([
                 'cursos_origen' => $cursosOrigen,
-                'cursos_destino' => $cursosGrupoTematico
+                'cursos_destino' => $cursosDestino,
+                'id_grupo_tematico' => $idGrupoTematico
             ]);
 
-            return [];
-
-            // 3. Llamar al endpoint de NLP
-            $resultados = self::NLPEndpoint([
-                'cursos_origen' => $cursosOrigen,
-                'cursos_destino' => $cursosGrupoTematico
-            ]);
-
-            Controller::printJson([
-                'cursos_origen' => $cursosOrigen,
-                'cursos_destino' => $cursosGrupoTematico
-            ]);
-
-            if (empty($resultados)) {
-                return [];
-            }
-
-            // 4. Procesar resultados
+            // 5. Procesar resultados
+            $resultadosFinales = [];
             $mapaCursos = $cursosPorMallaTema->keyBy('idCurso');
-            $cursosSimilares = [];
 
-            foreach ($resultados['comparaciones'] as $comparacion) {
+            foreach ($resultadosNLP['comparaciones'] ?? [] as $comparacion) {
                 $idCursoDestino = $comparacion['idCursoDestino'] ?? null;
                 
-                if (!$idCursoDestino || !isset($mapaCursos[$idCursoDestino])) {
-                    continue;
+                if ($idCursoDestino && isset($mapaCursos[$idCursoDestino])) {
+                    $curso = $mapaCursos[$idCursoDestino];
+                    
+                    $resultadosFinales[] = [
+                        'idCurso' => $curso->idCurso,
+                        'idMalla' => $curso->idMalla,
+                        'codigo' => $curso->codigo,
+                        'nombre' => $curso->nombre,
+                        'fueComparado' => $curso->fueComparado,
+                        'id_curso_original' => $comparacion['idCursoOrigen'] ?? null,
+                        'similitud' => round($comparacion['similitud_total'] ?? 0, 4),
+                        'id_grupo_tematico' => $idGrupoTematico
+                    ];
                 }
-
-                $curso = $mapaCursos[$idCursoDestino];
-                $similitud = $comparacion['similitud_total'] ?? 0;
-                
-                $cursosSimilares[] = [
-                    'idCurso' => $idCursoDestino,
-                    'idMalla' => $curso->idMalla,
-                    'codigo' => $curso->codigo,
-                    'nombre' => $curso->nombre,
-                    'fueComparado' => 0,
-                    'id_curso_original' => $comparacion['idCursoOrigen'] ?? null,
-                    'puntuacion_similitud' => min(100, round($similitud * 100)),
-                    'detalle_similitud' => [
-                        'sumilla' => $comparacion['similitud_sumilla'] ?? 0,
-                        'aprendizajes' => $comparacion['similitud_aprendizajes'] ?? 0,
-                        'unidades' => $comparacion['similitud_unidades'] ?? 0
-                    ]
-                ];
             }
 
-            // 5. Ordenar por puntuación
-            usort($cursosSimilares, function($a, $b) {
-                return $b['puntuacion_similitud'] <=> $a['puntuacion_similitud'];
+            // 6. Ordenar por similitud descendente
+            usort($resultadosFinales, function($a, $b) {
+                return $b['similitud'] <=> $a['similitud'];
             });
 
-            return $cursosSimilares;
+            return $resultadosFinales;
+
         } catch (\Exception $e) {
             Log::error('Error en búsqueda semántica: ' . $e->getMessage());
             return [];
@@ -320,68 +311,67 @@ class AlgoritmosBusquedaController extends Controller
     {
         try {
             $client = new \GuzzleHttp\Client([
-                'base_uri' => env('NLP_URL', 'http://127.0.0.1:5001'),
-                'timeout' => 30.0,
+                'base_uri' => env('NLP_URL', 'http://127.0.0.1:5000'),
+                'timeout' => 60.0,
                 'connect_timeout' => 10.0,
                 'http_errors' => false
             ]);
-
+    
             // Preparar el formato que espera el endpoint Python
-            $requestData = [
-                'comparaciones' => [
-                    [
+            $requestData = ['comparaciones' => []];
+            
+            foreach ($data['cursos_origen'] as $cursoOrigen) {
+                foreach ($data['cursos_destino'] as $cursoDestino) {
+                    $requestData['comparaciones'][] = [
                         'cursoOrigen' => [
-                            'idCurso' => $data['cursos_origen'][0]['idCurso'] ?? null,
-                            'nombre' => $data['cursos_origen'][0]['nombre'] ?? '',
+                            'idCurso' => $cursoOrigen['idCurso'] ?? null,
+                            'nombre' => $cursoOrigen['nombre'] ?? '',
                             'silabo' => [
-                                'sumilla' => $data['cursos_origen'][0]['sumilla'] ?? ''
+                                'sumilla' => $cursoOrigen['sumilla'] ?? ''
                             ]
                         ],
                         'cursoDestino' => [
-                            'idCurso' => $data['cursos_destino'][0]['idCurso'] ?? null,
-                            'nombre' => $data['cursos_destino'][0]['nombre'] ?? '',
+                            'idCurso' => $cursoDestino['idCurso'] ?? null,
+                            'nombre' => $cursoDestino['nombre'] ?? '',
                             'silabo' => [
-                                'sumilla' => $data['cursos_destino'][0]['sumilla'] ?? ''
+                                'sumilla' => $cursoDestino['sumilla'] ?? ''
                             ]
                         ]
-                    ]
-                ]
-            ];
-
-            $response = $client->post('/comparar_cursos', [
+                    ];
+                }
+            }
+    
+            $response = $client->post('/busqueda_semantica', [
                 'json' => $requestData,
                 'headers' => [
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json'
                 ]
             ]);
-
+    
             if ($response->getStatusCode() != 200) {
                 Log::error("NLP API returned status: ".$response->getStatusCode());
                 return [];
             }
-
+    
             $result = json_decode($response->getBody(), true);
-
+    
             if (empty($result['comparaciones'])) {
                 Log::error("Invalid response format from NLP API");
                 return [];
             }
-
+    
             // Adaptar la respuesta al formato esperado por busquedaSemantica()
             return [
                 'comparaciones' => array_map(function($item) {
                     return [
                         'idCursoOrigen' => $item['cursoOrigen']['idCurso'] ?? null,
                         'idCursoDestino' => $item['cursoDestino']['idCurso'] ?? null,
-                        'similitud_total' => $item['resultado_resumido']['similitud_global'] ?? 0,
-                        'similitud_sumilla' => $item['resultado_resumido']['similitud_sumilla'] ?? 0,
-                        'similitud_aprendizajes' => $item['resultado_resumido']['similitud_aprendizajes'] ?? 0,
-                        'similitud_unidades' => $item['resultado_resumido']['similitud_unidades'] ?? 0
+                        'similitud_total' => $item['resultado_resumido']['similitud_global'] ?? 0
                     ];
                 }, $result['comparaciones'])
             ];
-
+    
         } catch (\GuzzleHttp\Exception\ConnectException $e) {
             Log::error("NLP Connection failed: " . $e->getMessage());
             return [];
@@ -389,5 +379,5 @@ class AlgoritmosBusquedaController extends Controller
             Log::error("NLP API Error: " . $e->getMessage());
             return [];
         }
-    } 
+    }
 }
