@@ -18,11 +18,9 @@ class AlgoritmosBusquedaController extends Controller
      * @param int $idMalla
      * @param array $cursosInput (id y nombre)
      * @return array
-     */
-    public static function busquedaPorNombre($idMalla, $cursosInput)
+    */
+    public static function busquedaPorNombre($idMalla, $cursosInput) 
     {   
-        //Log::info($cursosInput);
-
         // Lista de términos de búsqueda procesados
         $terminosProcesados = [];
         
@@ -77,33 +75,40 @@ class AlgoritmosBusquedaController extends Controller
             
             foreach ($cursosMalla as $cursoMalla) {
                 $nombreCurso = AlgoritmosBusquedaController::normalizarTexto($cursoMalla->nombre);
-                $puntuacion = 0;
+                $puntuacion = 0.0;
+                $maxPuntuacion = 0.0; // Para normalización
                 
                 // 1. Coincidencia exacta o muy cercana (combinando algoritmos)
                 $similaridadTexto = 0;
                 similar_text($nombreCurso, $termino['original'], $similaridadTexto);
                 $distanciaLevenshtein = levenshtein($nombreCurso, $termino['original']);
-                $longitudPromedio = (strlen($nombreCurso) + strlen($termino['original'])) / 2;
                 
-                // Combinación inteligente de ambos algoritmos
-                if ($similaridadTexto > 80 || 
-                    ($distanciaLevenshtein / $longitudPromedio) < 0.2) {
-                    $puntuacion += 10;
-                } elseif ($similaridadTexto > 70 || 
-                        ($distanciaLevenshtein / $longitudPromedio) < 0.3) {
-                    $puntuacion += 7;
-                }
+                // Normalizar la similaridad (ya está en porcentaje 0-100)
+                $similaridadNormalizada = $similaridadTexto / 100;
+                
+                // Normalizar la distancia Levenshtein (0-1, donde 0 es mejor coincidencia)
+                $levenshteinNormalizado = $distanciaLevenshtein / max(strlen($nombreCurso), strlen($termino['original']));
+                $levenshteinScore = 1 - min($levenshteinNormalizado, 1);
+                
+                // Combinación ponderada de ambas métricas
+                $matchScore = ($similaridadNormalizada * 0.6) + ($levenshteinScore * 0.4);
+                
+                // Añadir al score total con un peso del 40%
+                $puntuacion += $matchScore * 0.4;
+                $maxPuntuacion += 0.4;
                 
                 // 2. Coincidencia por palabras individuales
+                $wordScores = [];
                 foreach ($termino['palabras'] as $palabra) {
                     // Coincidencia exacta de palabra
                     if (mb_strpos($nombreCurso, $palabra) !== false) {
-                        $puntuacion += 5;
+                        $wordScores[] = 1.0; // Máxima puntuación por coincidencia exacta
                         continue;
                     }
                     
                     // Coincidencia aproximada
                     $palabrasCurso = explode(' ', $nombreCurso);
+                    $bestWordScore = 0.0;
                     foreach ($palabrasCurso as $palabraCurso) {
                         $palabraCurso = trim($palabraCurso);
                         if (strlen($palabraCurso) > 2) {
@@ -112,27 +117,43 @@ class AlgoritmosBusquedaController extends Controller
                             similar_text($palabraCurso, $palabra, $porcentajeSimilar);
                             $distanciaLev = levenshtein($palabraCurso, $palabra);
                             
-                            if ($porcentajeSimilar > 85 || $distanciaLev <= 1) {
-                                $puntuacion += 4;
-                            } elseif ($porcentajeSimilar > 75 || $distanciaLev <= 2) {
-                                $puntuacion += 3;
-                            } elseif ($porcentajeSimilar > 65 || $distanciaLev <= 3) {
-                                $puntuacion += 1;
-                            }
+                            // Normalizar scores
+                            $similarNormalized = $porcentajeSimilar / 100;
+                            $levNormalized = 1 - min($distanciaLev / max(strlen($palabraCurso), strlen($palabra)), 1);
+                            
+                            // Combinación ponderada
+                            $currentScore = ($similarNormalized * 0.6) + ($levNormalized * 0.4);
+                            $bestWordScore = max($bestWordScore, $currentScore);
                         }
+                    }
+                    
+                    if ($bestWordScore > 0) {
+                        $wordScores[] = $bestWordScore;
                     }
                 }
                 
-                if ($puntuacion > 0) {
+                // Promedio de scores de palabras con un peso del 60%
+                if (!empty($wordScores)) {
+                    $averageWordScore = array_sum($wordScores) / count($wordScores);
+                    $puntuacion += $averageWordScore * 0.6;
+                    $maxPuntuacion += 0.6;
+                }
+                
+                // Normalizar el score final si hay contribución de palabras
+                $scoreFinal = $maxPuntuacion > 0 ? $puntuacion / $maxPuntuacion : 0;
+                
+                $umbralMinimo = env('TEXTUAL_SEARCH_UMBRAL', 0.5); // Solo considerar similitudes mayores al 50%
+               
+                if ($scoreFinal >= $umbralMinimo) {
                     $resultadosCursoActual[] = [
                         'curso' => $cursoMalla,
-                        'puntuacion' => $puntuacion
+                        'similitud' => $scoreFinal
                     ];
                 }
             }
             
             usort($resultadosCursoActual, function($a, $b) {
-                return $b['puntuacion'] <=> $a['puntuacion'];
+                return $b['similitud'] <=> $a['similitud'];
             });
             
             $resultadosCursoActual = array_slice($resultadosCursoActual, 0, 3);
@@ -146,128 +167,35 @@ class AlgoritmosBusquedaController extends Controller
                     $curso = $resultado['curso'];
                     $cursoData = $curso->toArray();
                     $cursoData['id_curso_original'] = $idOriginal;
-                    $cursoData['puntuacion_similitud'] = $resultado['puntuacion']; // Agregar puntuación
+                    $cursoData['similitud'] = round($resultado['similitud'], 4);
                     
                     $resultadosPorCursoOriginal[$idOriginal][] = $cursoData;
                 }
             }
         }
         
-        $resultadosFinales = [];
+        // Procesar resultados finales eliminando duplicados
+        $cursosProcesados = [];
+        
         foreach ($resultadosPorCursoOriginal as $cursos) {
             foreach ($cursos as $curso) {
-                $resultadosFinales[] = $curso;
+                $idCurso = $curso['idCurso'];
+                
+                // Si el curso no ha sido procesado o tiene mayor similitud que el anterior
+                if (!isset($cursosProcesados[$idCurso]) || 
+                    $curso['similitud'] > $cursosProcesados[$idCurso]['similitud']) {
+                    $cursosProcesados[$idCurso] = $curso;
+                }
             }
         }
         
-        // Ordenar resultados finales por puntuación descendente
+        // Ordenar los resultados únicos por similitud descendente
+        $resultadosFinales = array_values($cursosProcesados);
         usort($resultadosFinales, function($a, $b) {
-            return $b['puntuacion_similitud'] <=> $a['puntuacion_similitud'];
+            return $b['similitud'] <=> $a['similitud'];
         });
         
         return $resultadosFinales;
-    }
-
-    /**
-     * @param int $idGrupoTematico
-     * @param array $cursosInput (id, nombre y sumilla)
-     * @return array
-     */
-    public static function busquedaSemantica($idGrupoTematico, $cursosInput) 
-    {
-        try {
-            // 1. Obtener los cursos de referencia del grupo temático
-            $cursosPorTematica = Curso::where('idGrupoTematico', $idGrupoTematico)
-                ->select('idCurso', 'idMalla', 'codigo', 'nombre', 'sumilla')
-                ->get();
-                
-            if ($cursosPorTematica->isEmpty()) {
-                return [];
-            }
-            
-            // 2. Preparar datos para enviar al endpoint de comparación rápida
-            $cursosEntrada = [];
-            foreach ($cursosInput as $curso) {
-                $cursosEntrada[] = [
-                    'id' => $curso['id'],
-                    'nombre' => $curso['nombre'],
-                    'sumilla' => $curso['sumilla']
-                ];
-            }
-            
-            $cursosGrupoTematico = [];
-            foreach ($cursosPorTematica as $curso) {
-                $cursosGrupoTematico[] = [
-                    'id' => $curso->idCurso,
-                    'nombre' => $curso->nombre,
-                    'sumilla' => $curso->sumilla
-                ];
-            }
-            
-            // 3. Llamar al endpoint simplificado de NLP
-            $client = new \GuzzleHttp\Client();
-            $response = $client->post('http://localhost:5001/comparar_cursos_simple', [
-                'json' => [
-                    'cursos_origen' => $cursosEntrada,
-                    'cursos_destino' => $cursosGrupoTematico,
-                    'configuracion' => [
-                        'peso_nombre' => 0.4,     // 40% de importancia al nombre
-                        'peso_sumilla' => 0.6,    // 60% de importancia a la sumilla
-                        'umbral_similitud' => 0.5 // Umbral mínimo para considerar similitud
-                    ]
-                ],
-                'timeout' => 60
-            ]);
-            
-            $resultados = json_decode($response->getBody(), true);
-            
-            // 4. Procesar los resultados y formatear según la estructura requerida
-            $cursosSimilares = [];
-            
-            // Crear un mapeo para acceso rápido a datos del curso por ID
-            $mapaCursos = [];
-            foreach ($cursosPorTematica as $curso) {
-                $mapaCursos[$curso->idCurso] = $curso;
-            }
-            
-            foreach ($resultados['comparaciones'] as $comparacion) {
-                $idCursoDestino = $comparacion['id_curso_destino'];
-                $idCursoOrigen = $comparacion['id_curso_origen'];
-                
-                // Verificar si el curso destino existe en nuestro mapa
-                if (isset($mapaCursos[$idCursoDestino])) {
-                    $curso = $mapaCursos[$idCursoDestino];
-                    
-                    // Convertir la similitud a una escala de 0-100 para la puntuación
-                    // Asumiendo que la similitud viene en escala 0-1
-                    $puntuacion = round($comparacion['similitud_total'] * 100);
-                    
-                    // Limitar la puntuación a un máximo de 100
-                    $puntuacion = min(100, $puntuacion);
-                    
-                    $cursosSimilares[] = [
-                        'idCurso' => $idCursoDestino,
-                        'idMalla' => $curso->idMalla,
-                        'codigo' => $curso->codigo,
-                        'nombre' => $curso->nombre,
-                        'fueComparado' => 0,  // Por defecto asignamos 0
-                        'id_curso_original' => $idCursoOrigen,
-                        'puntuacion_similitud' => $puntuacion
-                    ];
-                }
-            }
-            
-            // 5. Ordenar resultados por puntuación de similitud (descendente)
-            usort($cursosSimilares, function($a, $b) {
-                return $b['puntuacion_similitud'] <=> $a['puntuacion_similitud'];
-            });
-            
-            return $cursosSimilares;
-            
-        } catch (\Exception $e) {
-            Log::error('Error en búsqueda semántica: ' . $e->getMessage());
-            return [];
-        }
     }
 
     public static function normalizarTexto($texto)
@@ -286,10 +214,180 @@ class AlgoritmosBusquedaController extends Controller
         
         return trim($texto);
     }
-    
 
-    public static function a($texto) 
+    /**
+     * @param int $idGrupoTematico
+     * @param array $cursosInput (id, nombre y sumilla)
+     * @return array
+    */
+    public static function busquedaSemantica($idMalla, $idGrupoTematico, $cursosInput) 
     {
-        return;
-    }   
+        try {
+            // 1. Obtener los cursos del grupo temático
+            $cursosPorMallaTema = Curso::with('silabo:idSilabo,idCurso,sumilla')
+                                ->where(['idMalla' => $idMalla])
+                                ->whereHas('cursosGruposTematicos', function($query) use ($idGrupoTematico) {
+                                    $query->where('idGrupoTematico', $idGrupoTematico);
+                                })
+                                ->select('idCurso', 'idMalla', 'codigo', 'nombre')
+                                ->get();    
+
+            if ($cursosPorMallaTema->isEmpty()) {
+                return [];
+            }
+            
+            // 2. Preparar datos para el NLP
+            $cursosOrigen = $cursosInput;
+
+            $cursosGrupoTematico = $cursosPorMallaTema->map(function($curso) {
+                return [
+                    'idCurso' => $curso->idCurso,
+                    'nombre' => $curso->nombre,
+                    'sumilla' => $curso->silabo->sumilla ?? ''
+                ];
+            })->toArray();
+
+            /* Log::info("CURSOS ORIGEN (input):");
+            Controller::printJson($cursosOrigen);
+            Log::info("POSIBLES CURSOS DESTINO:");
+            Controller::printJson($cursosGrupoTematico); */
+
+            Controller::printJson([
+                'cursos_origen' => $cursosOrigen,
+                'cursos_destino' => $cursosGrupoTematico
+            ]);
+
+            return [];
+
+            // 3. Llamar al endpoint de NLP
+            $resultados = self::NLPEndpoint([
+                'cursos_origen' => $cursosOrigen,
+                'cursos_destino' => $cursosGrupoTematico
+            ]);
+
+            Controller::printJson([
+                'cursos_origen' => $cursosOrigen,
+                'cursos_destino' => $cursosGrupoTematico
+            ]);
+
+            if (empty($resultados)) {
+                return [];
+            }
+
+            // 4. Procesar resultados
+            $mapaCursos = $cursosPorMallaTema->keyBy('idCurso');
+            $cursosSimilares = [];
+
+            foreach ($resultados['comparaciones'] as $comparacion) {
+                $idCursoDestino = $comparacion['idCursoDestino'] ?? null;
+                
+                if (!$idCursoDestino || !isset($mapaCursos[$idCursoDestino])) {
+                    continue;
+                }
+
+                $curso = $mapaCursos[$idCursoDestino];
+                $similitud = $comparacion['similitud_total'] ?? 0;
+                
+                $cursosSimilares[] = [
+                    'idCurso' => $idCursoDestino,
+                    'idMalla' => $curso->idMalla,
+                    'codigo' => $curso->codigo,
+                    'nombre' => $curso->nombre,
+                    'fueComparado' => 0,
+                    'id_curso_original' => $comparacion['idCursoOrigen'] ?? null,
+                    'puntuacion_similitud' => min(100, round($similitud * 100)),
+                    'detalle_similitud' => [
+                        'sumilla' => $comparacion['similitud_sumilla'] ?? 0,
+                        'aprendizajes' => $comparacion['similitud_aprendizajes'] ?? 0,
+                        'unidades' => $comparacion['similitud_unidades'] ?? 0
+                    ]
+                ];
+            }
+
+            // 5. Ordenar por puntuación
+            usort($cursosSimilares, function($a, $b) {
+                return $b['puntuacion_similitud'] <=> $a['puntuacion_similitud'];
+            });
+
+            return $cursosSimilares;
+        } catch (\Exception $e) {
+            Log::error('Error en búsqueda semántica: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    public static function NLPEndpoint($data) 
+    {
+        try {
+            $client = new \GuzzleHttp\Client([
+                'base_uri' => env('NLP_URL', 'http://127.0.0.1:5001'),
+                'timeout' => 30.0,
+                'connect_timeout' => 10.0,
+                'http_errors' => false
+            ]);
+
+            // Preparar el formato que espera el endpoint Python
+            $requestData = [
+                'comparaciones' => [
+                    [
+                        'cursoOrigen' => [
+                            'idCurso' => $data['cursos_origen'][0]['idCurso'] ?? null,
+                            'nombre' => $data['cursos_origen'][0]['nombre'] ?? '',
+                            'silabo' => [
+                                'sumilla' => $data['cursos_origen'][0]['sumilla'] ?? ''
+                            ]
+                        ],
+                        'cursoDestino' => [
+                            'idCurso' => $data['cursos_destino'][0]['idCurso'] ?? null,
+                            'nombre' => $data['cursos_destino'][0]['nombre'] ?? '',
+                            'silabo' => [
+                                'sumilla' => $data['cursos_destino'][0]['sumilla'] ?? ''
+                            ]
+                        ]
+                    ]
+                ]
+            ];
+
+            $response = $client->post('/comparar_cursos', [
+                'json' => $requestData,
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json'
+                ]
+            ]);
+
+            if ($response->getStatusCode() != 200) {
+                Log::error("NLP API returned status: ".$response->getStatusCode());
+                return [];
+            }
+
+            $result = json_decode($response->getBody(), true);
+
+            if (empty($result['comparaciones'])) {
+                Log::error("Invalid response format from NLP API");
+                return [];
+            }
+
+            // Adaptar la respuesta al formato esperado por busquedaSemantica()
+            return [
+                'comparaciones' => array_map(function($item) {
+                    return [
+                        'idCursoOrigen' => $item['cursoOrigen']['idCurso'] ?? null,
+                        'idCursoDestino' => $item['cursoDestino']['idCurso'] ?? null,
+                        'similitud_total' => $item['resultado_resumido']['similitud_global'] ?? 0,
+                        'similitud_sumilla' => $item['resultado_resumido']['similitud_sumilla'] ?? 0,
+                        'similitud_aprendizajes' => $item['resultado_resumido']['similitud_aprendizajes'] ?? 0,
+                        'similitud_unidades' => $item['resultado_resumido']['similitud_unidades'] ?? 0
+                    ];
+                }, $result['comparaciones'])
+            ];
+
+        } catch (\GuzzleHttp\Exception\ConnectException $e) {
+            Log::error("NLP Connection failed: " . $e->getMessage());
+            return [];
+        } catch (\Exception $e) {
+            Log::error("NLP API Error: " . $e->getMessage());
+            return [];
+        }
+    } 
 }

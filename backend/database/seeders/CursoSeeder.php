@@ -98,21 +98,21 @@ class CursoSeeder extends Seeder
             [   
                 'idCurso' => 10,
                 'idMalla' =>  9, // Malla de Prueba 2024
-                'codigo' => null,
+                'codigo' => 'UC-ISI-AAAEEE-2024',
                 'nombre' => 'Curso de prueba',
                 'fueComparado' => true,
             ],
             [   
                 'idCurso' => 11,
                 'idMalla' =>  9, // Malla de Prueba 2024
-                'codigo' => null,
+                'codigo' => 'UC-ISI-TEST01-2024',
                 'nombre' => 'Curso de prueba 2',
                 'fueComparado' => true,
             ],
             [   
                 'idCurso' => 12,
                 'idMalla' =>  1, // Malla 2015 UC
-                'codigo' => null,
+                'codigo' => 'UC-ISI-TEST02-2024',
                 'nombre' => 'Curso de prueba Malla 2015 UC',
                 'fueComparado' => false,
             ],
@@ -129,6 +129,50 @@ class CursoSeeder extends Seeder
                 'idMalla' => 3, // Malla 2024 UC
                 'codigo' => 'UC-ISI-F00050136-2024',
                 'nombre' => 'Diseño y Desarrollo Web',
+                'fueComparado' => false,
+            ],
+            // UC cursos parecidos (similar_text y Levenshtein)
+            [   
+                'idCurso' => 15,
+                'idMalla' => 3, // Malla 2024 UC
+                'codigo' => 'UC-ISI-F00050137-2024',
+                'nombre' => 'Técnicas de programación',
+                'fueComparado' => false,
+            ],
+            [   
+                'idCurso' => 16,
+                'idMalla' => 3, // Malla 2024 UC
+                'codigo' => 'UC-ISI-F00050138-2024',
+                'nombre' => 'Aplicaciones Web',
+                'fueComparado' => false,
+            ],
+            [   
+                'idCurso' => 17,
+                'idMalla' => 3, // Malla 2024 UC
+                'codigo' => 'UC-ISI-F00050139-2024',
+                'nombre' => 'Redes y Comunicaciones',
+                'fueComparado' => false,
+            ],
+            // UC cursos "parecidos" (NLP)
+            [   
+                'idCurso' => 18,
+                'idMalla' => 3, // Malla 2024 UC
+                'codigo' => 'UC-ISI-F00050140-2024',
+                'nombre' => 'Fundamentos de Algoritmos',
+                'fueComparado' => false,
+            ],
+            [   
+                'idCurso' => 19,
+                'idMalla' => 3, // Malla 2024 UC
+                'codigo' => 'UC-ISI-F00050141-2024',
+                'nombre' => 'Desarrollo de Aplicaciones para Internet',
+                'fueComparado' => false,
+            ],
+            [   
+                'idCurso' => 20,
+                'idMalla' => 3, // Malla 2024 UC
+                'codigo' => 'UC-ISI-F00050142-2024',
+                'nombre' => 'Principios de Conectividad',
                 'fueComparado' => false,
             ],
         ];

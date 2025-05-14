@@ -97,7 +97,7 @@ Route::delete('/estudiantes/{idEstudiante}/delete', [EstudianteController::class
 // Mallas
 Route::get('/mallas', [MallaController::class, 'getMallas'])->name('getMallas');
 Route::get('/mallas/{idMalla}', [MallaController::class, 'getMalla'])->name('getMalla');
-Route::get('/mallas/{idMalla}/curso', [CursoController::class, 'getCoursesByMallaAndName'])->name('getCoursesByMallaAndName');
+Route::get('/mallas/{idMalla}/curso', [CursoController::class, 'getCoursesByMallaAndName'])->name('getCoursesByMallaAndName'); // MEJORAR BÚSQUEDA SIMILAR TEXT Y LEVENSHTEIN
 Route::post('/mallas/{idMalla}/cursos', [CursoController::class, 'getCoursesByMallaAndManyIds'])->name('getCoursesByMallaAndManyIds');
 Route::get('/mallas-trashed', [MallaController::class, 'getTrashedmallas'])->name('getTrashedmallas');
 Route::get('/mallas/{idMalla}/trashed', [MallaController::class, 'getTrashedMalla'])->name('getTrashedMalla');
@@ -114,6 +114,7 @@ Route::get('/cursos/{idCurso}', [CursoController::class, 'getCurso'])->name('get
 Route::get('/cursos/full/{idCurso}', [CursoController::class, 'getCursoSilaboUnidadBibliografia'])->name('getCursoSilaboUnidadBibliografia');
 Route::get('/cursos/forComparison/{idCurso1}/{idCurso2}', [CursoController::class, 'getCoursePairForComparison'])->name('getCoursePairForComparison');
 Route::post('/cursos/someForComparison', [CursoController::class, 'getSomeCoursesForComparison'])->name('getSomeCoursesForComparison');
+Route::post('/cursos/{idMalla}/{idGrupoTematico}/semanticSearch', [CursoController::class, 'getCoursesByMallaAndGrupoTematicoAndManyIdsNLP'])->name('getCoursesByMallaAndGrupoTematicoAndManyIdsNLP');
 Route::get('/cursos-trashed', [CursoController::class, 'getTrashedCursos'])->name('getTrashedCursos');
 Route::get('/cursos/{idCurso}/trashed', [CursoController::class, 'getTrashedCurso'])->name('getTrashedCurso');
 Route::post('/cursos', [CursoController::class, 'createCurso'])->name('createCurso');

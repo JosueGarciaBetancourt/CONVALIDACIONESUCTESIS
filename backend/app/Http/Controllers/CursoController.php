@@ -171,9 +171,14 @@ class CursoController extends Controller
         }
     }
 
-    public function getCoursesByGrupoTematicoAndManyIdsNLP(Request $request, $idGrupoTematico)
+    public function getCoursesByMallaAndGrupoTematicoAndManyIdsNLP(Request $request, $idMalla, $idGrupoTematico)
     {
         try {
+             // Validar existencia de la malla
+             if (!Malla::where('idMalla', $idMalla)->exists()) {
+                return response()->json(['error' => 'Malla no encontrada'], 404);
+            }
+
             // Validar existencia de grupo temático
             if (!GrupoTematico::where('idGrupoTematico', $idGrupoTematico)->exists()) {
                 return response()->json(['error' => 'Grupo Temático no encontrado'], 404);
@@ -192,10 +197,10 @@ class CursoController extends Controller
                 ], 422);
             }
 
-            $cursoIds = $request->input('cursos');
+            $cursosIds = $request->input('cursos');
 
             // Si no hay IDs de cursos, devolvemos vacío
-            if (empty($cursoIds)) {
+            if (empty($cursosIds)) {
                 return response()->json([
                     'data' => [],
                     'meta' => ['total' => 0]
@@ -203,7 +208,7 @@ class CursoController extends Controller
             }
 
             // Cargar los cursos por IDs para obtener sus nombres y sumillas
-            $cursosOriginales = Curso::whereIn('idCurso', $cursoIds)->get();
+            $cursosOriginales = Curso::whereIn('idCurso', $cursosIds)->get();
             
             // Si no se encontraron cursos con esos IDs
             if ($cursosOriginales->isEmpty()) {
@@ -216,20 +221,20 @@ class CursoController extends Controller
             $cursosInput = [];
             foreach ($cursosOriginales as $curso) {
                 $cursosInput[] = [
-                    'id' => $curso->idCurso,
+                    'idCurso' => $curso->idCurso,
                     'nombre' => $curso->nombre,
-                    'sumilla' =>  $curso->sumilla,
+                    'sumilla' =>  $curso->silabo->sumilla ?? '',
                 ];
             }
 
             // Buscar cursos similares en la malla especificada
-            $resultados = AlgoritmosBusquedaController::busquedaSemantica($idGrupoTematico, $cursosInput);
+            $resultados = AlgoritmosBusquedaController::busquedaSemantica($idMalla, $idGrupoTematico, $cursosInput);
             
             return response()->json([
                 'data' => $resultados,
                 'meta' => [
                     'total' => count($resultados),
-                    'curso_ids_buscados' => $cursoIds
+                    'curso_ids_buscados' => $cursosIds
                 ]
             ]);
         } catch (\Exception $e) {
