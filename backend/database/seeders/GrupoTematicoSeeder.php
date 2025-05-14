@@ -11,83 +11,78 @@ class GrupoTematicoSeeder extends Seeder
     {
         $gruposTematicos = [
             [
-                'idGrupoTematico' => 1, 
-                'nombre' => 'Fundamentos de Programación', 
-                'descripcion' => 'Conceptos básicos de algoritmos, estructuras de control y lógica computacional.'
+                'idGrupoTematico' => 1,
+                'nombre' => 'Programación y Desarrollo de Software',
+                'descripcion' => 'Incluye temas de lógica de programación, paradigmas de desarrollo, estructuras de datos y patrones de diseño de software.'
             ],
             [
                 'idGrupoTematico' => 2,
-                'nombre' => 'Estructuras de Datos y Algoritmos', 
-                'descripcion' => 'Organización, almacenamiento y procesamiento eficiente de datos.'
+                'nombre' => 'Bases de Datos y Gestión de la Información',
+                'descripcion' => 'Abarca modelado de datos, diseño de bases de datos relacionales y no relacionales, y sistemas de gestión de bases de datos.'
             ],
             [
-                'idGrupoTematico' => 3, 
-                'nombre' => 'Desarrollo Web', 
-                'descripcion' => 'Creación de aplicaciones web del lado cliente y servidor.'
+                'idGrupoTematico' => 3,
+                'nombre' => 'Ingeniería de Software',
+                'descripcion' => 'Metodologías, gestión de proyectos de software, aseguramiento de calidad y ciclo de vida del desarrollo de aplicaciones.'
             ],
             [
-                'idGrupoTematico' => 4, 
-                'nombre' => 'Base de Datos', 
-                'descripcion' => 'Modelado, diseño e implementación de bases de datos relacionales y no relacionales.'
+                'idGrupoTematico' => 4,
+                'nombre' => 'Redes, Comunicaciones y Seguridad',
+                'descripcion' => 'Comprende fundamentos de redes, protocolos de comunicación, arquitecturas de red y seguridad informática.'
             ],
             [
-                'idGrupoTematico' => 5, 
-                'nombre' => 'Inteligencia Artificial', 
-                'descripcion' => 'Técnicas y algoritmos de IA como machine learning, NLP y visión artificial.'
+                'idGrupoTematico' => 5,
+                'nombre' => 'Sistemas Operativos y Plataformas Tecnológicas',
+                'descripcion' => 'Estudia el funcionamiento de sistemas operativos, administración de recursos y servicios de plataforma.'
             ],
             [
-                'idGrupoTematico' => 6, 
-                'nombre' => 'Ingeniería de Software', 
-                'descripcion' => 'Metodologías y técnicas para el diseño, desarrollo y mantenimiento de software.'
+                'idGrupoTematico' => 6,
+                'nombre' => 'Ciencia de Datos e Inteligencia Artificial',
+                'descripcion' => 'Incluye análisis de datos, minería de datos, machine learning, procesamiento de lenguaje natural y visión computacional.'
             ],
             [
-                'idGrupoTematico' => 7, 
-                'nombre' => 'Redes y Comunicaciones', 
-                'descripcion' => 'Fundamentos de redes de computadoras, protocolos y seguridad en la transmisión de datos.'
+                'idGrupoTematico' => 7,
+                'nombre' => 'Computación en la Nube y Tecnologías Emergentes',
+                'descripcion' => 'Abarca arquitecturas cloud, virtualización, servicios distribuidos y tendencias tecnológicas actuales.'
             ],
             [
-                'idGrupoTematico' => 8, 
-                'nombre' => 'Seguridad Informática', 
-                'descripcion' => 'Protección de sistemas, redes y datos frente a ataques y vulnerabilidades.'
+                'idGrupoTematico' => 8,
+                'nombre' => 'Arquitectura de Computadoras y Hardware',
+                'descripcion' => 'Se enfoca en la estructura interna de los computadores, microprocesadores y componentes de hardware.'
             ],
             [
-                'idGrupoTematico' => 9, 
-                'nombre' => 'Sistemas Operativos', 
-                'descripcion' => 'Administración de recursos de hardware y software en computadoras y servidores.'
+                'idGrupoTematico' => 9,
+                'nombre' => 'Matemática y Estadística Aplicada',
+                'descripcion' => 'Temas de matemática discreta, álgebra, estadística y cálculo enfocados a aplicaciones en sistemas de información.'
             ],
             [
-                'idGrupoTematico' => 10, 
-                'nombre' => 'Ciencia de Datos', 
-                'descripcion' => 'Técnicas de análisis, procesamiento y visualización de grandes volúmenes de datos.'
+                'idGrupoTematico' => 10,
+                'nombre' => 'Gestión de Tecnologías de Información',
+                'descripcion' => 'Comprende dirección de proyectos TI, innovación digital, transformación organizacional y gobierno de TI.'
             ],
             [
-                'idGrupoTematico' => 11, 
-                'nombre' => 'Matemática para Computación', 
-                'descripcion' => 'Matemática discreta, álgebra lineal y cálculo aplicados a informática.'
+                'idGrupoTematico' => 11,
+                'nombre' => 'Desarrollo Web y Aplicaciones Móviles',
+                'descripcion' => 'Incluye diseño y desarrollo de aplicaciones web y móviles, frameworks modernos y arquitecturas cliente-servidor.'
             ],
             [
-                'idGrupoTematico' => 12, 
-                'nombre' => 'Gestión de Proyectos TI', 
-                'descripcion' => 'Administración y control de proyectos de tecnología de la información.'
+                'idGrupoTematico' => 12,
+                'nombre' => 'Investigación, Ética y Responsabilidad Social',
+                'descripcion' => 'Aborda metodología de investigación, ética profesional y aportes de la tecnología a la sociedad.'
             ],
             [
-                'idGrupoTematico' => 13, 
-                'nombre' => 'Arquitectura de Computadoras', 
-                'descripcion' => 'Estructura interna y funcionamiento de computadoras y microprocesadores.'
+                'idGrupoTematico' => 13,
+                'nombre' => 'Tecnologías de Integración y Middleware',
+                'descripcion' => 'Estudia herramientas, protocolos y técnicas para la integración de sistemas y aplicaciones empresariales.'
             ],
             [
-                'idGrupoTematico' => 14, 
-                'nombre' => 'Computación en la Nube', 
-                'descripcion' => 'Servicios y aplicaciones distribuidas mediante plataformas en la nube.'
+                'idGrupoTematico' => 14,
+                'nombre' => 'Simulación, Modelado y Optimización de Sistemas',
+                'descripcion' => 'Incluye simulación de procesos, modelado de sistemas complejos y optimización computacional.'
             ],
             [
-                'idGrupoTematico' => 15, 
-                'nombre' => 'Innovación y Transformación Digital', 
-                'descripcion' => 'Tendencias tecnológicas y adopción digital en empresas y organizaciones.'
-            ],
-            [
-                'idGrupoTematico' => 16, 
-                'nombre' => 'GRUPO TEMÁTICO DE PRUEBA', 
+                'idGrupoTematico' => 15,
+                'nombre' => 'GRUPO TEMÁTICO DE PRUEBA',
                 'descripcion' => 'DESCRIPCIÓN DE GRUPO TEMÁTICO DE PRUEBA.'
             ],
         ];

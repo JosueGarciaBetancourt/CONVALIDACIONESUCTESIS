@@ -23,7 +23,7 @@ class CursoSeeder extends Seeder
             [   
                 'idCurso' => 1,
                 'idMalla' => 1, // Malla 2015 UC
-                'codigo' => 'UTP-ISI-ASUC00687-2015',
+                'codigo' => 'UC-ISI-ASUC00687-2015',
                 'nombre' => 'Programación I',
                 'fueComparado' => false,
             ],
@@ -31,7 +31,7 @@ class CursoSeeder extends Seeder
             [   
                 'idCurso' => 2,
                 'idMalla' => 2, // Malla 2018 UC
-                'codigo' => 'UTP-ISI-ASUC00469-2018',
+                'codigo' => 'UC-ISI-ASUC00469-2018',
                 'nombre' => 'Ingeniería web',
                 'fueComparado' => false,
             ],
@@ -39,11 +39,10 @@ class CursoSeeder extends Seeder
             [   
                 'idCurso' => 3,
                 'idMalla' => 3, // Malla 2024 UC
-                'codigo' => 'UTP-ISI-F00050134-2024',
+                'codigo' => 'UC-ISI-F00050134-2024',
                 'nombre' => 'Redes de computadoras',
                 'fueComparado' => false,
             ],
-
             // CURSOS PARA LA UTP
             // Malla 2016
             [   
@@ -116,7 +115,22 @@ class CursoSeeder extends Seeder
                 'codigo' => null,
                 'nombre' => 'Curso de prueba Malla 2015 UC',
                 'fueComparado' => false,
-            ]
+            ],
+            // UC
+            [   
+                'idCurso' => 13,
+                'idMalla' => 3, // Malla 2024 UC
+                'codigo' => 'UC-ISI-F00050135-2024',
+                'nombre' => 'Fundamentos de la programación',
+                'fueComparado' => false,
+            ],
+            [   
+                'idCurso' => 14,
+                'idMalla' => 3, // Malla 2024 UC
+                'codigo' => 'UC-ISI-F00050136-2024',
+                'nombre' => 'Diseño y Desarrollo Web',
+                'fueComparado' => false,
+            ],
         ];
 
         foreach ($cursos as $curso) {

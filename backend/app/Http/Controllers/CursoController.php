@@ -6,11 +6,13 @@ use App\Models\Curso;
 use App\Models\Malla;
 use App\Models\Carrera;
 use Illuminate\Http\Request;
+use App\Models\GrupoTematico;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\curso\CreateCursoRequest;
 use App\Http\Requests\curso\UpdateCursoRequest;
+use App\Http\Controllers\AlgoritmosBusquedaController;
 
 class CursoController extends Controller
 {   
@@ -102,76 +104,165 @@ class CursoController extends Controller
         }
     }
     
-    public function getCoursesByMallaAndManyNames(Request $request, $idMalla)
+    public function getCoursesByMallaAndManyIds(Request $request, $idMalla)
     {
         try {
-            // Validar existencia de la malla de una vez
+            // Validar existencia de la malla
             if (!Malla::where('idMalla', $idMalla)->exists()) {
                 return response()->json(['error' => 'Malla no encontrada'], 404);
             }
-    
-            // Validar nombres con Validator manual
+
+            // Validar estructura del request - ahora solo esperamos un array de IDs
             $validator = Validator::make($request->all(), [
-                'nombres' => 'required|array|min:1',
-                'nombres.*' => 'string|max:150'
+                'cursos' => 'required|array|min:1',
+                'cursos.*' => 'required|integer'
             ]);
-    
+
             if ($validator->fails()) {
                 return response()->json([
                     'message' => 'Error de validación',
                     'errors'  => $validator->errors()
                 ], 422);
             }
-    
-            $nombres = $request->input('nombres');
-    
-            // Si no hay nombres válidos, devolvemos vacío
-            if (empty($nombres)) {
+
+            $cursoIds = $request->input('cursos');
+
+            // Si no hay IDs de cursos, devolvemos vacío
+            if (empty($cursoIds)) {
                 return response()->json([
                     'data' => [],
                     'meta' => ['total' => 0]
                 ]);
             }
-    
-            // Construcción de las queries con UNION ALL
-            $unionQuery = null;
-            foreach ($nombres as $nombre) {
-                $query = Curso::where('idMalla', $idMalla)
-                    ->where('nombre', 'LIKE', "%{$nombre}%")
-                    ->limit(3)
-                    ->getQuery();
-    
-                $unionQuery = $unionQuery ? $unionQuery->unionAll($query) : $query;
-            }
-    
-            // Si no se generó ninguna query
-            if (!$unionQuery) {
+
+            // Cargar los cursos por IDs para obtener sus nombres
+            $cursosOriginales = Curso::whereIn('idCurso', $cursoIds)->get();
+            
+            // Si no se encontraron cursos con esos IDs
+            if ($cursosOriginales->isEmpty()) {
                 return response()->json([
-                    'data' => [],
-                    'meta' => ['total' => 0]
-                ]);
+                    'error' => 'No se encontraron cursos con los IDs proporcionados'
+                ], 404);
             }
-    
-            // Ejecutar consulta final
-            $result = DB::table(DB::raw("({$unionQuery->toSql()}) as sub"))
-                ->mergeBindings($unionQuery)
-                ->get();
-    
+            
+            // Preparar los cursos para la búsqueda
+            $cursosInput = [];
+            foreach ($cursosOriginales as $curso) {
+                $cursosInput[] = [
+                    'id' => $curso->idCurso,
+                    'nombre' => $curso->nombre
+                ];
+            }
+
+            // Buscar cursos similares en la malla especificada
+            $resultados = AlgoritmosBusquedaController::busquedaPorNombre($idMalla, $cursosInput);
+            
             return response()->json([
-                'data' => $result,
+                'data' => $resultados,
                 'meta' => [
-                    'total' => $result->count(),
-                    'nombres_buscados' => $nombres
+                    'total' => count($resultados),
+                    'curso_ids_buscados' => $cursoIds
                 ]
             ]);
-    
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "Error en la búsqueda: " . $e->getMessage()
             ], 500);
         }
     }
-    
+
+    public function getCoursesByGrupoTematicoAndManyIdsNLP(Request $request, $idGrupoTematico)
+    {
+        try {
+            // Validar existencia de grupo temático
+            if (!GrupoTematico::where('idGrupoTematico', $idGrupoTematico)->exists()) {
+                return response()->json(['error' => 'Grupo Temático no encontrado'], 404);
+            }
+
+            // Validar estructura del request, un array de IDs
+            $validator = Validator::make($request->all(), [
+                'cursos' => 'required|array|min:1',
+                'cursos.*' => 'required|integer'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Error de validación',
+                    'errors'  => $validator->errors()
+                ], 422);
+            }
+
+            $cursoIds = $request->input('cursos');
+
+            // Si no hay IDs de cursos, devolvemos vacío
+            if (empty($cursoIds)) {
+                return response()->json([
+                    'data' => [],
+                    'meta' => ['total' => 0]
+                ]);
+            }
+
+            // Cargar los cursos por IDs para obtener sus nombres y sumillas
+            $cursosOriginales = Curso::whereIn('idCurso', $cursoIds)->get();
+            
+            // Si no se encontraron cursos con esos IDs
+            if ($cursosOriginales->isEmpty()) {
+                return response()->json([
+                    'error' => 'No se encontraron cursos con los IDs proporcionados'
+                ], 404);
+            }
+            
+            // Preparar los cursos para la búsqueda
+            $cursosInput = [];
+            foreach ($cursosOriginales as $curso) {
+                $cursosInput[] = [
+                    'id' => $curso->idCurso,
+                    'nombre' => $curso->nombre,
+                    'sumilla' =>  $curso->sumilla,
+                ];
+            }
+
+            // Buscar cursos similares en la malla especificada
+            $resultados = AlgoritmosBusquedaController::busquedaSemantica($idGrupoTematico, $cursosInput);
+            
+            return response()->json([
+                'data' => $resultados,
+                'meta' => [
+                    'total' => count($resultados),
+                    'curso_ids_buscados' => $cursoIds
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Error en la búsqueda: " . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getCursoSilaboUnidadBibliografia($idCurso)
+    {
+        try {
+            $curso = Curso::select('idCurso', 'nombre')
+                    ->with([
+                        'silabo' => function($query) {
+                            $query->select();
+                        },
+                        'silabo.unidades' => function($query) {
+                            $query->select();
+                        },
+                        'silabo.bibliografias' => function($query) {
+                            $query->select();
+                        }
+                    ])
+                    ->findOrFail($idCurso);
+            return response()->json($curso);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Error al obtener el curso con su silabo, unidades y bibliografia con ID $idCurso. " . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function getCoursePairForComparison($idCurso1, $idCurso2)
     {
         try {
@@ -240,10 +331,55 @@ class CursoController extends Controller
             // Validamos que lleguen los pares correctamente
             $validatedData = $request->validate([
                 'comparaciones' => 'required|array|min:1',
-                'comparaciones.*.origen' => 'required|integer|distinct',
-                'comparaciones.*.destino' => 'required|integer|distinct'
+                'comparaciones.*.origen' => 'required|integer',
+                'comparaciones.*.destino' => 'required|integer'
             ]);
 
+            // Verificar combinaciones únicas
+            $combinacionesVistas = [];
+            $duplicados = [];
+
+            foreach ($validatedData['comparaciones'] as $index => $comparacion) {
+                $clave = $comparacion['origen'].'-'.$comparacion['destino'];
+                
+                if (in_array($clave, $combinacionesVistas)) {
+                    $duplicados[] = [
+                        'indice' => $index,
+                        'origen' => $comparacion['origen'],
+                        'destino' => $comparacion['destino']
+                    ];
+                } else {
+                    $combinacionesVistas[] = $clave;
+                }
+            }
+
+            // Si hay duplicados, retornar error
+            if (!empty($duplicados)) {
+                return response()->json([
+                    'message' => 'Se encontraron combinaciones duplicadas.',
+                    'duplicados' => $duplicados
+                ], 422);
+            }
+
+            // Verificar autocomparaciones
+            $autocomparaciones = [];
+            foreach ($validatedData['comparaciones'] as $index => $comparacion) {
+                if ($comparacion['origen'] == $comparacion['destino']) {
+                    $autocomparaciones[] = [
+                        'indice' => $index,
+                        'curso_id' => $comparacion['origen']
+                    ];
+                }
+            }
+
+            // Si hay autocomparaciones, retornar error
+            if (!empty($autocomparaciones)) {
+                return response()->json([
+                    'message' => 'No se permiten comparaciones de un curso consigo mismo.',
+                    'autocomparaciones' => $autocomparaciones
+                ], 422);
+            }
+            
             $comparaciones = $validatedData['comparaciones'];
 
             // Obtenemos todos los IDs únicos de cursos involucrados
@@ -316,52 +452,6 @@ class CursoController extends Controller
             ], 500);
         }
     }
-
-    public function getCursoSilaboUnidadBibliografia($idCurso)
-    {
-        try {
-            $curso = Curso::select('idCurso', 'nombre')
-                    ->with([
-                        'silabo' => function($query) {
-                            $query->select();
-                        },
-                        'silabo.unidades' => function($query) {
-                            $query->select();
-                        },
-                        'silabo.bibliografias' => function($query) {
-                            $query->select();
-                        }
-                    ])
-                    ->findOrFail($idCurso);
-            return response()->json($curso);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => "Error al obtener el curso con su silabo, unidades y bibliografia con ID $idCurso. " . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /* 
-    public function createCurso(CreateCursoRequest $request)
-    {
-        try {
-            $data = $request->validated();
-
-            Curso::create([
-                'idMalla' => $data['idMalla'],
-                'nombre' => $data['nombre'],
-            ]);
-
-            return response()->json([
-                'message' => 'Curso parcialmente creado correctamente'
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => "Error al crear el curso. " . $e->getMessage()
-            ], 500);
-        }
-    } 
-    */
 
     public function createCurso(CreateCursoRequest $request)
     {

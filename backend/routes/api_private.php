@@ -98,7 +98,7 @@ Route::delete('/estudiantes/{idEstudiante}/delete', [EstudianteController::class
 Route::get('/mallas', [MallaController::class, 'getMallas'])->name('getMallas');
 Route::get('/mallas/{idMalla}', [MallaController::class, 'getMalla'])->name('getMalla');
 Route::get('/mallas/{idMalla}/curso', [CursoController::class, 'getCoursesByMallaAndName'])->name('getCoursesByMallaAndName');
-Route::post('/mallas/{idMalla}/cursos', [CursoController::class, 'getCoursesByMallaAndManyNames'])->name('getCoursesByMallaAndManyNames');
+Route::post('/mallas/{idMalla}/cursos', [CursoController::class, 'getCoursesByMallaAndManyIds'])->name('getCoursesByMallaAndManyIds');
 Route::get('/mallas-trashed', [MallaController::class, 'getTrashedmallas'])->name('getTrashedmallas');
 Route::get('/mallas/{idMalla}/trashed', [MallaController::class, 'getTrashedMalla'])->name('getTrashedMalla');
 Route::post('/mallas', [MallaController::class, 'createMalla'])->name('createMalla');
