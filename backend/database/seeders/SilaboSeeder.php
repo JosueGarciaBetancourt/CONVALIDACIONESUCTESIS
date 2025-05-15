@@ -239,7 +239,7 @@ class SilaboSeeder extends Seeder
                 'horas_teoria' => 3,
                 'horas_practica' => 2,
                 'horas_teoricoPracticas' => 5,
-                'sumilla' => 'Estudio de los fundamentos algorítmicos y estructuras de datos esenciales para la solución de problemas computacionales.',
+                'sumilla' => 'Estudio de los fundamentos algorítmicos y programación para la solución de problemas computacionales.',
                 'aprendizaje_general' => 'El estudiante diseñará algoritmos eficientes y evaluará su complejidad computacional.',
             ],
             [
@@ -252,7 +252,7 @@ class SilaboSeeder extends Seeder
                 'horas_teoria' => 3,
                 'horas_practica' => 3,
                 'horas_teoricoPracticas' => 6,
-                'sumilla' => 'Desarrollo de aplicaciones distribuidas para internet utilizando arquitecturas modernas y patrones de diseño.',
+                'sumilla' => 'Desarrollo de aplicaciones distribuidas para internet utilizando arquitecturas modernas y patrones de diseño web.',
                 'aprendizaje_general' => 'El estudiante implementará aplicaciones web escalables siguiendo mejores prácticas de la industria.',
             ],
             [
@@ -265,7 +265,7 @@ class SilaboSeeder extends Seeder
                 'horas_teoria' => 2,
                 'horas_practica' => 4,
                 'horas_teoricoPracticas' => 6,
-                'sumilla' => 'Principios fundamentales de comunicación de datos, redes, protocolos de red y arquitecturas de sistemas distribuidos.',
+                'sumilla' => 'Principios de comunicación de datos, redes, protocolos de red y arquitecturas de sistemas distribuidos.',
                 'aprendizaje_general' => 'El estudiante diseñará soluciones de red considerando requisitos de performance y seguridad.',
             ]
         ];

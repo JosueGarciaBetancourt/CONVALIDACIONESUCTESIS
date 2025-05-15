@@ -115,6 +115,7 @@ Route::get('/cursos/full/{idCurso}', [CursoController::class, 'getCursoSilaboUni
 Route::get('/cursos/forComparison/{idCurso1}/{idCurso2}', [CursoController::class, 'getCoursePairForComparison'])->name('getCoursePairForComparison');
 Route::post('/cursos/someForComparison', [CursoController::class, 'getSomeCoursesForComparison'])->name('getSomeCoursesForComparison');
 Route::post('/cursos/{idMalla}/semanticSearch', [CursoController::class, 'getCoursesByMallaAndGrupoTematicoAndManyIdsNLP'])->name('getCoursesByMallaAndGrupoTematicoAndManyIdsNLP');
+Route::post('/cursos/suggestionsToCompare', [CursoController::class, 'getCoursesSuggestionsToCompare'])->name('getCoursesSuggestionsToCompare');
 Route::get('/cursos-trashed', [CursoController::class, 'getTrashedCursos'])->name('getTrashedCursos');
 Route::get('/cursos/{idCurso}/trashed', [CursoController::class, 'getTrashedCurso'])->name('getTrashedCurso');
 Route::post('/cursos', [CursoController::class, 'createCurso'])->name('createCurso');

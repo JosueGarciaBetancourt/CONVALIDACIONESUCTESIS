@@ -158,14 +158,14 @@ class CursoController extends Controller
             $resultados = AlgoritmosBusquedaController::busquedaPorNombre($idMalla, $cursosInput);
             
             // Extraer IDs de cursos encontrados
-            $cursosBuscadosIdsEncontrados = array_unique(array_column($resultados, 'idCurso'));
+            $cursosIdsEncontrados = array_unique(array_column($resultados, 'idCurso'));
             
             return response()->json([
                 'data' => $resultados, // Solo los resultados directos
                 'meta' => [
                     'total' => count($resultados),
                     'curso_ids_buscados' => $cursosBuscadosIds,
-                    'curso_ids_encontrados' => array_values($cursosBuscadosIdsEncontrados)
+                    'curso_ids_encontrados' => array_values($cursosIdsEncontrados)
                 ]
             ]);
         } catch (\Exception $e) {
@@ -235,7 +235,8 @@ class CursoController extends Controller
             );
 
             // Buscar cursos similares en la malla especificada para cada grupo temático
-            $resultadosPorGrupo = [];
+            $resultadosUnicos = []; // Usaremos un array asociativo para evitar duplicados
+            
             foreach ($gruposTematicosIds as $idGrupoTematico) {
                 $resultados = AlgoritmosBusquedaController::busquedaSemantica(
                     $idMalla,
@@ -243,21 +244,39 @@ class CursoController extends Controller
                     $cursosInput,
                     $cursosNoBuscar
                 );
-                $resultadosPorGrupo[$idGrupoTematico] = $resultados;
+                
+                // Procesar resultados manteniendo solo la mejor coincidencia por curso
+                foreach ($resultados as $resultado) {
+                    $idCurso = $resultado['idCurso'];
+                    
+                    if (!isset($resultadosUnicos[$idCurso])) {
+                        // Si el curso no existe, lo agregamos
+                        $resultadosUnicos[$idCurso] = $resultado;
+                    } else {
+                        // Si ya existe, conservamos el que tenga mayor similitud
+                        if ($resultado['similitud'] > $resultadosUnicos[$idCurso]['similitud']) {
+                            $resultadosUnicos[$idCurso] = $resultado;
+                        }
+                    }
+                }
             }
 
-            // Combinar y ordenar resultados de todos los grupos temáticos
-            $resultadosCombinados = array_merge(...array_values($resultadosPorGrupo));
-            usort($resultadosCombinados, function($a, $b) {
+            // Convertir a array indexado y ordenar
+            $resultadosFinales = array_values($resultadosUnicos);
+            usort($resultadosFinales, function($a, $b) {
                 return $b['similitud'] <=> $a['similitud'];
             });
 
+            // Extraer IDs de cursos encontrados
+            $cursosIdsEncontrados = array_keys($resultadosUnicos);
+
             return response()->json([
-                'data' => $resultadosCombinados,
+                'data' => $resultadosFinales,
                 'meta' => [
-                    'total' => count($resultadosCombinados),
+                    'total' => count($resultadosFinales),
                     'curso_ids_buscados' => array_column($cursosBuscados, 'idCurso'),
-                    'grupos_tematicos_buscados' => $gruposTematicosIds
+                    'grupos_tematicos_buscados' => array_values($gruposTematicosIds), // Aseguramos array indexado
+                    'cursos_ids_encontrados' => $cursosIdsEncontrados
                 ]
             ]);
         } catch (\Exception $e) {
@@ -267,6 +286,57 @@ class CursoController extends Controller
         }
     }
 
+    public function getCoursesSuggestionsToCompare(Request $request)
+    {
+        try {
+            // Validar estructura del request JSON directamente
+            $data = $request->json()->all();
+
+            $validated = Validator::make($data, [
+                'idMalla' => 'required|integer|exists:mallas,idMalla',
+                'cursos' => 'required|array|min:1',
+                'cursos.*.idCurso' => 'required|integer|exists:cursos,idCurso',
+                'cursos.*.grupos_tematicos_ids' => 'required|array',
+                'cursos.*.grupos_tematicos_ids.*' => 'required|integer|exists:grupostematicos,idGrupoTematico',
+            ])->validate();
+
+            $idMalla = $validated['idMalla'];
+            $cursosGrupoTematico = $validated['cursos'];
+            $cursosArray = collect($cursosGrupoTematico)->pluck('idCurso')->toArray();
+
+            // Búsqueda textual
+            $requestCursos = new Request([
+                'cursos' => $cursosArray
+            ]);
+            
+            $resultadosBusquedaTextual = $this->getCoursesByMallaAndManyIds($requestCursos, $idMalla);
+            if (isset($resultadosBusquedaTextual->original['meta']['curso_ids_encontrados'])) {
+                $curso_ids_encontrados = $resultadosBusquedaTextual->original['meta']['curso_ids_encontrados'];
+            } else {
+                $curso_ids_encontrados = [];
+            }
+
+            // Búsqueda NLP
+            $requestCursosGruposTematicosIdsEncontrados = new Request([
+                'cursos' => $cursosGrupoTematico,
+                'cursos_ids_encontrados_busqueda_textual' => $curso_ids_encontrados
+            ]);
+            $resultadosBusquedaNLP = $this->getCoursesByMallaAndGrupoTematicoAndManyIdsNLP($requestCursosGruposTematicosIdsEncontrados, $idMalla);
+
+            // Retornar resultados combinados
+            return response()->json([
+                'busqueda_textual' => $resultadosBusquedaTextual->original,
+                'busqueda_nlp' => $resultadosBusquedaNLP->original
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error inesperado',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
     public function getCursoSilaboUnidadBibliografia($idCurso)
     {
         try {
