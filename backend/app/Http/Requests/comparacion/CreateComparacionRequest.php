@@ -15,9 +15,9 @@ class CreateComparacionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'idSolicitud' => 'required|exists:estudiantes,idEstudiante',
-            'idCursoOrigen' => 'required|exists:carreras,idCarrera',
-            'idCursoDestino' => 'required|exists:carreras,idCarrera',
+            'idSolicitud' => 'required|exists:solicitudes,idSolicitud',
+            'idCursoOrigen' => 'required|exists:cursos,idCurso',
+            'idCursoDestino' => 'required|exists:cursos,idCurso',
             'porcentaje_similitud' => [
                 'required',
                 'numeric',

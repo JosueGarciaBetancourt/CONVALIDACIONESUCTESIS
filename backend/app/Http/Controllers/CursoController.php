@@ -5,16 +5,23 @@ namespace App\Http\Controllers;
 use App\Models\Curso;
 use App\Models\Malla;
 use App\Models\Carrera;
+use App\Models\Comparacion;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use App\Models\GrupoTematico;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\TemaComunController;
+use Illuminate\Validation\ValidationException;
 use App\Http\Controllers\ComparacionController;
 use App\Http\Requests\curso\CreateCursoRequest;
 use App\Http\Requests\curso\UpdateCursoRequest;
 use App\Http\Requests\curso\CompararCursosRequest;
 use App\Http\Controllers\AlgoritmosBusquedaController;
+use App\Http\Controllers\UnidadSinParOrigenController;
+use App\Http\Requests\comparacion\CreateComparacionRequest;
+use App\Http\Controllers\EstadisticasDetalleComparacionController;
 
 class CursoController extends Controller
 {   
@@ -556,9 +563,13 @@ class CursoController extends Controller
     public function compararCursosNLP(CompararCursosRequest $request) {
         try {
             // REAL
-            /* 
-            $comparacionesData = $request->validated();
             
+            $validatedData = $request->validated();
+            $idSolicitud = $validatedData['idSolicitud'];
+            $comparacionesData = Arr::except($validatedData, 'idSolicitud');
+            
+            /* 
+
             $client = new \GuzzleHttp\Client([
                 'base_uri' => env('NLP_URL', 'http://127.0.0.1:5000'),
                 'timeout' => 120.0,
@@ -574,7 +585,7 @@ class CursoController extends Controller
                 ]
             ]);
 
-            $result = json_decode($response->getBody(), true);
+            $result = json_decode($response->getBody(), true); // Convertir a array asociativo ['atributo']
 
             // Verificar si se recibió respuesta válida
             if (!isset($result['status']) || $result['status'] !== 'success') {
@@ -586,16 +597,17 @@ class CursoController extends Controller
                 return [];
             }
 
-            $dataNLP = $result['comparaciones'];
+            $responseNLP = $result['comparaciones'];
 
-            return response()->json($dataNLP); */
+            return response()->json($responseNLP);
+            */
 
             // PRUEBA
             $json = file_get_contents(base_path('comparacion_output_NLP.json'));
-            $dataNLP = json_decode($json, true);
-            $dataForReview = $this->fillOtherTables($dataNLP);
+            $responseNLP = json_decode($json, true); // Convertir a array asociativo ['atributo']
+            $dataForUserReview = $this->fillOtherTables($idSolicitud, $responseNLP);
 
-            return response()->json($dataForReview);
+            return response()->json($dataForUserReview);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "Error al realizar la comparación de cursos con PLN. " . $e->getMessage()
@@ -603,42 +615,97 @@ class CursoController extends Controller
         }
     }
 
-    public function fillOtherTables() {
+    public function calcularSimilitudTOTAL($similitud_sumilla, $similitud_aprendizajes, $similitud_unidades, $similitud_bibliografia) {
+        try {
+            $peso_similitud_sumilla = env('PESO_SIMILUTD_SUMILLA', 0.25);
+            $peso_similitud_aprendizajes = env('PESO_SIMILUTD_APRENDIZAJES', 0.15);
+            $peso_similitud_unidades = env('PESO_SIMILUTD_UNIDADES', 0.5);
+            $peso_similitud_bibliografia = env('PESO_SIMILUTD_BIBLIOGRAFIA', 0.10);
+
+            $porcentaje_similitud_total = ($similitud_sumilla * $peso_similitud_sumilla) + ($similitud_aprendizajes * $peso_similitud_aprendizajes) +
+                                          ($similitud_unidades * $peso_similitud_unidades) + ($similitud_bibliografia * $peso_similitud_bibliografia);                        
+            
+            return round($porcentaje_similitud_total, 2);
+        } catch (\Exception $e) {
+            throw new \Exception("Error al realizar el cálculo de similitud de los cursos.");
+        }
+    }
+
+    public function crear_comparacion($idSolicitud, $data) {
+        // Obtener reglas de validación
+        $comparacionValidationRules = (new CreateComparacionRequest())->rules();
+
+        // Calcular similitud de cursos
+        $porcentaje_similitud = $this->calcularSimilitudTOTAL(
+            $data['resultado_resumido']['similitud_sumilla'],
+            $data['resultado_resumido']['similitud_aprendizajes'],
+            $data['resultado_resumido']['similitud_unidades'],
+            $data['resultado_resumido']['similitud_bibliografia']
+        );
+
+        // Calcular resultado (1: convalida ó 0: no convalida)
+        $resultado = $porcentaje_similitud >= env('CONVALIDACION_UMBRAL', 0.75) ? 1 : 0;     
+
         // Crear registro en Comparaciones
-        $comparacionObj = new ComparacionController();
+        $comparacionData = [
+        "idSolicitud" => $idSolicitud,
+        "idCursoOrigen" => $data['idCursoOrigen'],
+        "idCursoDestino" => $data['idCursoDestino'],
+        "porcentaje_similitud" => $porcentaje_similitud,
+        "resultado" => $resultado,
+        "justificacion" => null
+        ];
+
+        // Validar los datos manualmente
+        $validator = Validator::make($comparacionData, $comparacionValidationRules);
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
+
+        // Si pasa la validación, crear el registro
+        $comparacion = Comparacion::create($comparacionData);
+        $comparacionId = $comparacion->idComparacion;
+
+        Log::info("Comparación creada con ID: " . $comparacionId);
+
+        return $comparacionId;
+    }
+
+    public function fillOtherTables($idSolicitud, $responseNLP) {
+        try {
+            $comparacion_ids = [];
+
+            foreach ($responseNLP as $response) {
+                $idComparacion = $this->crear_comparacion($idSolicitud, $response);
+                $comparacion_ids[] = $idComparacion;
+             
+                // Crear registro en Detalle_Comparacion
+            
+                /* 
+                $detalleComparacionesRequest = new Request([
+                    "idComparacion" => $comparacionId,
+                    "similitud_sumilla" => 3,
+                    "similitud_aprendizajes" => 4,
+                    "similitud_unidades" =>0.80,
+                    "similitud_bibliografia" => 1
+                ]);
         
-        $comparacionRequest = new Request([
-            "idSolicitud" => 2,
-            "idCursoOrigen" => 3,
-            "idCursoDestino" => 4,
-            "porcentaje_similitud" => 0.80,
-            "resultado" => 1,
-            "justificacion" => null
-        ]);
+                $comparacionCreada = $detalleComparacion_Obj->createDetalleComparacion($detalleComparacionesRequest);
+                $comparacionId = $comparacionCreada->original['idComparacion'];
+                */
+                
+                // Crear registro en Unidades_Comparadas
+                // Crear registro en Temas_Comunes
+                // Crear registro en Unidades_Sin_Par_Origen
+                // Crear registro en Unidades_Sin_Par_Destino
+                // Crear registro en Estadisticas_Detalle_Comparacion
+            }
 
-        $comparacionCreada = $comparacionObj->createComparacion($comparacionRequest);
-        $comparacionId = $comparacionCreada->original['idComparacion'];
-
-        // Crear registro en Detalle_Comparacion
-        $detalleComparacionObj = new DetalleComparacionController();
-    
-        $detalleComparacionesRequest = new Request([
-            "idComparacion" => $comparacionId,
-            "similitud_sumilla" => 3,
-            "similitud_aprendizajes" => 4,
-            "similitud_unidades" =>0.80,
-            "similitud_bibliografia" => 1
-        ]);
-
-        $comparacionCreada = $detalleComparacionObj->createDetalleComparacion($detalleComparacionesRequest);
-        $comparacionId = $comparacionCreada->original['idComparacion'];
-        
-        // Crear registro en Unidades_Comparadas
-        // Crear registro en Temas_Comunes
-        // Crear registro en Unidades_Sin_Par_Origen
-        // Crear registro en Unidades_Sin_Par_Destino
-        // Crear registro en Estadisticas_Detalle_Comparacion
-        return;
+            return $comparacion_ids;
+        } catch (\Exception $e) {
+            throw new \Exception("Error al guardar los resultados. ". $e);
+        }
     }
 
     public function createCurso(CreateCursoRequest $request)
