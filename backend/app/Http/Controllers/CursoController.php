@@ -10,8 +10,10 @@ use App\Models\GrupoTematico;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\ComparacionController;
 use App\Http\Requests\curso\CreateCursoRequest;
 use App\Http\Requests\curso\UpdateCursoRequest;
+use App\Http\Requests\curso\CompararCursosRequest;
 use App\Http\Controllers\AlgoritmosBusquedaController;
 
 class CursoController extends Controller
@@ -549,6 +551,94 @@ class CursoController extends Controller
                 'message' => "Error al obtener los pares de cursos. " . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function compararCursosNLP(CompararCursosRequest $request) {
+        try {
+            // REAL
+            /* 
+            $comparacionesData = $request->validated();
+            
+            $client = new \GuzzleHttp\Client([
+                'base_uri' => env('NLP_URL', 'http://127.0.0.1:5000'),
+                'timeout' => 120.0,
+                'connect_timeout' => 10.0,
+                'http_errors' => true
+            ]);
+
+            $response = $client->post('/comparar_cursos', [
+                'json' => $comparacionesData,
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json'
+                ]
+            ]);
+
+            $result = json_decode($response->getBody(), true);
+
+            // Verificar si se recibió respuesta válida
+            if (!isset($result['status']) || $result['status'] !== 'success') {
+                return [];
+            }
+
+            // Verificar si hay comparaciones
+            if (empty($result['comparaciones'])) {
+                return [];
+            }
+
+            $dataNLP = $result['comparaciones'];
+
+            return response()->json($dataNLP); */
+
+            // PRUEBA
+            $json = file_get_contents(base_path('comparacion_output_NLP.json'));
+            $dataNLP = json_decode($json, true);
+            $dataForReview = $this->fillOtherTables($dataNLP);
+
+            return response()->json($dataForReview);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Error al realizar la comparación de cursos con PLN. " . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function fillOtherTables() {
+        // Crear registro en Comparaciones
+        $comparacionObj = new ComparacionController();
+        
+        $comparacionRequest = new Request([
+            "idSolicitud" => 2,
+            "idCursoOrigen" => 3,
+            "idCursoDestino" => 4,
+            "porcentaje_similitud" => 0.80,
+            "resultado" => 1,
+            "justificacion" => null
+        ]);
+
+        $comparacionCreada = $comparacionObj->createComparacion($comparacionRequest);
+        $comparacionId = $comparacionCreada->original['idComparacion'];
+
+        // Crear registro en Detalle_Comparacion
+        $detalleComparacionObj = new DetalleComparacionController();
+    
+        $detalleComparacionesRequest = new Request([
+            "idComparacion" => $comparacionId,
+            "similitud_sumilla" => 3,
+            "similitud_aprendizajes" => 4,
+            "similitud_unidades" =>0.80,
+            "similitud_bibliografia" => 1
+        ]);
+
+        $comparacionCreada = $detalleComparacionObj->createDetalleComparacion($detalleComparacionesRequest);
+        $comparacionId = $comparacionCreada->original['idComparacion'];
+        
+        // Crear registro en Unidades_Comparadas
+        // Crear registro en Temas_Comunes
+        // Crear registro en Unidades_Sin_Par_Origen
+        // Crear registro en Unidades_Sin_Par_Destino
+        // Crear registro en Estadisticas_Detalle_Comparacion
+        return;
     }
 
     public function createCurso(CreateCursoRequest $request)

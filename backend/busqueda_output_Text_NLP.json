@@ -1,0 +1,129 @@
+{
+	"busqueda_textual": {
+		"data": [
+			{
+				"idCurso": 3,
+				"idMalla": 3,
+				"codigo": "UC-ISI-F00050134-2024",
+				"nombre": "Redes de computadoras",
+				"fueComparado": 0,
+				"id_curso_original": 6,
+				"similitud": 0.9752
+			},
+			{
+				"idCurso": 14,
+				"idMalla": 3,
+				"codigo": "UC-ISI-F00050136-2024",
+				"nombre": "Diseño y Desarrollo Web",
+				"fueComparado": 0,
+				"id_curso_original": 5,
+				"similitud": 0.8702
+			},
+			{
+				"idCurso": 13,
+				"idMalla": 3,
+				"codigo": "UC-ISI-F00050135-2024",
+				"nombre": "Fundamentos de la programación",
+				"fueComparado": 0,
+				"id_curso_original": 4,
+				"similitud": 0.753
+			},
+			{
+				"idCurso": 15,
+				"idMalla": 3,
+				"codigo": "UC-ISI-F00050137-2024",
+				"nombre": "Técnicas de programación",
+				"fueComparado": 0,
+				"id_curso_original": 4,
+				"similitud": 0.7452
+			},
+			{
+				"idCurso": 17,
+				"idMalla": 3,
+				"codigo": "UC-ISI-F00050139-2024",
+				"nombre": "Redes y Comunicaciones",
+				"fueComparado": 0,
+				"id_curso_original": 6,
+				"similitud": 0.6742
+			},
+			{
+				"idCurso": 19,
+				"idMalla": 3,
+				"codigo": "UC-ISI-F00050141-2024",
+				"nombre": "Desarrollo de Aplicaciones para Internet",
+				"fueComparado": 0,
+				"id_curso_original": 4,
+				"similitud": 0.5239
+			},
+			{
+				"idCurso": 16,
+				"idMalla": 3,
+				"codigo": "UC-ISI-F00050138-2024",
+				"nombre": "Aplicaciones Web",
+				"fueComparado": 0,
+				"id_curso_original": 5,
+				"similitud": 0.5087
+			}
+		],
+		"meta": {
+			"total": 7,
+			"curso_ids_buscados": [
+				4,
+				5,
+				6
+			],
+			"curso_ids_encontrados": [
+				3,
+				14,
+				13,
+				15,
+				17,
+				19,
+				16
+			]
+		}
+	},
+	"busqueda_nlp": {
+		"data": [
+			{
+				"idCurso": 20,
+				"idMalla": 3,
+				"codigo": "UC-ISI-F00050142-2024",
+				"nombre": "Principios de Conectividad",
+				"fueComparado": 0,
+				"id_curso_original": 6,
+				"similitud": 0.69,
+				"id_grupo_tematico": 4
+			},
+			{
+				"idCurso": 18,
+				"idMalla": 3,
+				"codigo": "UC-ISI-F00050140-2024",
+				"nombre": "Fundamentos de Algoritmos",
+				"fueComparado": 0,
+				"id_curso_original": 4,
+				"similitud": 0.66,
+				"id_grupo_tematico": 1
+			}
+		],
+		"meta": {
+			"total": 2,
+			"curso_ids_buscados": [
+				4,
+				5,
+				6
+			],
+			"grupos_tematicos_buscados": [
+				1,
+				3,
+				11,
+				4,
+				7
+			],
+			"cursos_ids_encontrados": [
+				18,
+				20
+			]
+		}
+	}
+}

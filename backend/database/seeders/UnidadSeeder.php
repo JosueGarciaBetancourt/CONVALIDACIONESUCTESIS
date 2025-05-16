@@ -154,6 +154,15 @@ class UnidadSeeder extends Seeder
                 'temas' => 'Definición de funciones, recursividad.',
             ],
             [
+                'idUnidad' => 4,
+                'idSilabo' => 1,
+                'numero' => 4,
+                'titulo' => 'Funciones y modularidad',
+                'duracion_semanas' => '13-16',
+                'aprendizajes' => 'Implementar funciones para modularizar el código.',
+                'temas' => 'Funciones, parámetros, ámbito de variables.',
+            ],
+            [
                 'idUnidad' => 16,
                 'idSilabo' => 4,
                 'numero' => 4,

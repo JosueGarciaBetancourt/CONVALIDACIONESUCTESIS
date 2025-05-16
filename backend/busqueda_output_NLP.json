@@ -1,0 +1,43 @@
+{
+	"data": [
+		{
+			"idCurso": 20,
+			"idMalla": 3,
+			"codigo": "UC-ISI-F00050142-2024",
+			"nombre": "Principios de Conectividad",
+			"fueComparado": 0,
+			"id_curso_original": 6,
+			"similitud": 0.69,
+			"id_grupo_tematico": 4
+		},
+		{
+			"idCurso": 18,
+			"idMalla": 3,
+			"codigo": "UC-ISI-F00050140-2024",
+			"nombre": "Fundamentos de Algoritmos",
+			"fueComparado": 0,
+			"id_curso_original": 4,
+			"similitud": 0.66,
+			"id_grupo_tematico": 1
+		}
+	],
+	"meta": {
+		"total": 2,
+		"curso_ids_buscados": [
+			4,
+			5,
+			6
+		],
+		"grupos_tematicos_buscados": [
+			1,
+			3,
+			11,
+			4,
+			7
+		],
+		"cursos_ids_encontrados": [
+			18,
+			20
+		]
+	}
+}

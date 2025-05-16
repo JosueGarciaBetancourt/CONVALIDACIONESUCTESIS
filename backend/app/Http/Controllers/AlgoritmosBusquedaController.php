@@ -221,9 +221,10 @@ class AlgoritmosBusquedaController extends Controller
     }
 
     /**
+     * @param int $idMalla
      * @param int $idGrupoTematico
      * @param array $cursosInput (id, nombre y sumilla)
-     * @return array
+     * @return array $cursosNoBuscar
     */
     public static function busquedaSemantica($idMalla, $idGrupoTematico, $cursosInput, $cursosNoBuscar = []) 
     {
@@ -348,8 +349,6 @@ class AlgoritmosBusquedaController extends Controller
                 }
             }
 
-            Controller::printJSON($requestData);
-
             $response = $client->post('/busqueda_semantica', [
                 'json' => $requestData,
                 'headers' => [
@@ -358,10 +357,8 @@ class AlgoritmosBusquedaController extends Controller
                 ]
             ]);
 
-            Controller::printJSON($response);
-    
             if ($response->getStatusCode() != 200) {
-                Log::error("NLP API returned status: ".$response->getStatusCode());
+                Log::error("NLP API returned status: ". $response->getStatusCode());
                 return [];
             }
     

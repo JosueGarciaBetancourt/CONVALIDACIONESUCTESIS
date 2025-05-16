@@ -123,6 +123,7 @@ Route::put('/cursos/{idCurso}', [CursoController::class, 'updateCurso'])->name('
 Route::delete('/cursos/{idCurso}/disable', [CursoController::class, 'disableCurso'])->name('disableCurso');
 Route::post('/cursos/{idCurso}/enable', [CursoController::class, 'enableCurso'])->name('enableCurso');
 Route::delete('/cursos/{idCurso}/delete', [CursoController::class, 'deleteCurso'])->name('deleteCurso');
+Route::post('/cursos/comparar_cursos', [CursoController::class, 'compararCursosNLP'])->name('compararCursosNLP');
 
 
 // Carreras Cursos

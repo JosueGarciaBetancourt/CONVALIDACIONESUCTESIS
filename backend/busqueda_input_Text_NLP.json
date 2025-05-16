@@ -1,0 +1,17 @@
+{
+	"idMalla": 3,
+	"cursos": [
+		{
+			"idCurso": 4,
+			"grupos_tematicos_ids": [1, 3]
+		},
+		{
+			"idCurso": 5,
+			"grupos_tematicos_ids": [11, 3]
+		},
+		{
+			"idCurso": 6,
+			"grupos_tematicos_ids": [4, 7]
+		}
+	]
+}

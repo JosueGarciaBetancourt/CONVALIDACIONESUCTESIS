@@ -65,10 +65,11 @@ class ComparacionController extends Controller
         try {
             $data = $request->validated();
 
-            Comparacion::create($data);
+            $comparacionObj = Comparacion::create($data);
                         
             return response()->json([
-                'message' => 'Comparación creada correctamente'
+                'message' => 'Comparación creada correctamente',
+                'idComparacion' => $comparacionObj->idComparacion,
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
