@@ -24,6 +24,7 @@ class UpdateComparacionRequest extends FormRequest
             ],
             'resultado' => 'nullable|in:0,1',
             'justificacion' => 'nullable|string',
+            'requirio_revision_manual' => 'sometimes|in:0,1',
         ];
     }
 
@@ -40,12 +41,12 @@ class UpdateComparacionRequest extends FormRequest
             $porcentaje_similitud =  $this->input('porcentaje_similitud');
             $resultado = $this->input('resultado');
 
-            if ($porcentaje_similitud < 0.75 && $resultado == 1) {
-                $validator->errors()->add('resultado', 'El campo resultado no puedo ser 1 (Aprobado) ya que el porcentaje de similitud es menor al 75%.');
+            if ($porcentaje_similitud < env('CONVALIDACION_UMBRAL', 0.75) && $resultado == 1) {
+                $validator->errors()->add('resultado', 'El campo resultado no puede ser 1 (Aprobado) ya que el porcentaje de similitud es menor al 75%.');
             }
 
-            if ($porcentaje_similitud >= 0.75 && $resultado == 0) {
-                $validator->errors()->add('resultado', 'El campo resultado no puedo ser 0 (Rechazado) ya que el porcentaje de similitud es mayor al 75%.');
+            if ($porcentaje_similitud >= env('CONVALIDACION_UMBRAL', 0.75) && $resultado == 0) {
+                $validator->errors()->add('resultado', 'El campo resultado no puede ser 0 (Rechazado) ya que el porcentaje de similitud es mayor al 75%.');
             }
         });
     }

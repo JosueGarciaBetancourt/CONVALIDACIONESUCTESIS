@@ -31,7 +31,7 @@ class ResultadoController extends Controller
         $mensaje .= ", de un total de {$totalCreditosEvaluados}, lo que representa un {$porcentajeCreditosConvalidados}%.\n\n";
 
         if ($totalCursosRechazados > 0) {
-            $mensaje .= "Los cursos rechazados presentaron diferencias significativas en contenidos clave, metodologías o criterios de evaluación, ";
+            $mensaje .= "Los cursos rechazados presentaron diferencias significativas en sumilla, apredizajes, contenido de unidades y bibliografía, ";
             $mensaje .= "lo cual impidió su convalidación según las políticas académicas establecidas.\n";
         } else {
             $mensaje .= "No se identificaron cursos rechazados, lo que indica una alta correspondencia entre los programas evaluados.";

@@ -15,7 +15,7 @@ class Comparacion extends BaseModel
 
     protected $fillable = [
         'idComparacion', 'idSolicitud', 'idCursoOrigen', 'idCursoDestino', 'idResultado', 'fechaHora',
-		'porcentaje_similitud', 'resultado', 'justificacion'
+		'porcentaje_similitud', 'resultado', 'justificacion', 'requirio_revision_manual'
     ];
 
 	// Campos virtuales 

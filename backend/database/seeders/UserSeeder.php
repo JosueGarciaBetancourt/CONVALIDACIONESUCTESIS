@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
             'DNI' => '12345678',
             'personal_name' => 'Admin Convalidaciones',
             'cargo' => 'Coordinador de Convalidaciones',
-            'corporative_email' =>  '12345678@continental.edu.pe', 
+            'corporative_email' => '12345678@continental.edu.pe', 
         ]);
 
         User::create([
@@ -29,7 +29,7 @@ class UserSeeder extends Seeder
             'DNI' => '77043114',
             'personal_name' => 'Ing. Josué García Betancourt',
             'cargo' => 'Asistente de Convalidaciones',
-            'corporative_email' =>  '77043114@continental.edu.pe', 
+            'corporative_email' => '77043114@continental.edu.pe', 
         ]);
     }
 }

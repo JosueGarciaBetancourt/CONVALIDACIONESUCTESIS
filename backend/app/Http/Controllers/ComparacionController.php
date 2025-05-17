@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\comparacion\CreateComparacionRequest;
 use App\Http\Requests\comparacion\UpdateComparacionRequest;
+use App\Http\Requests\comparacion\UpdateComparacionBulkRequest;
 
 class ComparacionController extends Controller
 {
@@ -98,6 +99,33 @@ class ComparacionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "Error al actualizar la comparacion con ID $idComparacion. " . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateComparacionBulk(UpdateComparacionBulkRequest $request)
+    {
+        try {
+            Log::info("xd");
+            $data = $request->validated();
+
+            if (empty($data['comparaciones'])) {
+                return response()->json([
+                    'message' => 'No se enviaron datos para actualizar las comparaciones.'
+                ], 400);
+            }
+
+            foreach ($data['comparaciones'] as $comparacion) {
+                $comp = Comparacion::findOrFail($comparacion['idComparacion']);
+                $comp->update($comparacion);
+            }
+
+            return response()->json([
+                'message' => 'Comparaciones actualizadas correctamente'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Error al actualizar las comparaciones. " . $e->getMessage()
             ], 500);
         }
     }

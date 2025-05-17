@@ -198,6 +198,7 @@ Route::get('/comparaciones/{idComparacion}', [ComparacionController::class, 'get
 Route::get('/comparaciones-trashed', [ComparacionController::class, 'getTrashedComparaciones'])->name('getTrashedComparaciones');
 Route::get('/comparaciones/{idComparacion}/trashed', [ComparacionController::class, 'getTrashedComparacion'])->name('getTrashedComparacion');
 Route::post('/comparaciones', [ComparacionController::class, 'createComparacion'])->name('createComparacion');
+Route::put('/comparaciones/updateBulk', [ComparacionController::class, 'updateComparacionBulk'])->name('updateComparacionBulk');
 Route::put('/comparaciones/{idComparacion}', [ComparacionController::class, 'updateComparacion'])->name('updateComparacion');
 
 

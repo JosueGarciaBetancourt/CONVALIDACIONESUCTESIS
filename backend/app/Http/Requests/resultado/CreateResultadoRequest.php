@@ -83,7 +83,7 @@ class CreateResultadoRequest extends FormRequest
                                         $creditosRechazados
                                     );
         } catch (\Exception $e) {
-            $this->errorMessage = "Error al calcular valores: " . $e->getMessage();
+            $this->errorMessage = "Error al calcular valores para los resultados: " . $e->getMessage();
             return null;
         }
 

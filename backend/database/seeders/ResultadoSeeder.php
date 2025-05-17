@@ -34,7 +34,7 @@ class ResultadoSeeder extends Seeder
                 'correoResponsable' => $evaluador1->corporative_email,
                 'DNI' => $evaluador1->DNI,
             ],
-            [   
+           /*  [   
                 'idResultado' => 2,
                 'idSolicitud' => 2,
                 'totalCursosEvaluados' => 1,
@@ -50,7 +50,7 @@ class ResultadoSeeder extends Seeder
                 'cargoResponsable' => $evaluador2->cargo,
                 'correoResponsable' => $evaluador2->corporative_email,
                 'DNI' => $evaluador2->DNI,
-            ],
+            ], */
         ];
 
         foreach ($resultados as $resultado) {

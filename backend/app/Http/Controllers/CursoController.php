@@ -630,15 +630,22 @@ class CursoController extends Controller
 
     public function fillOtherTables($idSolicitud, $responseNLP) {
         try {
-            foreach ($responseNLP as $response) {
+            $comparaciones_ids = [];
+
+            foreach ($responseNLP as &$response) {
                 $idComparacion = $this->crear_comparacion($idSolicitud, $response);
                 $idDetalleComparacion = $this->crear_detalleComparacion($idComparacion, $response);
                 $this->crear_unidadesComparadasTemasComunes($idDetalleComparacion, $response);
                 $this->crear_unidadSinParOrigen($idDetalleComparacion, $response);
                 $this->crear_unidadSinParDestino($idDetalleComparacion, $response);
                 $this->crear_estadisticasDetalleComparacion($idDetalleComparacion, $response);
-                $idDetComp = $idDetalleComparacion;
+             
+                // Agregar idComparacion a cada objeto del array
+                $response['idComparacion'] = $idComparacion;
+                $comparaciones_ids[] = $idComparacion;
             }
+
+            unset($response); // Limpiar la referencia (&)
 
             // Agregar campos extra a la respuesta
             $solicitud = Solicitud::with(['comparaciones.detalleComparacion.estadisticas'])->findOrFail($idSolicitud);
@@ -656,6 +663,7 @@ class CursoController extends Controller
             
             $otros = [
                 "estadisticas" => $estadisticasDetaleComparacion,
+                "comparaciones_ids" => $comparaciones_ids,
                 "tiempo_total_procesamiento_ms" => $tiempo_total,
             ];
 
@@ -708,7 +716,8 @@ class CursoController extends Controller
             "idCursoDestino" => $data['idCursoDestino'],
             "porcentaje_similitud" => $porcentaje_similitud,
             "resultado" => $resultado,
-            "justificacion" => null
+            "justificacion" => null,
+            "requirio_revision_manual" => 0
         ];
 
         // Validar los datos manualmente
