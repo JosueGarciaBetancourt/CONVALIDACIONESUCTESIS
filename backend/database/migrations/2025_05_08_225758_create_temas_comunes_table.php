@@ -8,21 +8,23 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('Temas_Comunes', function (Blueprint $table) {
+        Schema::create('temas_comunes', function (Blueprint $table) {
             $table->id('idTemaComun');
-            $table->unsignedBigInteger('idUnidadesComparadas');
-            $table->string('tema');
 
-            $table->foreign('idUnidadesComparadas')->references('idUnidadesComparadas')
-                    ->on('Unidades_Comparadas')->onDelete('cascade');
+            $table->foreignId('idUnidadesComparadas')->constrained('Unidades_Comparadas', 'idUnidadesComparadas')
+                  ->onDelete('cascade');
+
+            $table->string('tema', 100);
 
             $table->softDeletes();
             $table->timestamps();
+
+            $table->index('idUnidadesComparadas');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('Temas_Comunes');
+        Schema::dropIfExists('temas_comunes');
     }
 };

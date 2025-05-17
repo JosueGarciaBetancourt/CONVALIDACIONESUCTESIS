@@ -5,14 +5,21 @@ namespace App\Http\Controllers;
 use App\Models\Curso;
 use App\Models\Malla;
 use App\Models\Carrera;
+use App\Models\Solicitud;
+use App\Models\TemaComun;
 use App\Models\Comparacion;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use App\Models\GrupoTematico;
+use App\Models\DetalleComparacion;
+use App\Models\UnidadesComparadas;
+use App\Models\UnidadSinParOrigen;
 use Illuminate\Support\Facades\DB;
+use App\Models\UnidadSinParDestino;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\TemaComunController;
+use App\Models\EstadisticasDetalleComparacion;
 use Illuminate\Validation\ValidationException;
 use App\Http\Controllers\ComparacionController;
 use App\Http\Requests\curso\CreateCursoRequest;
@@ -20,8 +27,14 @@ use App\Http\Requests\curso\UpdateCursoRequest;
 use App\Http\Requests\curso\CompararCursosRequest;
 use App\Http\Controllers\AlgoritmosBusquedaController;
 use App\Http\Controllers\UnidadSinParOrigenController;
+use App\Http\Requests\temaComun\CreateTemaComunRequest;
 use App\Http\Requests\comparacion\CreateComparacionRequest;
 use App\Http\Controllers\EstadisticasDetalleComparacionController;
+use App\Http\Requests\detallecomparacion\CreateDetalleComparacionRequest;
+use App\Http\Requests\unidadesComparadas\CreateUnidadesComparadasRequest;
+use App\Http\Requests\unidadSinParOrigen\CreateUnidadSinParOrigenRequest;
+use App\Http\Requests\unidadSinParDestino\CreateUnidadSinParDestinoRequest;
+use App\Http\Requests\estadisticasDetalleComparacion\CreateEstadisticasDetalleComparacionRequest;
 
 class CursoController extends Controller
 {   
@@ -615,6 +628,48 @@ class CursoController extends Controller
         }
     }
 
+    public function fillOtherTables($idSolicitud, $responseNLP) {
+        try {
+            foreach ($responseNLP as $response) {
+                $idComparacion = $this->crear_comparacion($idSolicitud, $response);
+                $idDetalleComparacion = $this->crear_detalleComparacion($idComparacion, $response);
+                $this->crear_unidadesComparadasTemasComunes($idDetalleComparacion, $response);
+                $this->crear_unidadSinParOrigen($idDetalleComparacion, $response);
+                $this->crear_unidadSinParDestino($idDetalleComparacion, $response);
+                $this->crear_estadisticasDetalleComparacion($idDetalleComparacion, $response);
+                $idDetComp = $idDetalleComparacion;
+            }
+
+            // Agregar campos extra a la respuesta
+            $solicitud = Solicitud::with(['comparaciones.detalleComparacion.estadisticas'])->findOrFail($idSolicitud);
+            
+            // Recopilar todas las estadísticas
+            $estadisticasDetaleComparacion = [];
+            $tiempo_total = 0;
+            
+            foreach ($solicitud->comparaciones as $comparacion) {
+                if ($comparacion->detalleComparacion && $comparacion->detalleComparacion->estadisticas) {
+                    $estadisticasDetaleComparacion[] = $comparacion->detalleComparacion->estadisticas;
+                    $tiempo_total += $comparacion->detalleComparacion->estadisticas->tiempo_procesamiento_ms;
+                }
+            }
+            
+            $otros = [
+                "estadisticas" => $estadisticasDetaleComparacion,
+                "tiempo_total_procesamiento_ms" => $tiempo_total,
+            ];
+
+            $dataForUserReview = [
+                "comparaciones" => $responseNLP,
+                "otros" => $otros,
+            ];
+
+            return $dataForUserReview;
+        } catch (\Exception $e) {
+            throw new \Exception("Error al guardar los resultados de las comparaciones. ". $e);
+        }
+    }
+
     public function calcularSimilitudTOTAL($similitud_sumilla, $similitud_aprendizajes, $similitud_unidades, $similitud_bibliografia) {
         try {
             $peso_similitud_sumilla = env('PESO_SIMILUTD_SUMILLA', 0.25);
@@ -648,12 +703,12 @@ class CursoController extends Controller
 
         // Crear registro en Comparaciones
         $comparacionData = [
-        "idSolicitud" => $idSolicitud,
-        "idCursoOrigen" => $data['idCursoOrigen'],
-        "idCursoDestino" => $data['idCursoDestino'],
-        "porcentaje_similitud" => $porcentaje_similitud,
-        "resultado" => $resultado,
-        "justificacion" => null
+            "idSolicitud" => $idSolicitud,
+            "idCursoOrigen" => $data['idCursoOrigen'],
+            "idCursoDestino" => $data['idCursoDestino'],
+            "porcentaje_similitud" => $porcentaje_similitud,
+            "resultado" => $resultado,
+            "justificacion" => null
         ];
 
         // Validar los datos manualmente
@@ -667,45 +722,211 @@ class CursoController extends Controller
         $comparacion = Comparacion::create($comparacionData);
         $comparacionId = $comparacion->idComparacion;
 
-        Log::info("Comparación creada con ID: " . $comparacionId);
+        // Log::info("Comparación creada con ID: " . $comparacionId);
 
         return $comparacionId;
     }
 
-    public function fillOtherTables($idSolicitud, $responseNLP) {
-        try {
-            $comparacion_ids = [];
+    public function crear_detalleComparacion($idComparacion, $data) {
+        // Obtener reglas de validación
+        $detalleComparacionValidationRules = (new CreateDetalleComparacionRequest())->rules();
 
-            foreach ($responseNLP as $response) {
-                $idComparacion = $this->crear_comparacion($idSolicitud, $response);
-                $comparacion_ids[] = $idComparacion;
-             
-                // Crear registro en Detalle_Comparacion
-            
-                /* 
-                $detalleComparacionesRequest = new Request([
-                    "idComparacion" => $comparacionId,
-                    "similitud_sumilla" => 3,
-                    "similitud_aprendizajes" => 4,
-                    "similitud_unidades" =>0.80,
-                    "similitud_bibliografia" => 1
-                ]);
+        // Calcular similitudes
+        $similitud_sumilla = round($data['resultado_resumido']['similitud_sumilla'], 2);
+        $similitud_aprendizajes = round($data['resultado_resumido']['similitud_aprendizajes'], 2);
+        $similitud_unidades = round($data['resultado_resumido']['similitud_unidades'], 2);
+        $similitud_bibliografia = round($data['resultado_resumido']['similitud_bibliografia'], 2);
+
+        // Crear registro en Detalle Comparacion
+        $detalleComparacionData = [
+            "idComparacion" => $idComparacion,
+            "similitud_sumilla" => $similitud_sumilla,
+            "similitud_aprendizajes" => $similitud_aprendizajes,
+            "similitud_unidades" => $similitud_unidades,
+            "similitud_bibliografia" => $similitud_bibliografia
+        ];
+
+        // Validar los datos manualmente
+        $validator = Validator::make($detalleComparacionData, $detalleComparacionValidationRules);
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
+
+        // Si pasa la validación, crear el registro
+        $detalleComparacion = DetalleComparacion::create($detalleComparacionData);
+        $detalleComparacionId = $detalleComparacion->idDetalleComparacion;
+
+        // Log::info("Detalle de Comparación creada con ID: " . $detalleComparacionId);
+
+        return $detalleComparacionId;
+    }
+
+    public function crear_unidadesComparadasTemasComunes($idDetalleComparacion, $data) {
+        // Obtener reglas de validación
+        $unidadesComparadasValidationRules = (new CreateUnidadesComparadasRequest())->rules();
+        $temaComunValidationRules = (new CreateTemaComunRequest())->rules();
+
+        $unidadesEmparejadas = $data['resultado_detallado']['unidades_emparejadas'];
         
-                $comparacionCreada = $detalleComparacion_Obj->createDetalleComparacion($detalleComparacionesRequest);
-                $comparacionId = $comparacionCreada->original['idComparacion'];
-                */
-                
-                // Crear registro en Unidades_Comparadas
-                // Crear registro en Temas_Comunes
-                // Crear registro en Unidades_Sin_Par_Origen
-                // Crear registro en Unidades_Sin_Par_Destino
-                // Crear registro en Estadisticas_Detalle_Comparacion
+        foreach ($unidadesEmparejadas as $unidEmp) {
+            // Calcular similitudes
+            $similitud_ponderada = round($unidEmp['similitud_ponderada'], 2);
+            $similitud_titulo = round($unidEmp['similitud_titulo'], 2);
+            $similitud_aprendizaje = round($unidEmp['similitud_aprendizaje'], 2);
+            $similitud_temas = round($unidEmp['similitud_temas'], 2);
+            
+            // Crear registro en Unidades Comparadas
+            $unidadesComparadasData = [
+                "idDetalleComparacion" => $idDetalleComparacion,
+                "idUnidadOrigen" => $unidEmp['id_unidad_origen'],
+                "idUnidadDestino" => $unidEmp['id_unidad_destino'],
+                "similitud_ponderada" => $similitud_ponderada,
+                "similitud_titulo" => $similitud_titulo,
+                "similitud_aprendizaje" => $similitud_aprendizaje,
+                "similitud_temas" => $similitud_temas
+            ];
+
+            // Validar los datos manualmente
+            $validator = Validator::make($unidadesComparadasData, $unidadesComparadasValidationRules);
+
+            if ($validator->fails()) {
+                throw new ValidationException($validator);
             }
 
-            return $comparacion_ids;
-        } catch (\Exception $e) {
-            throw new \Exception("Error al guardar los resultados. ". $e);
+            // Si pasa la validación, crear el registro
+            $unidadesComparadas = UnidadesComparadas::create($unidadesComparadasData);
+            $unidadesComparadasId = $unidadesComparadas->idUnidadesComparadas;
+
+            // Log::info("Unidades Comparadas creada con ID: " . $unidadesComparadasId);
+
+            // Crear registro en Temas Comunes
+            $temasComunes = $unidEmp['temas_comunes'];
+            if (!$temasComunes) continue;
+
+            foreach ($temasComunes as $temaComun) {
+                $temaComunData = [
+                    'idUnidadesComparadas' => $unidadesComparadasId, 
+                    'tema' => $temaComun['tema_comun'],
+                ];
+                
+                // Validar los datos manualmente
+                $validator = Validator::make($temaComunData, $temaComunValidationRules);
+    
+                if ($validator->fails()) {
+                    throw new ValidationException($validator);
+                }
+                
+                // Si pasa la validación, crear el registro
+                $temaComun = TemaComun::create($temaComunData);
+                $temaComunId = $temaComun->idTemaComun;
+    
+                // Log::info("Tema Común creado con ID: " . $temaComunId);
+            }
         }
+    }
+
+    public function crear_unidadSinParOrigen($idDetalleComparacion, $data) {
+        // Obtener reglas de validación
+        $unidadSinParOrigenValidationRules = (new CreateUnidadSinParOrigenRequest())->rules();
+
+        // Calcular similitudes
+        $unidadesSinParOrigen = $data['resultado_detallado']['unidades_sin_par_origen'];
+        if (!$unidadesSinParOrigen) return;
+
+        foreach ($unidadesSinParOrigen as $uspo) {
+            // Crear registro en UnidadSinParOrigen
+            $unidadSinParOrigenData = [
+                "idDetalleComparacion" => $idDetalleComparacion,
+                "idUnidad" => $uspo['id_unidad']
+            ];
+
+            // Validar los datos manualmente
+            $validator = Validator::make($unidadSinParOrigenData, $unidadSinParOrigenValidationRules);
+
+            if ($validator->fails()) {
+                throw new ValidationException($validator);
+            }
+
+            // Si pasa la validación, crear el registro
+            $unidadSinParOrigen = UnidadSinParOrigen::create($unidadSinParOrigenData);
+            $unidadSinParOrigenId = $unidadSinParOrigen->idUnidadSinParOrigen;
+
+            // Log::info("Unidad Sin Par Origen creado con ID: " . $unidadSinParOrigenId);
+        }
+    }
+
+    public function crear_unidadSinParDestino($idDetalleComparacion, $data) {
+        // Obtener reglas de validación
+        $unidadSinParDestinoValidationRules = (new CreateUnidadSinParDestinoRequest())->rules();
+
+        // Calcular similitudes
+        $unidadesSinParDestino = $data['resultado_detallado']['unidades_sin_par_destino'];
+        if (!$unidadesSinParDestino) return;
+
+        foreach ($unidadesSinParDestino as $uspd) {
+            // Crear registro en UnidadSinParDestino
+            $unidadSinParDestinoData = [
+                "idDetalleComparacion" => $idDetalleComparacion,
+                "idUnidad" => $uspd['id_unidad']
+            ];
+
+            // Validar los datos manualmente
+            $validator = Validator::make($unidadSinParDestinoData, $unidadSinParDestinoValidationRules);
+
+            if ($validator->fails()) {
+                throw new ValidationException($validator);
+            }
+
+            // Si pasa la validación, crear el registro
+            $unidadSinParDestino = UnidadSinParDestino::create($unidadSinParDestinoData);
+            $unidadSinParDestinoId = $unidadSinParDestino->idUnidadSinParDestino;
+
+            // Log::info("Unidad Sin Par Destino creado con ID: " . $unidadSinParDestinoId);
+        }
+    }
+
+    public function crear_estadisticasDetalleComparacion($idDetalleComparacion, $data) {
+        // Obtener reglas de validación
+        $estadisticasDetalleComparacionValidationRules = (new CreateEstadisticasDetalleComparacionRequest())->rules();
+
+        // Obtener campos
+        $unidades_comparadas = UnidadesComparadas::where('idDetalleComparacion', $idDetalleComparacion)->get();
+        $total_registros_unidades_comparadas = $unidades_comparadas->count();
+        $total_unidades_comparadas = $total_registros_unidades_comparadas*2;
+
+        $unidades_sin_par_origen = UnidadSinParOrigen::where('idDetalleComparacion', $idDetalleComparacion)->count();
+        $unidades_sin_par_destino = UnidadSinParDestino::where('idDetalleComparacion', $idDetalleComparacion)->count();
+
+        $total_unidades_origen = $total_registros_unidades_comparadas + $unidades_sin_par_origen;
+        $total_unidades_destino = $total_registros_unidades_comparadas + $unidades_sin_par_destino;
+        $porcentaje_emparejamiento_unidades = round($total_unidades_comparadas/($total_unidades_origen + $total_unidades_destino), 2);
+        $total_temas_comunes = TemaComun::whereIn('idUnidadesComparadas', $unidades_comparadas->pluck('idUnidadesComparadas'))->count();
+        $tiempo_procesamiento_ms = (int) round($data['tiempo_procesamiento_ms'], 0);
+
+        // Crear registro en Detalle Comparacion
+        $estadisticasDetalleComparacionData = [
+            "idDetalleComparacion" => $idDetalleComparacion,
+            "total_unidades_origen" => $total_unidades_origen,
+            "total_unidades_destino" => $total_unidades_destino,
+            "total_unidades_emparejadas" => $total_unidades_comparadas,
+            "porcentaje_emparejamiento_unidades" => $porcentaje_emparejamiento_unidades,
+            "total_temas_comunes" => $total_temas_comunes,
+            "tiempo_procesamiento_ms" => $tiempo_procesamiento_ms
+        ];
+
+        // Validar los datos manualmente
+        $validator = Validator::make($estadisticasDetalleComparacionData, $estadisticasDetalleComparacionValidationRules);
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
+
+        // Si pasa la validación, crear el registro
+        $estadisticasDetalleComparacion = EstadisticasDetalleComparacion::create($estadisticasDetalleComparacionData);
+        $estadisticasDetalleComparacionId = $estadisticasDetalleComparacion->idEstadisticasDetalleComparacion;
+
+        // Log::info("Estadísticas Detalle Comparacion creada con ID: " . $estadisticasDetalleComparacionId);
     }
 
     public function createCurso(CreateCursoRequest $request)

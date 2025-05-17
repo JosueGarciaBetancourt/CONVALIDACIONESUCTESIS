@@ -14,7 +14,7 @@ class UnidadesComparadas extends BaseModel
     public $incrementing = true;
 
     protected $fillable = [
-        'idUnidadesComparadas', 'idDetalleComparacion', 'idUnidadOrigen', 'idUnidadDestino', 'similitud_promedio', 
+        'idUnidadesComparadas', 'idDetalleComparacion', 'idUnidadOrigen', 'idUnidadDestino', 'similitud_ponderada', 
 		'similitud_titulo', 'similitud_aprendizaje', 'similitud_temas', 'tipo'
     ];
 
