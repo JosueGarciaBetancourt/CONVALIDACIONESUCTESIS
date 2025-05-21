@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import routes from '../routes';
 
@@ -7,17 +7,95 @@ const NuevaConvalidacion = () => {
   const [searchInput, setSearchInput] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [universityFilter, setUniversityFilter] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [filteredStudents, setFilteredStudents] = useState([]);
 
-  // Datos de ejemplo (deberías reemplazarlos con tus datos reales)
+  // Datos de ejemplo más completos
   const students = [
-    { id: 1, name: 'Juan Pérez', dni: '71234567', university: 'UNMSM' },
-    { id: 2, name: 'María García', dni: '76543210', university: 'PUCP' },
+    { 
+      id: 1, 
+      nombre: 'Juan', 
+      apellido: 'Pérez', 
+      dni: '71234567', 
+      universidad: 'UNMSM', 
+      carrera: 'Ingeniería de Software',
+      correo: 'jperez@unmsm.edu.pe',
+      celular: '987654321'
+    },
+    { 
+      id: 2, 
+      nombre: 'María', 
+      apellido: 'García', 
+      dni: '76543210', 
+      universidad: 'PUCP', 
+      carrera: 'Derecho',
+      correo: 'mgarcia@pucp.edu.pe',
+      celular: '912345678'
+    },
+    { 
+      id: 3, 
+      nombre: 'Carlos', 
+      apellido: 'López', 
+      dni: '72345678', 
+      universidad: 'UNMSM', 
+      carrera: 'Medicina',
+      correo: 'clopez@unmsm.edu.pe',
+      celular: '934567890'
+    },
+    { 
+      id: 4, 
+      nombre: 'Ana', 
+      apellido: 'Martínez', 
+      dni: '73456789', 
+      universidad: 'PUCP', 
+      carrera: 'Economía',
+      correo: 'amartinez@pucp.edu.pe',
+      celular: '945678901'
+    },
+    { 
+      id: 5, 
+      nombre: 'Luis', 
+      apellido: 'Rodríguez', 
+      dni: '74567890', 
+      universidad: 'UNI', 
+      carrera: 'Arquitectura',
+      correo: 'lrodriguez@uni.edu.pe',
+      celular: '956789012'
+    }
   ];
 
   const universities = [
     { id: 1, name: 'Universidad Nacional Mayor de San Marcos', acronym: 'UNMSM' },
     { id: 2, name: 'Pontificia Universidad Católica del Perú', acronym: 'PUCP' },
+    { id: 3, name: 'Universidad Nacional de Ingeniería', acronym: 'UNI' },
   ];
+
+  const careers = [
+    { id: 1, name: 'Ingeniería de Sistemas e Informática', acronym: 'ISI' },
+    { id: 2, name: 'Ingeniería de Sofware ', acronym: 'IS' },
+  ];
+
+  // Filtrar estudiantes según búsqueda
+  useEffect(() => {
+    const filtered = students.filter(student => {
+      const matchesSearch = 
+        student.dni.includes(searchInput) ||
+        `${student.nombre} ${student.apellido}`.toLowerCase().includes(searchInput.toLowerCase());
+      
+      const matchesUniversity = 
+        !universityFilter || student.universidad === universities.find(u => u.id.toString() === universityFilter)?.acronym;
+      
+      return matchesSearch && matchesUniversity;
+    });
+    
+    setFilteredStudents(filtered.slice(0, 5)); // Mostrar máximo 5 resultados
+  }, [searchInput, universityFilter]);
+
+  const handleSelectStudent = (student) => {
+    setSelectedStudent(student);
+    setShowDropdown(false);
+    setSearchInput(`${student.nombre} ${student.apellido} (${student.dni})`);
+  };
 
   return (
     <div className="min-h-screen bg-gray-950 p-4 sm:p-6">
@@ -37,15 +115,15 @@ const NuevaConvalidacion = () => {
         </p>
 
         {/* Pestañas */}
-        <div className="flex border-b border-gray-200 mb-6">
+        <div className="flex border-b border-gray-700 mb-6">
           <button
-            className={`pb-3 px-4 font-medium ${activeTab === 'search' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-gray-300 cursor-pointer'}`}
+            className={`pb-3 px-4 font-medium ${activeTab === 'search' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-gray-300 hover:text-white'}`}
             onClick={() => setActiveTab('search')}
           >
             Buscar Estudiante
           </button>
           <button
-            className={`pb-3 px-4 font-medium ${activeTab === 'create' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-gray-300 cursor-pointer'}`}
+            className={`pb-3 px-4 font-medium ${activeTab === 'create' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-gray-300 hover:text-white'}`}
             onClick={() => setActiveTab('create')}
           >
             Crear Nuevo
@@ -64,93 +142,169 @@ const NuevaConvalidacion = () => {
                 </div>
                 <input
                   type="text"
-                  className="block w-full pl-10 pr-3 py-2 text-white border border-gray-300 rounded-md leading-5 placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                  className="block w-full pl-10 pr-3 py-2 bg-gray-800 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
                   placeholder="Buscar por DNI o nombre..."
                   value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
+                  onChange={(e) => {
+                    setSearchInput(e.target.value);
+                    setShowDropdown(e.target.value.length > 0);
+                  }}
+                  onFocus={() => setShowDropdown(searchInput.length > 0)}
                 />
+                
+                {/* Dropdown de resultados */}
+                {showDropdown && filteredStudents.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full bg-gray-800 border border-gray-700 rounded-md shadow-lg">
+                    <ul className="py-1 max-h-60 overflow-auto">
+                      {filteredStudents.map(student => (
+                        <li 
+                          key={student.id}
+                          className="px-4 py-2 hover:bg-gray-700 cursor-pointer text-white"
+                          onClick={() => handleSelectStudent(student)}
+                        >
+                          <div className="font-medium">{student.nombre} {student.apellido}</div>
+                          <div className="text-sm text-gray-400">{student.dni} • {student.universidad}</div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
               
               <select
-                className="block w-full sm:w-48 pl-3 pr-10 py-2 text-base text-white bg-gray-900 border border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md"
+                className="block w-full sm:w-60 pl-3 pr-10 py-2 bg-gray-800 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
                 value={universityFilter}
                 onChange={(e) => setUniversityFilter(e.target.value)}
               >
-                <option value="">Universidad</option>
+                <option value="">Todas las universidades</option>
                 {universities.map((uni) => (
                   <option key={uni.id} value={uni.id}>
                     {uni.acronym}
                   </option>
                 ))}
               </select>
-              
-              <button className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
-                Buscar
-              </button>
             </div>
 
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-300 mb-1">Seleccione un estudiante...</label>
-              <select
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base text-gray-300 bg-gray-900 border border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md"
-                onChange={(e) => setSelectedStudent(e.target.value)}
-              >
-                <option value="">Seleccione...</option>
-                {students.map((student) => (
-                  <option key={student.id} value={student.id}>
-                    {student.name} ({student.dni}) - {student.university}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Mostrar datos del estudiante seleccionado */}
+            {selectedStudent && (
+              <div className="mt-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
+                <h3 className="text-lg font-semibold text-white mb-4">Datos del Estudiante</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-400">Nombre completo</p>
+                    <p className="text-white">{selectedStudent.nombre} {selectedStudent.apellido}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">DNI</p>
+                    <p className="text-white">{selectedStudent.dni}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Universidad</p>
+                    <p className="text-white">{selectedStudent.universidad}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Carrera</p>
+                    <p className="text-white">{selectedStudent.carrera}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Correo institucional</p>
+                    <p className="text-white">{selectedStudent.correo}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-400">Celular</p>
+                    <p className="text-white">{selectedStudent.celular}</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre
-              </label>
-              <input
-                type="text"
-                id="firstName"
-                className="shadow-sm focus:ring-purple-500 focus:border-purple-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-              />
+          <div>
+            <div className="flex gap-4 mb-5">
+              <div className="w-full">
+                <label className="block text-sm font-medium text-gray-300 mb-1">Nombre</label>
+                <input
+                  type="text"
+                  className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                />
+              </div>
+              <div className="w-full">
+                <label className="block text-sm font-medium text-gray-300 mb-1">Apellido</label>
+                <input
+                  type="text"
+                  className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                />
+              </div>
             </div>
-            <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-                Apellido
-              </label>
-              <input
-                type="text"
-                id="lastName"
-                className="shadow-sm focus:ring-purple-500 focus:border-purple-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-              />
+
+            <div className="flex gap-4 mb-5">
+              <div className="w-26">
+                <label className="w-26 block text-sm font-medium text-gray-300 mb-1">DNI</label>
+                <input
+                  type="text"  // Usamos text en lugar de number para maxLength
+                  inputMode="numeric" // Muestra teclado numérico en móviles
+                  pattern="[0-9]*"    // Valida solo números
+                  maxLength={8}
+                  className="w-26 bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                  onInput={(e) => {
+                    // Filtra solo caracteres numéricos
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                    // Limita a 9 caracteres
+                    if (e.target.value.length > 9) {
+                      e.target.value = e.target.value.slice(0, 9);
+                    }
+                  }}
+                />
+              </div>
+              <div className="w-100">
+                <label className="block text-sm font-medium text-gray-300 mb-1">Universidad de Procedencia</label>
+                <select className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                  <option>Seleccione universidad</option>
+                  {universities.map((uni) => (
+                    <option key={uni.id} value={uni.id}>
+                      {uni.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="w-100">
+                <label className="block text-sm font-medium text-gray-300 mb-1">Carrera de Procedencia</label>
+                <select className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
+                  <option>Seleccione carrera</option>
+                  {careers.map((car) => (
+                    <option key={car.id} value={car.id}>
+                      {car.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div>
-              <label htmlFor="dni" className="block text-sm font-medium text-gray-700 mb-1">
-                DNI
-              </label>
-              <input
-                type="text"
-                id="dni"
-                className="shadow-sm focus:ring-purple-500 focus:border-purple-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-              />
-            </div>
-            <div>
-              <label htmlFor="university" className="block text-sm font-medium text-gray-700 mb-1">
-                Universidad
-              </label>
-              <select
-                id="university"
-                className="shadow-sm focus:ring-purple-500 focus:border-purple-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-              >
-                <option>Seleccione universidad</option>
-                {universities.map((uni) => (
-                  <option key={uni.id} value={uni.id}>
-                    {uni.name}
-                  </option>
-                ))}
-              </select>
+            <div className="flex gap-4">
+              <div className="w-100">
+                  <label className="w-100 block text-sm font-medium text-gray-300 mb-1">Correo Institucional</label>
+                  <input
+                    type="email"
+                    className="w-100 bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                />
+              </div>
+              <div className="w-50">
+                <label className="w-50 block text-sm font-medium text-gray-300 mb-1">Celular</label>
+                <input
+                  type="text"  // Usamos text en lugar de number para maxLength
+                  inputMode="numeric" // Muestra teclado numérico en móviles
+                  pattern="[0-9]*"    // Valida solo números
+                  maxLength={9}
+                  className="w-50 bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                  onInput={(e) => {
+                    // Filtra solo caracteres numéricos
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                    // Limita a 9 caracteres
+                    if (e.target.value.length > 9) {
+                      e.target.value = e.target.value.slice(0, 9);
+                    }
+                  }}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -160,13 +314,13 @@ const NuevaConvalidacion = () => {
       <div className="flex justify-end space-x-3">
         <Link
           to={routes.convalidaciones}
-          className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+          className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md"
         >
           Cancelar
         </Link>
         <button
-          type="button"
-          className="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+          className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md disabled:opacity-50"
+          disabled={!selectedStudent && activeTab === 'search'}
         >
           Continuar
         </button>
