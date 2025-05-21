@@ -6,31 +6,26 @@ import { LayoutDashboard, FilePlus, Book, School, Settings, HelpCircle, ChevronR
 const Sidebar = ({ sidebarHidden }) => {  // Recibiendo el prop 'sidebarHidden'
   const location = useLocation();
 
-  // Construir rutas completas para las rutas hijas del dashboard
-  const getFullPath = (childRoute) => {
-    return `${routes.dashboard}${childRoute}`;
-  };
-
   // Menú principal
   const navItems = [
     {
       title: "Inicio",
-      to: getFullPath(routes.inicio),
+      to: routes.inicio,
       icon: <LayoutDashboard className="h-5 w-5" />,
     },
     {
       title: "Convalidaciones",
-      to: getFullPath(routes.convalidaciones),
+      to: routes.convalidaciones,
       icon: <FilePlus className="h-5 w-5" />,
     },
     {
       title: "Universidades",
-      to: getFullPath(routes.universidades),
+      to: routes.universidades,
       icon: <School className="h-5 w-5" />,
     },
     {
       title: "Cursos",
-      to: getFullPath(routes.cursos),
+      to: routes.cursos,
       icon: <Book className="h-5 w-5" />,  
     },
   ];
@@ -39,12 +34,12 @@ const Sidebar = ({ sidebarHidden }) => {  // Recibiendo el prop 'sidebarHidden'
   const secondaryNavItems = [
     {
       title: "Configuración",
-      to: getFullPath(routes.configuracion),
+      to: routes.configuracion,
       icon: <Settings className="h-5 w-5" />,
     },
     {
       title: "Ayuda",
-      to: getFullPath(routes.ayuda),
+      to: routes.ayuda,
       icon: <HelpCircle className="h-5 w-5" />,
     },
   ];
@@ -52,7 +47,7 @@ const Sidebar = ({ sidebarHidden }) => {  // Recibiendo el prop 'sidebarHidden'
   // Verificar si un elemento está activo o está dentro de sus subrutas
   const isActiveOrHasActiveChild = (path) => {
     if (location.pathname === path) return true;
-    if (path === getFullPath(routes.inicio)) return location.pathname === path;
+    if (path === routes.inicio) return location.pathname === path;
     const normPath = path.endsWith('/') ? path.slice(0, -1) : path;
     const normCurrentPath = location.pathname.endsWith('/') 
       ? location.pathname.slice(0, -1) 
