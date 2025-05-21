@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import routes from '../routes';
+import { getEstudiantes, getEstudiante } from '../services/estudiantes';
 
 const NuevaConvalidacion = () => {
   const [activeTab, setActiveTab] = useState('search');
@@ -9,92 +10,99 @@ const NuevaConvalidacion = () => {
   const [universityFilter, setUniversityFilter] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [filteredStudents, setFilteredStudents] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [universities, setUniversities] = useState([]);
+  const [careers, setCareers] = useState([]);
+  const [newStudent, setNewStudent] = useState({
+    nombre: '',
+    apellido: '',
+    dni: '',
+    idUniversidadOrigen: '',
+    idCarreraOrigen: '',
+    email: '',
+    celular: ''
+  });
 
-  // Datos de ejemplo más completos
-  const students = [
-    { 
-      id: 1, 
-      nombre: 'Juan', 
-      apellido: 'Pérez', 
-      dni: '71234567', 
-      universidad: 'UNMSM', 
-      carrera: 'Ingeniería de Software',
-      correo: 'jperez@unmsm.edu.pe',
-      celular: '987654321'
-    },
-    { 
-      id: 2, 
-      nombre: 'María', 
-      apellido: 'García', 
-      dni: '76543210', 
-      universidad: 'PUCP', 
-      carrera: 'Derecho',
-      correo: 'mgarcia@pucp.edu.pe',
-      celular: '912345678'
-    },
-    { 
-      id: 3, 
-      nombre: 'Carlos', 
-      apellido: 'López', 
-      dni: '72345678', 
-      universidad: 'UNMSM', 
-      carrera: 'Medicina',
-      correo: 'clopez@unmsm.edu.pe',
-      celular: '934567890'
-    },
-    { 
-      id: 4, 
-      nombre: 'Ana', 
-      apellido: 'Martínez', 
-      dni: '73456789', 
-      universidad: 'PUCP', 
-      carrera: 'Economía',
-      correo: 'amartinez@pucp.edu.pe',
-      celular: '945678901'
-    },
-    { 
-      id: 5, 
-      nombre: 'Luis', 
-      apellido: 'Rodríguez', 
-      dni: '74567890', 
-      universidad: 'UNI', 
-      carrera: 'Arquitectura',
-      correo: 'lrodriguez@uni.edu.pe',
-      celular: '956789012'
-    }
-  ];
-
-  const universities = [
-    { id: 1, name: 'Universidad Nacional Mayor de San Marcos', acronym: 'UNMSM' },
-    { id: 2, name: 'Pontificia Universidad Católica del Perú', acronym: 'PUCP' },
-    { id: 3, name: 'Universidad Nacional de Ingeniería', acronym: 'UNI' },
-  ];
-
-  const careers = [
-    { id: 1, name: 'Ingeniería de Sistemas e Informática', acronym: 'ISI' },
-    { id: 2, name: 'Ingeniería de Sofware ', acronym: 'IS' },
-  ];
-
-  // Filtrar estudiantes según búsqueda
+  // Obtener universidades y carreras al montar el componente
   useEffect(() => {
-    const filtered = students.filter(student => {
-      const matchesSearch = 
-        student.dni.includes(searchInput) ||
-        `${student.nombre} ${student.apellido}`.toLowerCase().includes(searchInput.toLowerCase());
-      
-      const matchesUniversity = 
-        !universityFilter || student.universidad === universities.find(u => u.id.toString() === universityFilter)?.acronym;
-      
-      return matchesSearch && matchesUniversity;
-    });
-    
-    setFilteredStudents(filtered.slice(0, 5)); // Mostrar máximo 5 resultados
+    const fetchInitialData = async () => {
+      try {
+        // Simulando llamadas a la API - reemplaza con tus endpoints reales
+        const uniResponse = await fetch('/api/universidades');
+        const uniData = await uniResponse.json();
+        setUniversities(uniData);
+
+        const careersResponse = await fetch('/api/carreras');
+        const careersData = await careersResponse.json();
+        setCareers(careersData);
+      } catch (error) {
+        console.error('Error fetching initial data:', error);
+      }
+    };
+    fetchInitialData();
+  }, []);
+
+  // Buscar estudiantes en la API con debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchInput.length > 1) {
+        searchStudents();
+      } else {
+        setFilteredStudents([]);
+        setShowDropdown(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
   }, [searchInput, universityFilter]);
 
-  const handleSelectStudent = (student) => {
-    setSelectedStudent(student);
-    setShowDropdown(false);
-    setSearchInput(`${student.nombre} ${student.apellido} (${student.dni})`);
+  const searchStudents = async () => {
+    setIsLoading(true);
+    try {
+      const params = {
+        search: searchInput,
+        universidad: universityFilter
+      };
+      
+      const estudiantes = await getEstudiantes(params);
+      setFilteredStudents(estudiantes.slice(0, 5));
+      setShowDropdown(true);
+    } catch (error) {
+      console.error('Error searching students:', error);
+      setFilteredStudents([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSelectStudent = async (student) => {
+    try {
+      const estudianteCompleto = await getEstudiante(student.idEstudiante);
+      setSelectedStudent(estudianteCompleto);
+      setShowDropdown(false);
+      setSearchInput(`${estudianteCompleto.nombre} ${estudianteCompleto.apellido} (${estudianteCompleto.DNI})`);
+    } catch (error) {
+      console.error('Error fetching student details:', error);
+    }
+  };
+
+  const handleNewStudentChange = (e) => {
+    const { name, value } = e.target;
+    setNewStudent(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleCreateStudent = async () => {
+    try {
+      // Aquí iría la llamada a tu API para crear el estudiante
+      // const response = await createEstudiante(newStudent);
+      // setSelectedStudent(response.data);
+      console.log('Estudiante a crear:', newStudent);
+    } catch (error) {
+      console.error('Error creating student:', error);
+    }
   };
 
   return (
@@ -145,28 +153,33 @@ const NuevaConvalidacion = () => {
                   className="block w-full pl-10 pr-3 py-2 bg-gray-800 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
                   placeholder="Buscar por DNI o nombre..."
                   value={searchInput}
-                  onChange={(e) => {
-                    setSearchInput(e.target.value);
-                    setShowDropdown(e.target.value.length > 0);
-                  }}
-                  onFocus={() => setShowDropdown(searchInput.length > 0)}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onFocus={() => setShowDropdown(searchInput.length > 0 && filteredStudents.length > 0)}
                 />
                 
                 {/* Dropdown de resultados */}
-                {showDropdown && filteredStudents.length > 0 && (
+                {showDropdown && (
                   <div className="absolute z-10 mt-1 w-full bg-gray-800 border border-gray-700 rounded-md shadow-lg">
-                    <ul className="py-1 max-h-60 overflow-auto">
-                      {filteredStudents.map(student => (
-                        <li 
-                          key={student.id}
-                          className="px-4 py-2 hover:bg-gray-700 cursor-pointer text-white"
-                          onClick={() => handleSelectStudent(student)}
-                        >
-                          <div className="font-medium">{student.nombre} {student.apellido}</div>
-                          <div className="text-sm text-gray-400">{student.dni} • {student.universidad}</div>
-                        </li>
-                      ))}
-                    </ul>
+                    {isLoading ? (
+                      <div className="px-4 py-2 text-gray-400">Buscando...</div>
+                    ) : filteredStudents.length > 0 ? (
+                      <ul className="py-1 max-h-60 overflow-auto">
+                        {filteredStudents.map(student => (
+                          <li 
+                            key={student.idEstudiante}
+                            className="px-4 py-2 hover:bg-gray-700 cursor-pointer text-white"
+                            onClick={() => handleSelectStudent(student)}
+                          >
+                            <div className="font-medium">{student.nombre} {student.apellido}</div>
+                            <div className="text-sm text-gray-400">
+                              {student.DNI} • {universities.find(u => u.id === student.idUniversidadOrigen)?.acronym || 'Universidad'}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="px-4 py-2 text-gray-400">No se encontraron resultados</div>
+                    )}
                   </div>
                 )}
               </div>
@@ -196,19 +209,17 @@ const NuevaConvalidacion = () => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-400">DNI</p>
-                    <p className="text-white">{selectedStudent.dni}</p>
+                    <p className="text-white">{selectedStudent.DNI}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-400">Universidad</p>
-                    <p className="text-white">{selectedStudent.universidad}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-400">Carrera</p>
-                    <p className="text-white">{selectedStudent.carrera}</p>
+                    <p className="text-white">
+                      {universities.find(u => u.id === selectedStudent.idUniversidadOrigen)?.name || 'No especificada'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-400">Correo institucional</p>
-                    <p className="text-white">{selectedStudent.correo}</p>
+                    <p className="text-white">{selectedStudent.email}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-400">Celular</p>
@@ -225,6 +236,9 @@ const NuevaConvalidacion = () => {
                 <label className="block text-sm font-medium text-gray-300 mb-1">Nombre</label>
                 <input
                   type="text"
+                  name="nombre"
+                  value={newStudent.nombre}
+                  onChange={handleNewStudentChange}
                   className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
                 />
               </div>
@@ -232,34 +246,43 @@ const NuevaConvalidacion = () => {
                 <label className="block text-sm font-medium text-gray-300 mb-1">Apellido</label>
                 <input
                   type="text"
+                  name="apellido"
+                  value={newStudent.apellido}
+                  onChange={handleNewStudentChange}
                   className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
                 />
               </div>
             </div>
 
             <div className="flex gap-4 mb-5">
-              <div className="w-26">
-                <label className="w-26 block text-sm font-medium text-gray-300 mb-1">DNI</label>
+              <div className="w-32">
+                <label className="block text-sm font-medium text-gray-300 mb-1">DNI</label>
                 <input
-                  type="text"  // Usamos text en lugar de number para maxLength
-                  inputMode="numeric" // Muestra teclado numérico en móviles
-                  pattern="[0-9]*"    // Valida solo números
+                  type="text"
+                  name="dni"
+                  value={newStudent.dni}
+                  onChange={handleNewStudentChange}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   maxLength={8}
-                  className="w-26 bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                  className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
                   onInput={(e) => {
-                    // Filtra solo caracteres numéricos
                     e.target.value = e.target.value.replace(/[^0-9]/g, '');
-                    // Limita a 9 caracteres
-                    if (e.target.value.length > 9) {
-                      e.target.value = e.target.value.slice(0, 9);
+                    if (e.target.value.length > 8) {
+                      e.target.value = e.target.value.slice(0, 8);
                     }
                   }}
                 />
               </div>
-              <div className="w-100">
+              <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-300 mb-1">Universidad de Procedencia</label>
-                <select className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
-                  <option>Seleccione universidad</option>
+                <select 
+                  name="idUniversidadOrigen"
+                  value={newStudent.idUniversidadOrigen}
+                  onChange={handleNewStudentChange}
+                  className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                >
+                  <option value="">Seleccione universidad</option>
                   {universities.map((uni) => (
                     <option key={uni.id} value={uni.id}>
                       {uni.name}
@@ -267,10 +290,15 @@ const NuevaConvalidacion = () => {
                   ))}
                 </select>
               </div>
-              <div className="w-100">
+              <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-300 mb-1">Carrera de Procedencia</label>
-                <select className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500">
-                  <option>Seleccione carrera</option>
+                <select 
+                  name="idCarreraOrigen"
+                  value={newStudent.idCarreraOrigen}
+                  onChange={handleNewStudentChange}
+                  className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                >
+                  <option value="">Seleccione carrera</option>
                   {careers.map((car) => (
                     <option key={car.id} value={car.id}>
                       {car.name}
@@ -280,25 +308,29 @@ const NuevaConvalidacion = () => {
               </div>
             </div>
             <div className="flex gap-4">
-              <div className="w-100">
-                  <label className="w-100 block text-sm font-medium text-gray-300 mb-1">Correo Institucional</label>
-                  <input
-                    type="email"
-                    className="w-100 bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">Correo Institucional</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={newStudent.email}
+                  onChange={handleNewStudentChange}
+                  className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
                 />
               </div>
-              <div className="w-50">
-                <label className="w-50 block text-sm font-medium text-gray-300 mb-1">Celular</label>
+              <div className="w-40">
+                <label className="block text-sm font-medium text-gray-300 mb-1">Celular</label>
                 <input
-                  type="text"  // Usamos text en lugar de number para maxLength
-                  inputMode="numeric" // Muestra teclado numérico en móviles
-                  pattern="[0-9]*"    // Valida solo números
+                  type="text"
+                  name="celular"
+                  value={newStudent.celular}
+                  onChange={handleNewStudentChange}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   maxLength={9}
-                  className="w-50 bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                  className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
                   onInput={(e) => {
-                    // Filtra solo caracteres numéricos
                     e.target.value = e.target.value.replace(/[^0-9]/g, '');
-                    // Limita a 9 caracteres
                     if (e.target.value.length > 9) {
                       e.target.value = e.target.value.slice(0, 9);
                     }
@@ -320,7 +352,8 @@ const NuevaConvalidacion = () => {
         </Link>
         <button
           className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md disabled:opacity-50"
-          disabled={!selectedStudent && activeTab === 'search'}
+          disabled={activeTab === 'search' ? !selectedStudent : !newStudent.nombre || !newStudent.apellido || !newStudent.dni}
+          onClick={activeTab === 'create' ? handleCreateStudent : undefined}
         >
           Continuar
         </button>

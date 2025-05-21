@@ -84,6 +84,7 @@ Route::delete('/gruposTematicos/{idGrupoTematico}/delete', [GrupoTematicoControl
 
 // Estudiantes
 Route::get('/estudiantes', [EstudianteController::class, 'getEstudiantes'])->name('getEstudiantes');
+Route::get('/estudiantes/buscar', [EstudianteController::class, 'searchEstudianteByDNIName'])->name('searchEstudianteByDNIName'); // MEJORAR BÚSQUEDA SIMILAR TEXT Y LEVENSHTEIN
 Route::get('/estudiantes/{idEstudiante}', [EstudianteController::class, 'getEstudiante'])->name('getEstudiante');
 Route::get('/estudiantes-trashed', [EstudianteController::class, 'getTrashedEstudiantes'])->name('getTrashedEstudiantes');
 Route::get('/estudiantes/{idEstudiante}/trashed', [EstudianteController::class, 'getTrashedEstudiante'])->name('getTrashedEstudiante');

@@ -24,7 +24,7 @@ class EstudianteSeeder extends Seeder
             [
                 'idEstudiante' => 2,
                 'DNI' => '77665544',
-                'nombre' => 'Alejandro',
+                'nombre' => 'Gabriel',
                 'apellido' => 'Martinez Sanabria',
                 'email' => '77665544@utp.edu.pe',
                 'celular' => '999888777',

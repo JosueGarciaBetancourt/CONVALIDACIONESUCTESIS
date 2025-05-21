@@ -7,7 +7,7 @@ const handleError = (error) => {
 
 export const getUsers = async () => {
 	try {
-		const res = await api.get('users');
+		const res = await api.get('/users');
 		return res.data;
 	} catch (error) {
 		handleError(error);

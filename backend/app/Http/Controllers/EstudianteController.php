@@ -7,6 +7,7 @@ use App\Models\Estudiante;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\estudiante\CreateEstudianteRequest;
 use App\Http\Requests\estudiante\UpdateEstudianteRequest;
+use Illuminate\Http\Request;
 
 class EstudianteController extends Controller
 {
@@ -23,7 +24,7 @@ class EstudianteController extends Controller
         }
     }
 
-    public function getEstudiante($idEstudiante)
+    public function getEstudiante($idEstudiante) 
     {
         try {
             $estudiante = Estudiante::findOrFail($idEstudiante);
@@ -35,7 +36,53 @@ class EstudianteController extends Controller
         }
     }
 
-    public function getTrashedEstudiantes() {
+    public function searchEstudianteByDNIName(Request $request)
+    {
+        try {
+            $search = $request->input('search', '');
+            $searchTerms = explode(' ', trim($search));
+            
+            $query = Estudiante::query();
+            
+            if (!empty($search)) {
+                $query->where(function($q) use ($searchTerms) {
+                    foreach ($searchTerms as $term) {
+                        $q->orWhere('DNI', 'LIKE', "%{$term}%")
+                        ->orWhere('nombre', 'LIKE', "%{$term}%")
+                        ->orWhere('apellido', 'LIKE', "%{$term}%");
+                    }
+                });
+            }
+            
+            $query->with(['carrera', 'universidad'])
+                ->orderByRaw("CASE WHEN DNI = ? THEN 0 ELSE 1 END", [$search])
+                ->orderBy('apellido')
+                ->orderBy('nombre');
+            
+            $estudiantes = $query->paginate(5);
+
+            return response()->json([
+                'success' => true,
+                'data' => $estudiantes->items(),
+                'pagination' => [
+                    'total' => $estudiantes->total(),
+                    'current_page' => $estudiantes->currentPage(),
+                    'last_page' => $estudiantes->lastPage(),
+                    'per_page' => $estudiantes->perPage(),
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => "Error al buscar estudiantes",
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
+
+    public function getTrashedEstudiantes() 
+    {
         try {
             $estudiantes = Estudiante::onlyTrashed()->get();
 
