@@ -85,7 +85,7 @@ const Convalidaciones = () => {
         {/* Estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           {stats.map((stat, index) => (
-            <div key={index} className="bg-[#1D1D20] rounded-lg p-4 border border-gray-700">
+            <div key={index} className="bg-gray-900 rounded-lg p-4 border border-gray-700">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-medium text-white">{stat.name}</h3>
                 {stat.icon}
@@ -97,7 +97,7 @@ const Convalidaciones = () => {
         </div>
 
         {/* Convalidaciones Recientes */}
-        <div className="bg-[#1D1D20] rounded-lg p-4 border border-gray-700">
+        <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
             <div>
               <h2 className="text-lg font-bold text-white">Convalidaciones Recientes</h2>

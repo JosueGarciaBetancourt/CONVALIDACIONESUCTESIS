@@ -30,7 +30,7 @@ function Login() {
     try {
       const result = await login(credentials)
       if (result.success) {
-        navigate(routes.dashboard+routes.convalidaciones)
+        navigate(routes.convalidaciones)
       } else {
         setLoginError(result.error || 'Error de autenticación')
       }
