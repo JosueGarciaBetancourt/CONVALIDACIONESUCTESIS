@@ -8,6 +8,8 @@ const routes = {
 		// Rutas hijas de dashboard
 		inicio: "/inicio",
 		convalidaciones: "/convalidaciones",
+			// Rutas hijas de convalidaciones
+			nuevaConvalidacion: "/nuevo",
 		universidades: "/universidades",
 		cursos: "/cursos",
 		configuracion: "/configuracion",

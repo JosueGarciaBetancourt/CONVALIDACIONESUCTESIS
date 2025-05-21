@@ -1,4 +1,3 @@
-import DashboardHeader from "../components/dashboard/DashboardHeader"
 import DashboardShell from "../components/dashboard/DashboardShell"
 
 const Dashboard = () => {
