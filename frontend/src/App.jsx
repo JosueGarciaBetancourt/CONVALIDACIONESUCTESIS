@@ -116,7 +116,7 @@ function App() {
   };
 
   React.useEffect(() => {
-    printRoutes();
+    //printRoutes();
   }, []);
 
   return (

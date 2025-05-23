@@ -22,3 +22,22 @@ export const getEstudiante = async (id) => {
 		handleError(error);
 	}
 }
+
+export const searchEstudiante = async (searchText) => {
+	try {
+		const res = await api.get(`/estudiantes/buscar?search=${searchText}`);
+
+		return res.data;
+	} catch (error) {
+		handleError(error);
+	}
+}
+
+export const createEstudiante = async (data) => {
+	try {
+		const res = await api.post(`/estudiantes`, data);
+		return res.data;
+	} catch (error) {
+		handleError(error);
+	}
+}

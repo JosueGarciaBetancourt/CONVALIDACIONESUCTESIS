@@ -575,12 +575,12 @@ class CursoController extends Controller
 
     public function compararCursosNLP(CompararCursosRequest $request) {
         try {
-            // REAL
             
             $validatedData = $request->validated();
             $idSolicitud = $validatedData['idSolicitud'];
             $comparacionesData = Arr::except($validatedData, 'idSolicitud');
             
+            // REAL
             /* 
 
             $client = new \GuzzleHttp\Client([

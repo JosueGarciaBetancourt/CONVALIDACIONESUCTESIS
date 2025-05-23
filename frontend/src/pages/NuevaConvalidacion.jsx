@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import routes from '../routes';
-import { getEstudiantes, getEstudiante } from '../services/estudiantes';
+import { getEstudiantes, getEstudiante, searchEstudiante } from '../services/estudiantes';
+import { getUniversidades, getUniversidad } from '../services/universidades';
+import { getCarreras, getCarrera } from '../services/carreras';
 
 const NuevaConvalidacion = () => {
   const [activeTab, setActiveTab] = useState('search');
@@ -14,26 +16,27 @@ const NuevaConvalidacion = () => {
   const [universities, setUniversities] = useState([]);
   const [careers, setCareers] = useState([]);
   const [newStudent, setNewStudent] = useState({
-    nombre: '',
-    apellido: '',
-    dni: '',
-    idUniversidadOrigen: '',
-    idCarreraOrigen: '',
-    email: '',
-    celular: ''
+    nombre: 'Alberto',
+    apellido: 'Espinoza Contreras',
+    dni: '87654321',
+    idUniversidadOrigen: '2',
+    idCarreraOrigen: '2',
+    email: 'alberto@utp.edu.pe',
+    celular: '999888777'
   });
 
   // Obtener universidades y carreras al montar el componente
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        // Simulando llamadas a la API - reemplaza con tus endpoints reales
-        const uniResponse = await fetch('/api/universidades');
-        const uniData = await uniResponse.json();
-        setUniversities(uniData);
+        const [uniData, careersData] = await Promise.all([
+          getUniversidades(),
+          getCarreras()
+        ]);
+        
+        // console.log('Universities data:', uniData);
 
-        const careersResponse = await fetch('/api/carreras');
-        const careersData = await careersResponse.json();
+        setUniversities(uniData);
         setCareers(careersData);
       } catch (error) {
         console.error('Error fetching initial data:', error);
@@ -64,11 +67,13 @@ const NuevaConvalidacion = () => {
         universidad: universityFilter
       };
       
-      const estudiantes = await getEstudiantes(params);
+      const res = await searchEstudiante(params.search);
+      const estudiantes = res.data;
+
       setFilteredStudents(estudiantes.slice(0, 5));
       setShowDropdown(true);
     } catch (error) {
-      console.error('Error searching students:', error);
+      console.error('Error buscando estudiantes:', error);
       setFilteredStudents([]);
     } finally {
       setIsLoading(false);
@@ -82,7 +87,7 @@ const NuevaConvalidacion = () => {
       setShowDropdown(false);
       setSearchInput(`${estudianteCompleto.nombre} ${estudianteCompleto.apellido} (${estudianteCompleto.DNI})`);
     } catch (error) {
-      console.error('Error fetching student details:', error);
+      console.error('Error al obtener los detalles del estudiante:', error);
     }
   };
 
@@ -172,7 +177,7 @@ const NuevaConvalidacion = () => {
                           >
                             <div className="font-medium">{student.nombre} {student.apellido}</div>
                             <div className="text-sm text-gray-400">
-                              {student.DNI} • {universities.find(u => u.id === student.idUniversidadOrigen)?.acronym || 'Universidad'}
+                              {student.DNI} • {universities.find(u => u.idUniversidad === student.idUniversidadOrigen)?.abreviatura || 'Universidad'}
                             </div>
                           </li>
                         ))}
@@ -185,14 +190,14 @@ const NuevaConvalidacion = () => {
               </div>
               
               <select
-                className="block w-full sm:w-60 pl-3 pr-10 py-2 bg-gray-800 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                className="block w-full sm:w-60 pl-3 pr-10 py-2 bg-gray-800 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 cursor-pointer"
                 value={universityFilter}
                 onChange={(e) => setUniversityFilter(e.target.value)}
               >
                 <option value="">Todas las universidades</option>
                 {universities.map((uni) => (
-                  <option key={uni.id} value={uni.id}>
-                    {uni.acronym}
+                  <option key={`filter-uni-${uni.idUniversidad}`} value={uni.idUniversidad}>
+                    {uni.abreviatura}
                   </option>
                 ))}
               </select>
@@ -214,7 +219,7 @@ const NuevaConvalidacion = () => {
                   <div>
                     <p className="text-sm text-gray-400">Universidad</p>
                     <p className="text-white">
-                      {universities.find(u => u.id === selectedStudent.idUniversidadOrigen)?.name || 'No especificada'}
+                      {universities.find(u => u.idUniversidad === selectedStudent.idUniversidadOrigen)?.nombre || 'No especificada'}
                     </p>
                   </div>
                   <div>
@@ -284,8 +289,8 @@ const NuevaConvalidacion = () => {
                 >
                   <option value="">Seleccione universidad</option>
                   {universities.map((uni) => (
-                    <option key={uni.id} value={uni.id}>
-                      {uni.name}
+                    <option key={`uni-${uni.idUniversidad}`} value={uni.idUniversidad}>
+                      {uni.nombre}
                     </option>
                   ))}
                 </select>
@@ -300,8 +305,8 @@ const NuevaConvalidacion = () => {
                 >
                   <option value="">Seleccione carrera</option>
                   {careers.map((car) => (
-                    <option key={car.id} value={car.id}>
-                      {car.name}
+                    <option key={`car-${car.idCarrera}`} value={car.idCarrera}>
+                      {car.nombre}
                     </option>
                   ))}
                 </select>
