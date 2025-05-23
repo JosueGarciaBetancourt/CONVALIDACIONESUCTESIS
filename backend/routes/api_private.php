@@ -61,6 +61,7 @@ Route::delete('/universidades/{idUniversidad}/delete', [UniversidadController::c
 
 // Carreras
 Route::get('/carreras', [CarreraController::class, 'getCarreras'])->name('getCarreras');
+Route::get('/carreras/universidad/{idUniversidad}', [CarreraController::class, 'getCarrerasByUniversidad'])->name('getCarrerasByUniversidad');
 Route::get('/carreras/{idCarrera}', [CarreraController::class, 'getCarrera'])->name('getCarrera');
 Route::get('/carreras-trashed', [CarreraController::class, 'getTrashedCarreras'])->name('getTrashedCarreras');
 Route::get('/carreras/{idCarrera}/trashed', [CarreraController::class, 'getTrashedCarrera'])->name('getTrashedCarrera');
@@ -84,7 +85,7 @@ Route::delete('/gruposTematicos/{idGrupoTematico}/delete', [GrupoTematicoControl
 
 // Estudiantes
 Route::get('/estudiantes', [EstudianteController::class, 'getEstudiantes'])->name('getEstudiantes');
-Route::get('/estudiantes/buscar', [EstudianteController::class, 'searchEstudianteByDNIName'])->name('searchEstudianteByDNIName'); // MEJORAR BÚSQUEDA SIMILAR TEXT Y LEVENSHTEIN
+Route::get('/estudiantes/buscar', [EstudianteController::class, 'searchEstudianteByDNIName'])->name('searchEstudianteByDNIName');
 Route::get('/estudiantes/{idEstudiante}', [EstudianteController::class, 'getEstudiante'])->name('getEstudiante');
 Route::get('/estudiantes-trashed', [EstudianteController::class, 'getTrashedEstudiantes'])->name('getTrashedEstudiantes');
 Route::get('/estudiantes/{idEstudiante}/trashed', [EstudianteController::class, 'getTrashedEstudiante'])->name('getTrashedEstudiante');

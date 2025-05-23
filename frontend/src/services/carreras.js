@@ -22,3 +22,12 @@ export const getCarrera = async (id) => {
 		handleError(error);
 	}
 }
+
+export const getCarrerasByUniversidad = async (idUniversidad) => {
+	try {
+		const res = await api.get(`/carreras/universidad/${idUniversidad}`);
+		return res.data;
+	} catch (error) {
+		handleError(error);
+	}
+}	

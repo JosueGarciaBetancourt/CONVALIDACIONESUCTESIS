@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import routes from '../routes';
-import { getEstudiantes, getEstudiante, searchEstudiante } from '../services/estudiantes';
-import { getUniversidades, getUniversidad } from '../services/universidades';
-import { getCarreras, getCarrera } from '../services/carreras';
+import { getEstudiante, searchEstudiante, createEstudiante } from '../services/estudiantes';
+import { getUniversidades } from '../services/universidades';
+import { getCarreras, getCarrerasByUniversidad } from '../services/carreras';
 
 const NuevaConvalidacion = () => {
   const [activeTab, setActiveTab] = useState('search');
@@ -16,26 +16,22 @@ const NuevaConvalidacion = () => {
   const [universities, setUniversities] = useState([]);
   const [careers, setCareers] = useState([]);
   const [newStudent, setNewStudent] = useState({
+    DNI: '87654321',
     nombre: 'Alberto',
     apellido: 'Espinoza Contreras',
-    dni: '87654321',
-    idUniversidadOrigen: '2',
-    idCarreraOrigen: '2',
     email: 'alberto@utp.edu.pe',
-    celular: '999888777'
+    celular: '999888777',
+    idCarreraOrigen: '2',
+    idUniversidadOrigen: '2'
   });
 
   // Obtener universidades y carreras al montar el componente
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [uniData, careersData] = await Promise.all([
-          getUniversidades(),
-          getCarreras()
-        ]);
+        const uniData = await getUniversidades();
+        const careersData = await getCarrerasByUniversidad(newStudent.idUniversidadOrigen);
         
-        // console.log('Universities data:', uniData);
-
         setUniversities(uniData);
         setCareers(careersData);
       } catch (error) {
@@ -67,7 +63,7 @@ const NuevaConvalidacion = () => {
         universidad: universityFilter
       };
       
-      const res = await searchEstudiante(params.search);
+      const res = await searchEstudiante(params);
       const estudiantes = res.data;
 
       setFilteredStudents(estudiantes.slice(0, 5));
@@ -91,22 +87,42 @@ const NuevaConvalidacion = () => {
     }
   };
 
-  const handleNewStudentChange = (e) => {
+  const handleNewStudentChange = async (e) => {
     const { name, value } = e.target;
     setNewStudent(prev => ({
       ...prev,
       [name]: value
     }));
+    
+    if (name == "idUniversidadOrigen") {
+      var careersData = [];
+
+      if (value == -1) {
+        careersData = await getCarrerasByUniversidad(null);
+      } else {
+        careersData = await getCarrerasByUniversidad(value);
+      }
+
+      setCareers(careersData);
+    }
   };
 
   const handleCreateStudent = async () => {
     try {
-      // Aquí iría la llamada a tu API para crear el estudiante
-      // const response = await createEstudiante(newStudent);
-      // setSelectedStudent(response.data);
-      console.log('Estudiante a crear:', newStudent);
+      const response = await createEstudiante(newStudent);
+      console.log('Estudiante creado:', response.data);
+      setSelectedStudent(response.data);
+      setActiveTab('search');
     } catch (error) {
-      console.error('Error creating student:', error);
+      console.error('Error creando estudiante:', error);
+    }
+  };
+
+  const validateEmptyFieldsCreateStudent = () => {
+    try {
+      return !Object.values(newStudent).every(value => value);
+    } catch (error) {
+      console.error('Error vaidando campos vacíos en creación de estudiante:', error);
     }
   };
 
@@ -130,13 +146,13 @@ const NuevaConvalidacion = () => {
         {/* Pestañas */}
         <div className="flex border-b border-gray-700 mb-6">
           <button
-            className={`pb-3 px-4 font-medium ${activeTab === 'search' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-gray-300 hover:text-white'}`}
+            className={`pb-3 px-4 font-medium ${activeTab === 'search' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-gray-300 hover:text-white cursor-pointer'}`}
             onClick={() => setActiveTab('search')}
           >
             Buscar Estudiante
           </button>
           <button
-            className={`pb-3 px-4 font-medium ${activeTab === 'create' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-gray-300 hover:text-white'}`}
+            className={`pb-3 px-4 font-medium ${activeTab === 'create' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-gray-300 hover:text-white cursor-pointer'}`}
             onClick={() => setActiveTab('create')}
           >
             Crear Nuevo
@@ -190,14 +206,14 @@ const NuevaConvalidacion = () => {
               </div>
               
               <select
-                className="block w-full sm:w-60 pl-3 pr-10 py-2 bg-gray-800 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 cursor-pointer"
+                className="block w-full sm:w-100 pl-3 pr-10 py-2 bg-gray-800 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 cursor-pointer"
                 value={universityFilter}
                 onChange={(e) => setUniversityFilter(e.target.value)}
               >
                 <option value="">Todas las universidades</option>
                 {universities.map((uni) => (
                   <option key={`filter-uni-${uni.idUniversidad}`} value={uni.idUniversidad}>
-                    {uni.abreviatura}
+                    {uni.abreviatura} - {uni.nombre}
                   </option>
                 ))}
               </select>
@@ -233,6 +249,23 @@ const NuevaConvalidacion = () => {
                 </div>
               </div>
             )}
+
+            {/* Botones para el tab de búsqueda */}
+            <div className="flex justify-end space-x-3 mt-6">
+              <Link
+                to={routes.convalidaciones}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md"
+              >
+                Cancelar
+              </Link>
+              <button
+                className={`px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md disabled:opacity-50
+                            ${selectedStudent ? 'cursor-pointer' : ''}`}
+                disabled={!selectedStudent}
+              >
+                Continuar
+              </button>
+            </div>
           </div>
         ) : (
           <div>
@@ -264,8 +297,8 @@ const NuevaConvalidacion = () => {
                 <label className="block text-sm font-medium text-gray-300 mb-1">DNI</label>
                 <input
                   type="text"
-                  name="dni"
-                  value={newStudent.dni}
+                  name="DNI"
+                  value={newStudent.DNI}
                   onChange={handleNewStudentChange}
                   inputMode="numeric"
                   pattern="[0-9]*"
@@ -287,7 +320,7 @@ const NuevaConvalidacion = () => {
                   onChange={handleNewStudentChange}
                   className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
                 >
-                  <option value="">Seleccione universidad</option>
+                  <option value="-1">Seleccione universidad</option>
                   {universities.map((uni) => (
                     <option key={`uni-${uni.idUniversidad}`} value={uni.idUniversidad}>
                       {uni.nombre}
@@ -303,7 +336,7 @@ const NuevaConvalidacion = () => {
                   onChange={handleNewStudentChange}
                   className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
                 >
-                  <option value="">Seleccione carrera</option>
+                  <option value="-1">Seleccione carrera</option>
                   {careers.map((car) => (
                     <option key={`car-${car.idCarrera}`} value={car.idCarrera}>
                       {car.nombre}
@@ -312,7 +345,7 @@ const NuevaConvalidacion = () => {
                 </select>
               </div>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-4 mb-6">
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-300 mb-1">Correo Institucional</label>
                 <input
@@ -343,25 +376,21 @@ const NuevaConvalidacion = () => {
                 />
               </div>
             </div>
+
+            {/* Botón para el tab de crear */}
+            <div className="flex justify-end">
+              <button
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md disabled:opacity-50"
+                /* disabled={!newStudent.nombre || !newStudent.apellido || !newStudent.DNI || !newStudent.idUniversidadOrigen || 
+                          !newStudent.idCarreraOrigen || !newStudent.email || !newStudent.celular } */
+                disabled={validateEmptyFieldsCreateStudent()} 
+                onClick={handleCreateStudent}
+              >
+                Crear Estudiante
+              </button>
+            </div>
           </div>
         )}
-      </div>
-
-      {/* Botones de acción */}
-      <div className="flex justify-end space-x-3">
-        <Link
-          to={routes.convalidaciones}
-          className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md"
-        >
-          Cancelar
-        </Link>
-        <button
-          className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md disabled:opacity-50"
-          disabled={activeTab === 'search' ? !selectedStudent : !newStudent.nombre || !newStudent.apellido || !newStudent.dni}
-          onClick={activeTab === 'create' ? handleCreateStudent : undefined}
-        >
-          Continuar
-        </button>
       </div>
     </div>
   );

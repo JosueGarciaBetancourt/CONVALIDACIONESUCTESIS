@@ -25,6 +25,22 @@ class CarreraController extends Controller
         }
     }
 
+    public function getCarrerasByUniversidad($idUniversidad)
+    {
+        try {
+            if ($idUniversidad == -1) {
+                $carrerasByUniversidad = Carrera::all();
+            } else {
+                $carrerasByUniversidad = Carrera::where('idUniversidad', $idUniversidad)->get();
+            }
+            return response()->json($carrerasByUniversidad, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Error al obtener carreras por universidad. " . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function getCarrera($idCarrera)
     {
         try {

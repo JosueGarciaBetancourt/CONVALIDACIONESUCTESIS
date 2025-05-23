@@ -40,10 +40,16 @@ class EstudianteController extends Controller
     {
         try {
             $search = $request->input('search', '');
+            $idUniversidad = $request->input('idUniversidad', '');
+
             $searchTerms = explode(' ', trim($search));
             
             $query = Estudiante::query();
             
+            if(!empty($idUniversidad)) {
+                $query->where('idUniversidadOrigen', $idUniversidad);
+            }
+
             if (!empty($search)) {
                 $query->where(function($q) use ($searchTerms) {
                     foreach ($searchTerms as $term) {
@@ -59,19 +65,12 @@ class EstudianteController extends Controller
                 ->orderBy('apellido')
                 ->orderBy('nombre');
             
-            $estudiantes = $query->paginate(5);
+            $estudiantes = $query->limit(5)->get();
 
             return response()->json([
                 'success' => true,
-                'data' => $estudiantes->items(),
-                'pagination' => [
-                    'total' => $estudiantes->total(),
-                    'current_page' => $estudiantes->currentPage(),
-                    'last_page' => $estudiantes->lastPage(),
-                    'per_page' => $estudiantes->perPage(),
-                ]
+                'data' => $estudiantes
             ]);
-            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -112,7 +111,7 @@ class EstudianteController extends Controller
             // Validación automática por CreateEstudianteRequest
             $data = $request->validated();
 
-            Estudiante::create([
+            $estudiante = Estudiante::create([
                 'DNI' => $data['DNI'],
                 'nombre' => $data['nombre'],
                 'apellido' => $data['apellido'],
@@ -123,7 +122,8 @@ class EstudianteController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Estudiante creado correctamente'
+                'message' => 'Estudiante creado correctamente',
+                'data' => $estudiante
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
