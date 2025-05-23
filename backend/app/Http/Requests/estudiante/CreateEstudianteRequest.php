@@ -32,6 +32,14 @@ class CreateEstudianteRequest extends FormRequest
         ];
     }
 
+    public function messages(): array
+    {
+        return [
+            'DNI.unique' => 'El DNI ya ha sido registrado anteriormente.',
+            'email.unique' => 'El Correo Institucional ya ha sido registrado anteriormente.',
+        ];
+    }
+
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {

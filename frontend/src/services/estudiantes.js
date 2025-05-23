@@ -2,7 +2,7 @@ import api from './api'
 
 const handleError = (error) => {
 	console.error(error);
-	throw error;
+	throw error.response.data;
 }
 
 export const getEstudiantes = async () => {

@@ -28,10 +28,10 @@ class CarreraController extends Controller
     public function getCarrerasByUniversidad($idUniversidad)
     {
         try {
-            if ($idUniversidad == -1) {
-                $carrerasByUniversidad = Carrera::all();
-            } else {
+            if (is_numeric($idUniversidad)) {
                 $carrerasByUniversidad = Carrera::where('idUniversidad', $idUniversidad)->get();
+            } else {
+                $carrerasByUniversidad = [];
             }
             return response()->json($carrerasByUniversidad, 200);
         } catch (\Exception $e) {

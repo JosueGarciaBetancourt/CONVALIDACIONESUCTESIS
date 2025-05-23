@@ -35,7 +35,7 @@ class CarreraSeeder extends Seeder
             [
                 'idCarrera' => 4,
                 'nombre' => 'Ingeniería Mecatrónica',
-                'codigo' => 'UC-IS',
+                'codigo' => 'UC-IM',
                 'abreviatura' => 'IS',
                 'idUniversidad' => 1, // UNCP
             ],
