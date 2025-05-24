@@ -343,7 +343,6 @@ const InformacionEstudiante = ({
               disabled={!isCreateStudentValid} 
               onClick={() => {
                 handleCreateStudent();
-                onNext(); // Llamar a onNext después de crear el estudiante
               }}
             >
               Crear Estudiante

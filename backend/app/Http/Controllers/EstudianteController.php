@@ -133,7 +133,7 @@ class EstudianteController extends Controller
                 'idUniversidadOrigen' => $data['idUniversidadOrigen'],
             ]);
 
-            $estudianteFull = Estudiante::with(['carrera', 'universidad'])->where('idEstudiante', $estudiante->idEstudiante)->get();
+            $estudianteFull = Estudiante::with(['carrera', 'universidad'])->where('idEstudiante', $estudiante->idEstudiante)->first();
 
             return response()->json([
                 'message' => 'Estudiante creado correctamente',

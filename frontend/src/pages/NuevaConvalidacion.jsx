@@ -267,8 +267,12 @@ const STEPS = {
   const handleCreateStudent = useCallback(async () => {
     try {
       const response = await createEstudiante(newStudent);
-      setSelectedStudent(response.data);
+      const estudianteCompleto = response.data
+      setSelectedStudent(estudianteCompleto);
       setActiveTab(TABS.SEARCH);
+      setNewSolicitud(prev => ({ ...prev, idEstudiante: estudianteCompleto.idEstudiante.toString() }));
+      setShowDropdown(false);
+      setSearchInput(`${estudianteCompleto.nombre} ${estudianteCompleto.apellido} (${estudianteCompleto.DNI})`);
       setErrors({});
     } catch (error) {
       setErrors(error?.errors || { general: "Error al crear estudiante" });
