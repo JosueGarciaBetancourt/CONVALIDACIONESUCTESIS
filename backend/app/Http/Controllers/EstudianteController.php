@@ -36,6 +36,18 @@ class EstudianteController extends Controller
         }
     }
 
+    public function getEstudianteFull($idEstudiante) 
+    {
+        try {
+            $estudianteFull = Estudiante::with(['carrera', 'universidad'])->where('idEstudiante', $idEstudiante)->first();
+            return response()->json($estudianteFull, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Error al obtener el estudiante junto a su universidad y carrera con ID $idEstudiante. " . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function searchEstudianteByDNIName(Request $request)
     {
         try {
@@ -121,9 +133,11 @@ class EstudianteController extends Controller
                 'idUniversidadOrigen' => $data['idUniversidadOrigen'],
             ]);
 
+            $estudianteFull = Estudiante::with(['carrera', 'universidad'])->where('idEstudiante', $estudiante->idEstudiante)->get();
+
             return response()->json([
                 'message' => 'Estudiante creado correctamente',
-                'data' => $estudiante
+                'data' => $estudianteFull
             ], 201);
         } catch (\Exception $e) {
             return response()->json([

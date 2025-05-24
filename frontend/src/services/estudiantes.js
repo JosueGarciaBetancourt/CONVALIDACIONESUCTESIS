@@ -23,6 +23,15 @@ export const getEstudiante = async (id) => {
 	}
 }
 
+export const getEstudianteWithUniversidadCarrera = async (id) => {
+	try {
+		const res = await api.get(`/estudiantes/full/${id}`);
+		return res.data;
+	} catch (error) {
+		handleError(error);
+	}
+}
+
 export const searchEstudiante = async (params) => {
 	try {
 		const res = await api.get('/estudiantes/buscar', {

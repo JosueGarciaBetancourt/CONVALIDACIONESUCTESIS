@@ -86,6 +86,7 @@ Route::delete('/gruposTematicos/{idGrupoTematico}/delete', [GrupoTematicoControl
 // Estudiantes
 Route::get('/estudiantes', [EstudianteController::class, 'getEstudiantes'])->name('getEstudiantes');
 Route::get('/estudiantes/buscar', [EstudianteController::class, 'searchEstudianteByDNIName'])->name('searchEstudianteByDNIName');
+Route::get('/estudiantes/full/{idEstudiante}', [EstudianteController::class, 'getEstudianteFull'])->name('getEstudianteFull');
 Route::get('/estudiantes/{idEstudiante}', [EstudianteController::class, 'getEstudiante'])->name('getEstudiante');
 Route::get('/estudiantes-trashed', [EstudianteController::class, 'getTrashedEstudiantes'])->name('getTrashedEstudiantes');
 Route::get('/estudiantes/{idEstudiante}/trashed', [EstudianteController::class, 'getTrashedEstudiante'])->name('getTrashedEstudiante');

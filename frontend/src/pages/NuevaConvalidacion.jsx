@@ -1,83 +1,140 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import routes from '../routes';
-import { getEstudiante, searchEstudiante, createEstudiante } from '../services/estudiantes';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { getEstudiante, getEstudianteWithUniversidadCarrera, searchEstudiante, createEstudiante } from '../services/estudiantes';
 import { getUniversidades } from '../services/universidades';
-import { getCarreras, getCarrerasByUniversidad } from '../services/carreras';
-import { getMallas, getMallasByCarrera } from '../services/mallas';
+import { getCarrera, getCarrerasByUniversidad } from '../services/carreras';
+import { getMallasByCarrera } from '../services/mallas';
 import { createSolicitud } from '../services/solicitudes';
 
-const NuevaConvalidacion = () => {
-  const [activeTab, setActiveTab] = useState('search');
-  const [searchInput, setSearchInput] = useState('');
+// Componentes
+import InformacionEstudiante from '../components/convalidaciones/InformacionEstudiante';
+import RegistroCursosSilabos from '../components/convalidaciones/RegistroCursosSilabos';
+import SugerenciaCursos from '../components/convalidaciones/SugerenciaCursos';
+import ValidacionManual from '../components/convalidaciones/ValidacionManual';
+import Reporte from '../components/convalidaciones/Reporte';
+
+// Constantes
+const TABS = {
+  SEARCH: 'search',
+  CREATE: 'create'
+};
+
+const FORM_CONSTRAINTS = {
+  DNI_MAX_LENGTH: 8,
+  CELULAR_MAX_LENGTH: 9,
+  SEARCH_DEBOUNCE_MS: 300,
+  MAX_SEARCH_RESULTS: 5
+};
+
+const FORM_CONFIG = {
+  isUniversidadDestinoDisabled: true,
+  isCarreraDestinoDisabled: true,
+  isMallaDestinoDisabled: true,
+};
+
+const INITIAL_NEW_STUDENT = {
+  DNI: '87654321',
+  nombre: 'Alberto',
+  apellido: 'Espinoza Contreras',
+  email: 'alberto@utp.edu.pe',
+  celular: '999888777',
+  idCarreraOrigen: '2',
+  idUniversidadOrigen: '2'
+};
+
+const INITIAL_NEW_SOLICITUD = {
+  idEstudiante: '',
+  idCarreraDestino: '1',
+  idMallaConvalidar: '3'
+};
+
+// Definimos los pasos del proceso
+const STEPS = {
+  STUDENT_INFO: {
+    step: 1,
+    label: "Información del Estudiante"
+  },
+  COURSES_REGISTRATION: {
+    step: 2,
+    label: "Registro de Cursos"
+  },
+  COURSES_SUGGESTION: {
+    step: 3,
+    label: "Sugerencia de Cursos"
+  },
+  MANUAL_VALIDATION: {
+    step: 4,
+    label: "Validación Manual"
+  },
+  REPORT: {
+    step: 5,
+    label: "Reporte Final"
+  }
+};
+
+  const NuevaConvalidacion = () => {
+  const [currentStep, setCurrentStep] = useState(STEPS.STUDENT_INFO.step);
+  const [completedSteps, setCompletedSteps] = useState(new Set());
+
+  // Función para avanzar al siguiente paso
+  const nextStep = useCallback(() => {
+    setCompletedSteps(prev => new Set(prev).add(currentStep));
+    setCurrentStep(prev => Math.min(prev + 1, STEPS.REPORT.step));
+  }, [currentStep]);
+
+  // Función para retroceder al paso anterior
+  const prevStep = useCallback(() => {
+    setCurrentStep(prev => Math.max(prev - 1, STEPS.STUDENT_INFO.step));
+  }, []);
+
+  // Estados principales
+  const [activeTab, setActiveTab] = useState(TABS.SEARCH);
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [errors, setErrors] = useState({});
+  
+  // Estados de búsqueda
+  const [searchInput, setSearchInput] = useState('');
   const [universityFilter, setUniversityFilter] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Estados de datos
   const [universities, setUniversities] = useState([]);
   const [careers, setCareers] = useState([]);
+  const [destinationCareers, setDestinationCareers] = useState([]);
+  const [destinationStudiesPlan, setDestinationStudiesPlan] = useState([]);
+  
+  // Estados de formularios
+  const [newStudent, setNewStudent] = useState(INITIAL_NEW_STUDENT);
+  const [newSolicitud, setNewSolicitud] = useState(INITIAL_NEW_SOLICITUD);
   const [destinationUniversity, setDestinationUniversity] = useState(1);
-  const [destination_universities, setDestinationUniversities] = useState([]);
-  const [destination_careers, setDestinationCareers] = useState([]);
-  const [destination_studiesPlan, setDestinationStudiesPlan] = useState([]);
-  const [errors, setErrors] = useState({});
-  const [newStudent, setNewStudent] = useState({
-    DNI: '87654321',
-    nombre: 'Alberto',
-    apellido: 'Espinoza Contreras',
-    email: 'alberto@utp.edu.pe',
-    celular: '999888777',
-    idCarreraOrigen: '2',
-    idUniversidadOrigen: '2'
-  });
-  const [newSolicitud, setNewSolicitud] = useState({
-    idEstudiante: '',
-    idCarreraDestino: '1',
-    idMallaConvalidar: '3'
-  });
-  const isUniversidadDestinoDisabled = true;
-  const isCarreraDestinoDisabled = true;
-  const isMallaConvalidarDisabled = true;
+  
+  // Referencias para cleanup
+  const searchTimeoutRef = useRef(null);
+  const abortControllerRef = useRef(null);
 
+  // Memoización de datos derivados
+  const universityMap = useMemo(() => {
+    return universities.reduce((acc, uni) => {
+      acc[uni.idUniversidad] = uni;
+      return acc;
+    }, {});
+  }, [universities]);
 
-  // Obtener universidades y carreras al montar el componente
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const uniData = await getUniversidades();
-        const careersData = await getCarrerasByUniversidad(newStudent.idUniversidadOrigen || null);
-        const destinationCareersData = await getCarrerasByUniversidad(destinationUniversity || null);
-        const destinationStudiesPlanData = await getMallasByCarrera(newSolicitud.idCarreraDestino || null);
+  // Función de búsqueda optimizada con abort controller
+  const searchStudents = useCallback(async () => {
+    if (searchInput.length <= 1) {
+      setFilteredStudents([]);
+      setShowDropdown(false);
+      return;
+    }
 
-        setUniversities(uniData);
-        setCareers(careersData);
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
 
-        setDestinationUniversities(uniData);
-        setDestinationCareers(destinationCareersData);
-        setDestinationStudiesPlan(destinationStudiesPlanData);
-      } catch (error) {
-        console.error('Error al obttener datos iniciales:', error);
-      }
-    };
-    fetchInitialData();
-  }, []);
-
-  // Buscar estudiantes en la API con debounce
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchInput.length > 1) {
-        searchStudents();
-      } else {
-        setFilteredStudents([]);
-        setShowDropdown(false);
-      }
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [searchInput, universityFilter]);
-
-  const searchStudents = async () => {
+    abortControllerRef.current = new AbortController();
+    
     setIsLoading(true);
     try {
       const params = {
@@ -85,476 +142,264 @@ const NuevaConvalidacion = () => {
         universidad: universityFilter
       };
       
-      const res = await searchEstudiante(params);
-      const estudiantes = res.data;
-
-      setFilteredStudents(estudiantes.slice(0, 5));
-      setShowDropdown(true);
+      const res = await searchEstudiante(params, {
+        signal: abortControllerRef.current.signal
+      });
+      
+      if (!abortControllerRef.current.signal.aborted) {
+        const estudiantes = res.data || [];
+        setFilteredStudents(estudiantes.slice(0, FORM_CONSTRAINTS.MAX_SEARCH_RESULTS));
+        setShowDropdown(true);
+      }
     } catch (error) {
-      console.error('Error buscando estudiantes:', error);
-      setFilteredStudents([]);
+      if (error.name !== 'AbortError') {
+        console.error('Error buscando estudiantes:', error);
+        setFilteredStudents([]);
+      }
     } finally {
-      setIsLoading(false);
+      if (!abortControllerRef.current?.signal.aborted) {
+        setIsLoading(false);
+      }
     }
-  };
+  }, [searchInput, universityFilter]);
 
-  const handleSelectStudent = async (student) => {
+  // Efectos
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchInput.length > 1) {
+        searchStudents();
+      }
+    }, FORM_CONSTRAINTS.SEARCH_DEBOUNCE_MS);
+
+    return () => clearTimeout(timer);
+  }, [searchInput, searchStudents]);
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        const [uniData, careersData, destinationCareersData, destinationStudiesPlanData] = await Promise.all([
+          getUniversidades(),
+          getCarrerasByUniversidad(newStudent.idUniversidadOrigen || null),
+          getCarrerasByUniversidad(destinationUniversity || null),
+          getMallasByCarrera(newSolicitud.idCarreraDestino || null)
+        ]);
+
+        setUniversities(uniData || []);
+        setCareers(careersData || []);
+        setDestinationCareers(destinationCareersData || []);
+        setDestinationStudiesPlan(destinationStudiesPlanData || []);
+      } catch (error) {
+        console.error('Error al obtener datos iniciales:', error);
+      }
+    };
+
+    fetchInitialData();
+  }, []);
+
+  // Handlers
+  const handleSelectStudent = useCallback(async (student) => {
     try {
-      const estudianteCompleto = await getEstudiante(student.idEstudiante);
+      const estudianteCompleto = await getEstudianteWithUniversidadCarrera(student.idEstudiante);
       setSelectedStudent(estudianteCompleto);
-      const updatedSolicitud = { ...newSolicitud, idEstudiante: student.idEstudiante.toString() };
-      setNewSolicitud(updatedSolicitud);
+      setNewSolicitud(prev => ({ ...prev, idEstudiante: student.idEstudiante.toString() }));
       setShowDropdown(false);
       setSearchInput(`${estudianteCompleto.nombre} ${estudianteCompleto.apellido} (${estudianteCompleto.DNI})`);
     } catch (error) {
       console.error('Error al obtener los detalles del estudiante:', error);
     }
-  };
+  }, []);
 
-  const handleNewStudentChange = async (e) => {
+  const handleNewStudentChange = useCallback(async (e) => {
     const { name, value } = e.target;
-    setNewStudent(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setNewStudent(prev => ({ ...prev, [name]: value }));
     
     if (name === "idUniversidadOrigen") {
-      if (!value) {
-        setNewStudent(prev => ({
-          ...prev,
-          idUniversidadOrigen: "",
-          idCarreraOrigen: ""
-        }));
-        setCareers([]);
-        return;
-      } 
-
       const careersData = await getCarrerasByUniversidad(value);
-      setCareers(careersData);
+      setCareers(careersData || []);
     }
-  };
+  }, []);
 
-  const handleNewSolicitudChange = async (e) => {
+  const handleNewSolicitudChange = useCallback(async (e) => {
     const { name, value } = e.target;
-    setNewSolicitud(prev => ({
-      ...prev,
-      [name]: value
-    }));
     
-    if (name === "idUniversidadDestino") {
-      if (!value) {
+    try {
+      setNewSolicitud(prev => ({ ...prev, [name]: value }));
+  
+      if (name === "idUniversidadDestino") {
+        // Resetear dependencias
         setNewSolicitud(prev => ({
           ...prev,
           idCarreraDestino: "",
           idMallaConvalidar: ""
         }));
-        setDestinationUniversity("");
-        setDestinationCareers([]);
-        setDestinationStudiesPlan([]);
-        return;
-      } 
-
-      setDestinationUniversity(value);
-
-      const destination_careers = await getCarrerasByUniversidad(value);
-      setDestinationCareers(destination_careers);
-    } else if (name === "idCarreraDestino") {
-      if (!value) {
-        setNewSolicitud(prev => ({
-          ...prev,
-          idMallaConvalidar: ""
-        }));
-        setDestinationStudiesPlan([]);
-        return;
-      } 
-
-      const destination_studiesPlan = await getMallasByCarrera(value);
-      setDestinationStudiesPlan(destination_studiesPlan);
+        
+        if (!value) {
+          setDestinationCareers([]);
+          setDestinationStudiesPlan([]);
+          return;
+        }
+  
+        const destCareersData = await getCarrerasByUniversidad(value);
+        setDestinationCareers(destCareersData || []);
+        
+      } else if (name === "idCarreraDestino") {
+        // Resetear malla si cambia la carrera
+        setNewSolicitud(prev => ({ ...prev, idMallaConvalidar: "" }));
+  
+        if (!value) {
+          setDestinationStudiesPlan([]);
+          return;
+        }
+  
+        const studiesPlanData = await getMallasByCarrera(value);
+        setDestinationStudiesPlan(studiesPlanData || []);
+      }
+    } catch (error) {
+      console.error(`Error al cargar datos para ${name}:`, error);
+      // Mostrar feedback al usuario (ej: toast, mensaje en UI)
+      setErrors(prev => ({
+        ...prev,
+        [name]: `Error al cargar opciones: ${error.message}`
+      }));
     }
-  };
+  }, []);
 
-  const handleCreateStudent = async () => {
+  const handleCreateStudent = useCallback(async () => {
     try {
       const response = await createEstudiante(newStudent);
-      console.log('Estudiante creado:', response.data);
       setSelectedStudent(response.data);
-      setActiveTab('search');
+      setActiveTab(TABS.SEARCH);
       setErrors({});
     } catch (error) {
-      if (error && error.errors) {
-        console.error('Error creando estudiante:', error.errors);
-        setErrors(error.errors);
-      } else {
-        setErrors({ general: "Ocurrió un error al crear el estudiante." });
-      }
+      setErrors(error?.errors || { general: "Error al crear estudiante" });
     }
-  };
+  }, [newStudent]);
   
-  const handleCreateSolicitud = async () => {
+  const handleCreateSolicitud = useCallback(async () => {
     try {
-      const response = await createSolicitud(newSolicitud);
-      console.log('Solicitud creada:', response.data);
+      await createSolicitud(newSolicitud);
       setErrors({});
     } catch (error) {
-      if (error && error.errors) {
-        console.error('Error creando solicitud de convalidación:', error.errors);
-        setErrors(error.errors);
-      } else {
-        setErrors({ general: "Ocurrió un error al crear la solicitud de convalidación." });
-      }
+      setErrors(error?.errors || { general: "Error al crear solicitud" });
     }
-  };
+  }, [newSolicitud]);
 
-  const validateEmptyFieldsCreateStudent = () => {
-    try {
-      return Object.values(newStudent).every(value => value);
-    } catch (error) {
-      console.error('Error validando campos vacíos en creación de estudiante:', error);
-    }
-  };
+  // Validaciones
+  const isCreateStudentValid = useMemo(() => 
+    Object.values(newStudent).every(Boolean), 
+    [newStudent]
+  );
 
-  const validateEmptyFieldsCreateSolicitud = () => {
-    try {
-      return Object.values(newSolicitud).every(value => value);
-    } catch (error) {
-      console.error('Error validando campos vacíos en creación de solicitud:', error);
+  const isCreateSolicitudValid = useMemo(() => 
+    Object.values(newSolicitud).every(Boolean), 
+    [newSolicitud]
+  );
+
+  // Componente para mostrar el progreso (siempre visible)
+  const ProgressSteps = () => (
+    <div className="flex justify-between items-center mb-8">
+      {Object.values(STEPS).map(({step, label}) => (
+        <div key={step} className="flex flex-col items-center">
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center 
+            ${currentStep === step ? 'bg-blue-600 text-white' : 
+              completedSteps.has(step) ? 'bg-green-500 text-white' : 'bg-gray-700 text-gray-400'}`}
+          >
+            {step}
+          </div>
+          <span className={`mt-2 text-xs ${currentStep === step ? 'text-white' : 'text-gray-400'}`}>
+            {label}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+
+  // Renderizar el paso actual
+  const renderCurrentStep = () => {
+    switch (currentStep) {
+      case STEPS.STUDENT_INFO.step:
+        return (
+          <InformacionEstudiante
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            searchInput={searchInput}
+            setSearchInput={setSearchInput}
+            universityFilter={universityFilter}
+            setUniversityFilter={setUniversityFilter}
+            showDropdown={showDropdown}
+            setShowDropdown={setShowDropdown}
+            filteredStudents={filteredStudents}
+            isLoading={isLoading}
+            universities={universities}
+            universityMap={universityMap}
+            selectedStudent={selectedStudent}
+            handleSelectStudent={handleSelectStudent}
+            newStudent={newStudent}
+            handleNewStudentChange={handleNewStudentChange}
+            errors={errors}
+            isCreateStudentValid={isCreateStudentValid}
+            handleCreateStudent={handleCreateStudent}
+            newSolicitud={newSolicitud}
+            handleNewSolicitudChange={handleNewSolicitudChange}
+            isCreateSolicitudValid={isCreateSolicitudValid}
+            handleCreateSolicitud={handleCreateSolicitud}
+            destinationUniversity={destinationUniversity}
+            destinationCareers={destinationCareers}
+            destinationStudiesPlan={destinationStudiesPlan}
+            careers={careers}
+            isUniversidadDestinoDisabled={FORM_CONFIG.isUniversidadDestinoDisabled}
+            isCarreraDestinoDisabled={FORM_CONFIG.isCarreraDestinoDisabled}
+            isMallaDestinoDisabled={FORM_CONFIG.isMallaDestinoDisabled}
+            onNext={nextStep}
+          />
+        );
+      case STEPS.COURSES_REGISTRATION.step:
+        return (
+          <RegistroCursosSilabos 
+            student={selectedStudent}
+            universityMap={universityMap}
+            careers={careers}
+            onNext={nextStep}
+            onPrev={prevStep}
+          />
+        );
+      case STEPS.COURSES_SUGGESTION.step:
+        return (
+          <SugerenciaCursos 
+            originUniversity={selectedStudent.idUniversidadOrigen}
+            destinationUniversity={destinationUniversity}
+            onNext={nextStep}
+            onPrev={prevStep}
+          />
+        );
+      case STEPS.MANUAL_VALIDATION.step:
+        return (
+          <ValidacionManual 
+            studentId={selectedStudent.idEstudiante}
+            onNext={nextStep}
+            onPrev={prevStep}
+          />
+        );
+      case STEPS.REPORT.step:
+        return (
+          <Reporte 
+            onGenerate={handleCreateSolicitud}
+            onPrev={prevStep}
+          />
+        );
+      default:
+        return null;
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-950 p-4 sm:p-6">
-      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white mb-2">Nueva Convalidación</h1>
-    </div>
-
-      {/* Sección de Información del Estudiante */}
-      <div className="bg-gray-900 rounded-lg shadow-md p-6 mb-8 border border-gray-700">
-        <h2 className="text-lg font-semibold text-white mb-2">Información del Estudiante</h2>
-        <p className="text-gray-300 mb-6">
-          Busque un estudiante existente o cree uno nuevo
-        </p>
-
-        {/* Pestañas */}
-        <div className="flex border-b border-gray-700 mb-6">
-          <button
-            className={`pb-3 px-4 font-medium ${activeTab === 'search' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-gray-300 hover:text-white cursor-pointer'}`}
-            onClick={() => setActiveTab('search')}
-          >
-            Buscar Estudiante
-          </button>
-          <button
-            className={`pb-3 px-4 font-medium ${activeTab === 'create' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-gray-300 hover:text-white cursor-pointer'}`}
-            onClick={() => setActiveTab('create')}
-          >
-            Crear Nuevo
-          </button>
-        </div>
-
-        {/* Contenido de las pestañas */}
-        {activeTab === 'search' ? (
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-grow">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-                <input
-                  type="text"
-                  className="block w-full pl-10 pr-3 py-2 bg-gray-800 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
-                  placeholder="Buscar por DNI o nombre..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  onFocus={() => setShowDropdown(searchInput.length > 0 && filteredStudents.length > 0)}
-                />
-                
-                {/* Dropdown de resultados */}
-                {showDropdown && (
-                  <div className="absolute z-10 mt-1 w-full bg-gray-800 border border-gray-700 rounded-md shadow-lg">
-                    {isLoading ? (
-                      <div className="px-4 py-2 text-gray-400">Buscando...</div>
-                    ) : filteredStudents.length > 0 ? (
-                      <ul className="py-1 max-h-60 overflow-auto">
-                        {filteredStudents.map(student => (
-                          <li 
-                            key={student.idEstudiante}
-                            className="px-4 py-2 hover:bg-gray-700 cursor-pointer text-white"
-                            onClick={() => handleSelectStudent(student)}
-                          >
-                            <div className="font-medium">{student.nombre} {student.apellido}</div>
-                            <div className="text-sm text-gray-400">
-                              {student.DNI} • {universities.find(u => u.idUniversidad === student.idUniversidadOrigen)?.abreviatura || 'Universidad'}
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <div className="px-4 py-2 text-gray-400">No se encontraron resultados</div>
-                    )}
-                  </div>
-                )}
-              </div>
-              
-              <select
-                className="block w-full sm:w-100 pl-3 pr-10 py-2 bg-gray-800 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 cursor-pointer"
-                value={universityFilter}
-                onChange={(e) => setUniversityFilter(e.target.value)}
-              >
-                <option value="">Todas las universidades</option>
-                {universities.map((uni) => (
-                  <option key={`filter-uni-${uni.idUniversidad}`} value={uni.idUniversidad}>
-                    {uni.abreviatura} - {uni.nombre}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Mostrar datos del estudiante seleccionado */}
-            {selectedStudent && (
-              <div className="mt-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
-                <h3 className="text-lg font-semibold text-white mb-4">Datos del Estudiante</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-400">Nombre completo</p>
-                    <p className="text-white">{selectedStudent.nombre} {selectedStudent.apellido}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-400">DNI</p>
-                    <p className="text-white">{selectedStudent.DNI}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-400">Universidad</p>
-                    <p className="text-white">
-                      {universities.find(u => u.idUniversidad === selectedStudent.idUniversidadOrigen)?.nombre || 'No especificada'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-400">Correo institucional</p>
-                    <p className="text-white">{selectedStudent.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-400">Celular</p>
-                    <p className="text-white">{selectedStudent.celular}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Sección de Solicitud de Convalidación */}
-            {selectedStudent && (
-              <div className="bg-gray-900 rounded-lg shadow-md mt-8">
-              <h2 className="text-lg font-semibold text-white mb-2">Generación de Solicitud</h2>
-              <p className="text-gray-300 mb-6">
-                Complete todos los campos
-              </p>
-
-              <div>
-                <div className="flex gap-4 flex-nowrap mb-5">
-                  <div className="w-4/5">
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Universidad Destino</label>
-                    <select 
-                      name="idUniversidadDestino"
-                      value={destinationUniversity}
-                      disabled={isUniversidadDestinoDisabled}
-                      onChange={handleNewSolicitudChange}
-                      className={`w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 ${isUniversidadDestinoDisabled ? 'cursor-default' : 'cursor-pointer'}`}
-                    >
-                      <option value="" >Seleccione universidad destino</option>
-                      {destination_universities.map((uni) => (
-                        <option key={`uni-${uni.idUniversidad}`} value={uni.idUniversidad}>
-                          {uni.abreviatura} - {uni.nombre}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="w-3/5">
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Carrera Destino</label>
-                    <select 
-                      name="idCarreraDestino"
-                      value={newSolicitud.idCarreraDestino}
-                      disabled={isCarreraDestinoDisabled}
-                      onChange={handleNewSolicitudChange}
-                      className={`w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 ${isCarreraDestinoDisabled ? 'cursor-default' : 'cursor-pointer'}`}
-                 >
-                      <option value="">Seleccione carrera destino</option>
-                      {destination_careers.map((car) => (
-                        <option key={`car-${car.idCarrera}`} value={car.idCarrera}>
-                          {car.nombre} - {car.abreviatura}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="w-2/5">
-                    <label className="block text-sm font-medium text-gray-300 mb-1">Plan de Estudios Destino</label>
-                    <select 
-                      name="idMallaConvalidar"
-                      value={newSolicitud.idMallaConvalidar}
-                      disabled={isMallaConvalidarDisabled}
-                      onChange={handleNewSolicitudChange}
-                      className={`w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 ${isMallaConvalidarDisabled ? 'cursor-default' : 'cursor-pointer'}`}
-                    >
-                      <option value="">Seleccione plan de estudios destino</option>
-                      {destination_studiesPlan.map((destStuPlan) => (
-                        <option key={`destStuPlan-${destStuPlan.idMalla}`} value={destStuPlan.idMalla}>
-                          {destStuPlan.semestre_inicio}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-            )}
-           
-            
-            {/* Botones para guardar o cancelar Solicitud */}
-            <div className="flex justify-end space-x-3 mt-6">
-              <Link
-                to={routes.convalidaciones}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md"
-              >
-                Cancelar
-              </Link>
-              <button
-                className={`px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md disabled:opacity-50
-                            ${validateEmptyFieldsCreateSolicitud() ? 'cursor-pointer' : ''}`}
-                disabled={!validateEmptyFieldsCreateSolicitud()}
-                onClick={handleCreateSolicitud}
-              >
-                Continuar
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div>
-            <div className="flex gap-4 mb-5">
-              <div className="w-full">
-                <label className="block text-sm font-medium text-gray-300 mb-1">Nombre</label>
-                <input
-                  type="text"
-                  name="nombre"
-                  value={newStudent.nombre}
-                  onChange={handleNewStudentChange}
-                  className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
-                />
-              </div>
-              <div className="w-full">
-                <label className="block text-sm font-medium text-gray-300 mb-1">Apellido</label>
-                <input
-                  type="text"
-                  name="apellido"
-                  value={newStudent.apellido}
-                  onChange={handleNewStudentChange}
-                  className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-4 mb-5">
-              <div className="w-32">
-                <label className="block text-sm font-medium text-gray-300 mb-1">DNI</label>
-                <input
-                  type="text"
-                  name="DNI"
-                  value={newStudent.DNI}
-                  onChange={handleNewStudentChange}
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={8}
-                  className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
-                  onInput={(e) => {
-                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
-                    if (e.target.value.length > 8) {
-                      e.target.value = e.target.value.slice(0, 8);
-                    }
-                  }}
-                />
-                { errors.DNI && (<p className="text-red-500 text-sm mt-1">{errors.DNI[0]}</p>) }
-              </div>
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-300 mb-1">Universidad de Procedencia</label>
-                <select 
-                  name="idUniversidadOrigen"
-                  value={newStudent.idUniversidadOrigen}
-                  onChange={handleNewStudentChange}
-                  className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 cursor-pointer"
-                >
-                  <option value="" >Seleccione universidad</option>
-                  {universities.map((uni) => (
-                    <option key={`uni-${uni.idUniversidad}`} value={uni.idUniversidad}>
-                      {uni.abreviatura} - {uni.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-300 mb-1">Carrera de Procedencia</label>
-                <select 
-                  name="idCarreraOrigen"
-                  value={newStudent.idCarreraOrigen}
-                  onChange={handleNewStudentChange}
-                  className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 cursor-pointer"
-                >
-                  <option value="">Seleccione carrera</option>
-                  {careers.map((car) => (
-                    <option key={`car-${car.idCarrera}`} value={car.idCarrera}>
-                      {car.nombre} - {car.abreviatura}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div className="flex gap-4 mb-6">
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-300 mb-1">Correo Institucional</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={newStudent.email}
-                  onChange={handleNewStudentChange}
-                  className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
-                />
-                { errors.email && (<p className="text-red-500 text-sm mt-1">{errors.email[0]}</p>) }
-              </div>
-              <div className="w-40">
-                <label className="block text-sm font-medium text-gray-300 mb-1">Celular</label>
-                <input
-                  type="text"
-                  name="celular"
-                  value={newStudent.celular}
-                  onChange={handleNewStudentChange}
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={9}
-                  className="w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
-                  onInput={(e) => {
-                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
-                    if (e.target.value.length > 9) {
-                      e.target.value = e.target.value.slice(0, 9);
-                    }
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Botón para el tab de crear */}
-            <div className="flex justify-end">
-              <button
-                className={`px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md disabled:opacity-50
-                            ${validateEmptyFieldsCreateStudent() ? 'cursor-pointer' : ''}`}
-                disabled={!validateEmptyFieldsCreateStudent()} 
-                onClick={handleCreateStudent}
-              >
-                Crear Estudiante
-              </button>
-            </div>
-          </div>
-        )}
+        <h1 className="text-2xl font-bold text-white mb-7">Nueva Convalidación</h1>
+        <ProgressSteps />
       </div>
 
-      
+      {renderCurrentStep()}
     </div>
   );
 };
