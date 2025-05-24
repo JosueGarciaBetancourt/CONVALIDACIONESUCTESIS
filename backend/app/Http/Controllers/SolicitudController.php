@@ -80,24 +80,13 @@ class SolicitudController extends Controller
         return $newCodigoSolicitud;
     }
 
-    public function procesarRespuestaModeloNLP() {
-        return;
-    }
-
-    public function procesarComparacionCursos($inputJson) {
-        $response = $this->procesarRespuestaModeloNLP($inputJson);
-        return;
-    }
-
     public function createSolicitud(CreateSolicitudRequest $request)
     {
         try {
-            // Después de seleccionar al estudiante...
-
             $data = $request->validated();
             $codigo = $this::returnNuevoCodigoSolicitud();
 
-            Solicitud::create([
+            $solicitud = Solicitud::create([
                 'codigo' => $codigo,
                 'idEstudiante' => $data['idEstudiante'],
                 'idCarreraDestino' => $data['idCarreraDestino'],
@@ -109,7 +98,8 @@ class SolicitudController extends Controller
             Log::info($token); */
                         
             return response()->json([
-                'message' => 'Solicitud creada correctamente'
+                'message' => 'Solicitud creada correctamente',
+                'data' => $solicitud
             ], 201);
         } catch (\Exception $e) {
             return response()->json([

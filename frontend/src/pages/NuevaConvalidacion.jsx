@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import routes from '../routes';
 import { getEstudiante, searchEstudiante, createEstudiante } from '../services/estudiantes';
 import { getUniversidades } from '../services/universidades';
 import { getCarreras, getCarrerasByUniversidad } from '../services/carreras';
+import { getMallas, getMallasByCarrera } from '../services/mallas';
+import { createSolicitud } from '../services/solicitudes';
 
 const NuevaConvalidacion = () => {
   const [activeTab, setActiveTab] = useState('search');
@@ -15,6 +17,10 @@ const NuevaConvalidacion = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [universities, setUniversities] = useState([]);
   const [careers, setCareers] = useState([]);
+  const [destinationUniversity, setDestinationUniversity] = useState(1);
+  const [destination_universities, setDestinationUniversities] = useState([]);
+  const [destination_careers, setDestinationCareers] = useState([]);
+  const [destination_studiesPlan, setDestinationStudiesPlan] = useState([]);
   const [errors, setErrors] = useState({});
   const [newStudent, setNewStudent] = useState({
     DNI: '87654321',
@@ -25,18 +31,33 @@ const NuevaConvalidacion = () => {
     idCarreraOrigen: '2',
     idUniversidadOrigen: '2'
   });
+  const [newSolicitud, setNewSolicitud] = useState({
+    idEstudiante: '',
+    idCarreraDestino: '1',
+    idMallaConvalidar: '3'
+  });
+  const isUniversidadDestinoDisabled = true;
+  const isCarreraDestinoDisabled = true;
+  const isMallaConvalidarDisabled = true;
+
 
   // Obtener universidades y carreras al montar el componente
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         const uniData = await getUniversidades();
-        const careersData = await getCarrerasByUniversidad(newStudent.idUniversidadOrigen);
-        
+        const careersData = await getCarrerasByUniversidad(newStudent.idUniversidadOrigen || null);
+        const destinationCareersData = await getCarrerasByUniversidad(destinationUniversity || null);
+        const destinationStudiesPlanData = await getMallasByCarrera(newSolicitud.idCarreraDestino || null);
+
         setUniversities(uniData);
         setCareers(careersData);
+
+        setDestinationUniversities(uniData);
+        setDestinationCareers(destinationCareersData);
+        setDestinationStudiesPlan(destinationStudiesPlanData);
       } catch (error) {
-        console.error('Error fetching initial data:', error);
+        console.error('Error al obttener datos iniciales:', error);
       }
     };
     fetchInitialData();
@@ -81,6 +102,8 @@ const NuevaConvalidacion = () => {
     try {
       const estudianteCompleto = await getEstudiante(student.idEstudiante);
       setSelectedStudent(estudianteCompleto);
+      const updatedSolicitud = { ...newSolicitud, idEstudiante: student.idEstudiante.toString() };
+      setNewSolicitud(updatedSolicitud);
       setShowDropdown(false);
       setSearchInput(`${estudianteCompleto.nombre} ${estudianteCompleto.apellido} (${estudianteCompleto.DNI})`);
     } catch (error) {
@@ -111,6 +134,45 @@ const NuevaConvalidacion = () => {
     }
   };
 
+  const handleNewSolicitudChange = async (e) => {
+    const { name, value } = e.target;
+    setNewSolicitud(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    if (name === "idUniversidadDestino") {
+      if (!value) {
+        setNewSolicitud(prev => ({
+          ...prev,
+          idCarreraDestino: "",
+          idMallaConvalidar: ""
+        }));
+        setDestinationUniversity("");
+        setDestinationCareers([]);
+        setDestinationStudiesPlan([]);
+        return;
+      } 
+
+      setDestinationUniversity(value);
+
+      const destination_careers = await getCarrerasByUniversidad(value);
+      setDestinationCareers(destination_careers);
+    } else if (name === "idCarreraDestino") {
+      if (!value) {
+        setNewSolicitud(prev => ({
+          ...prev,
+          idMallaConvalidar: ""
+        }));
+        setDestinationStudiesPlan([]);
+        return;
+      } 
+
+      const destination_studiesPlan = await getMallasByCarrera(value);
+      setDestinationStudiesPlan(destination_studiesPlan);
+    }
+  };
+
   const handleCreateStudent = async () => {
     try {
       const response = await createEstudiante(newStudent);
@@ -119,20 +181,43 @@ const NuevaConvalidacion = () => {
       setActiveTab('search');
       setErrors({});
     } catch (error) {
-      console.error('Error creando estudiante:', error.errors);
       if (error && error.errors) {
+        console.error('Error creando estudiante:', error.errors);
         setErrors(error.errors);
       } else {
         setErrors({ general: "Ocurrió un error al crear el estudiante." });
       }
     }
   };
-
-  const areEmptyFieldsCreateStudent = () => {
+  
+  const handleCreateSolicitud = async () => {
     try {
-      return !Object.values(newStudent).every(value => value);
+      const response = await createSolicitud(newSolicitud);
+      console.log('Solicitud creada:', response.data);
+      setErrors({});
     } catch (error) {
-      console.error('Error vaidando campos vacíos en creación de estudiante:', error);
+      if (error && error.errors) {
+        console.error('Error creando solicitud de convalidación:', error.errors);
+        setErrors(error.errors);
+      } else {
+        setErrors({ general: "Ocurrió un error al crear la solicitud de convalidación." });
+      }
+    }
+  };
+
+  const validateEmptyFieldsCreateStudent = () => {
+    try {
+      return Object.values(newStudent).every(value => value);
+    } catch (error) {
+      console.error('Error validando campos vacíos en creación de estudiante:', error);
+    }
+  };
+
+  const validateEmptyFieldsCreateSolicitud = () => {
+    try {
+      return Object.values(newSolicitud).every(value => value);
+    } catch (error) {
+      console.error('Error validando campos vacíos en creación de solicitud:', error);
     }
   };
 
@@ -141,16 +226,13 @@ const NuevaConvalidacion = () => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white mb-2">Nueva Convalidación</h1>
-        <p className="text-gray-300">
-          Suba los documentos del estudiante para iniciar el proceso de convalidación
-        </p>
-      </div>
+    </div>
 
       {/* Sección de Información del Estudiante */}
       <div className="bg-gray-900 rounded-lg shadow-md p-6 mb-8 border border-gray-700">
         <h2 className="text-lg font-semibold text-white mb-2">Información del Estudiante</h2>
         <p className="text-gray-300 mb-6">
-          Busque un estudiante existente o ingrese los datos para un nuevo estudiante
+          Busque un estudiante existente o cree uno nuevo
         </p>
 
         {/* Pestañas */}
@@ -260,7 +342,74 @@ const NuevaConvalidacion = () => {
               </div>
             )}
 
-            {/* Botones para el tab de búsqueda */}
+            {/* Sección de Solicitud de Convalidación */}
+            {selectedStudent && (
+              <div className="bg-gray-900 rounded-lg shadow-md mt-8">
+              <h2 className="text-lg font-semibold text-white mb-2">Generación de Solicitud</h2>
+              <p className="text-gray-300 mb-6">
+                Complete todos los campos
+              </p>
+
+              <div>
+                <div className="flex gap-4 flex-nowrap mb-5">
+                  <div className="w-4/5">
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Universidad Destino</label>
+                    <select 
+                      name="idUniversidadDestino"
+                      value={destinationUniversity}
+                      disabled={isUniversidadDestinoDisabled}
+                      onChange={handleNewSolicitudChange}
+                      className={`w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 ${isUniversidadDestinoDisabled ? 'cursor-default' : 'cursor-pointer'}`}
+                    >
+                      <option value="" >Seleccione universidad destino</option>
+                      {destination_universities.map((uni) => (
+                        <option key={`uni-${uni.idUniversidad}`} value={uni.idUniversidad}>
+                          {uni.abreviatura} - {uni.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="w-3/5">
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Carrera Destino</label>
+                    <select 
+                      name="idCarreraDestino"
+                      value={newSolicitud.idCarreraDestino}
+                      disabled={isCarreraDestinoDisabled}
+                      onChange={handleNewSolicitudChange}
+                      className={`w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 ${isCarreraDestinoDisabled ? 'cursor-default' : 'cursor-pointer'}`}
+                 >
+                      <option value="">Seleccione carrera destino</option>
+                      {destination_careers.map((car) => (
+                        <option key={`car-${car.idCarrera}`} value={car.idCarrera}>
+                          {car.nombre} - {car.abreviatura}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="w-2/5">
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Plan de Estudios Destino</label>
+                    <select 
+                      name="idMallaConvalidar"
+                      value={newSolicitud.idMallaConvalidar}
+                      disabled={isMallaConvalidarDisabled}
+                      onChange={handleNewSolicitudChange}
+                      className={`w-full bg-gray-800 text-white border border-gray-700 rounded-md p-2 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 ${isMallaConvalidarDisabled ? 'cursor-default' : 'cursor-pointer'}`}
+                    >
+                      <option value="">Seleccione plan de estudios destino</option>
+                      {destination_studiesPlan.map((destStuPlan) => (
+                        <option key={`destStuPlan-${destStuPlan.idMalla}`} value={destStuPlan.idMalla}>
+                          {destStuPlan.semestre_inicio}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            )}
+           
+            
+            {/* Botones para guardar o cancelar Solicitud */}
             <div className="flex justify-end space-x-3 mt-6">
               <Link
                 to={routes.convalidaciones}
@@ -270,8 +419,9 @@ const NuevaConvalidacion = () => {
               </Link>
               <button
                 className={`px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md disabled:opacity-50
-                            ${selectedStudent ? 'cursor-pointer' : ''}`}
-                disabled={!selectedStudent}
+                            ${validateEmptyFieldsCreateSolicitud() ? 'cursor-pointer' : ''}`}
+                disabled={!validateEmptyFieldsCreateSolicitud()}
+                onClick={handleCreateSolicitud}
               >
                 Continuar
               </button>
@@ -393,8 +543,8 @@ const NuevaConvalidacion = () => {
             <div className="flex justify-end">
               <button
                 className={`px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md disabled:opacity-50
-                            ${!areEmptyFieldsCreateStudent() ? 'cursor-pointer' : ''}`}
-                disabled={areEmptyFieldsCreateStudent()} 
+                            ${validateEmptyFieldsCreateStudent() ? 'cursor-pointer' : ''}`}
+                disabled={!validateEmptyFieldsCreateStudent()} 
                 onClick={handleCreateStudent}
               >
                 Crear Estudiante
@@ -403,6 +553,8 @@ const NuevaConvalidacion = () => {
           </div>
         )}
       </div>
+
+      
     </div>
   );
 };

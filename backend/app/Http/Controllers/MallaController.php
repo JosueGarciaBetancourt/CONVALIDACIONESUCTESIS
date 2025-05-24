@@ -21,6 +21,22 @@ class MallaController extends Controller
         }
     }
 
+    public function getMallasByCarrera($idCarrera)
+    {
+        try {
+            if (is_numeric($idCarrera)) {
+                $mallasByCarrera = Malla::where('idCarrera', $idCarrera)->get();
+            } else {
+                $mallasByCarrera = [];
+            }
+            return response()->json($mallasByCarrera, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Error al obtener mallas por carrera. " . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function getMalla($idMalla)
     {
         try {

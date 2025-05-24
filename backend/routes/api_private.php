@@ -98,6 +98,7 @@ Route::delete('/estudiantes/{idEstudiante}/delete', [EstudianteController::class
 
 // Mallas
 Route::get('/mallas', [MallaController::class, 'getMallas'])->name('getMallas');
+Route::get('/mallas/carrera/{idCarrera}', [MallaController::class, 'getMallasByCarrera'])->name('getMallasByCarrera');
 Route::get('/mallas/{idMalla}', [MallaController::class, 'getMalla'])->name('getMalla');
 Route::get('/mallas/{idMalla}/curso', [CursoController::class, 'getCoursesByMallaAndName'])->name('getCoursesByMallaAndName'); // MEJORAR BÚSQUEDA SIMILAR TEXT Y LEVENSHTEIN
 Route::post('/mallas/{idMalla}/cursos', [CursoController::class, 'getCoursesByMallaAndManyIds'])->name('getCoursesByMallaAndManyIds');
