@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { useModal } from '../ui';
+import EditCourseModal from '../ui/EditCourseModal';
 
 const RegistroCursosSilabos = ({ 
   student, 
   universityMap, 
   careers,
-  onNext,  // Nueva prop para avanzar
-  onPrev   // Nueva prop para retroceder
+  onNext,
+  onPrev
 }) => {
   const originCareer = careers.find(c => c.idCarrera === student.idCarreraOrigen);
   const [courses, setCourses] = useState([]);
+  const { isOpen, openModal, closeModal } = useModal();
+  const [editingCourse, setEditingCourse] = useState(null);
   const [newCourse, setNewCourse] = useState({
     codigo: '',
     nombre: '',
@@ -24,8 +28,48 @@ const RegistroCursosSilabos = ({
 
   const addCourse = () => {
     if (newCourse.codigo && newCourse.nombre) {
-      setCourses([...courses, { ...newCourse, id: Date.now() }]);
+      setCourses([...courses, { 
+        ...newCourse, 
+        id: Date.now(),
+        silabo: null // Campo para almacenar el sílabo
+      }]);
       setNewCourse({ codigo: '', nombre: '', creditos: '' });
+    }
+  };
+
+  const startEditing = (course) => {
+    setEditingCourse(course); // Guarda el curso completo en el estado
+    openModal(); // Abre el modal
+  };
+  
+  const cancelEditing = () => {
+    setEditingCourse(null);
+    closeModal(); // Cierra el modal
+  };
+  
+  const saveEdit = (formData) => {
+    if (editingCourse) {
+      const updatedCourse = {
+        ...editingCourse,
+        ...formData
+      };
+      setCourses(courses.map(c => 
+        c.id === editingCourse.id ? updatedCourse : c
+      ));
+      setEditingCourse(null);
+      closeModal(); // Cierra el modal después de guardar
+    }
+  };
+
+  const handleSilaboUpload = (e, courseId) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setCourses(courses.map(course => 
+        course.id === courseId 
+          ? { ...course, silabo: selectedFile }
+          : course
+      ));
+      alert(`Sílabo ${selectedFile.name} cargado para el curso ${courses.find(c => c.id === courseId)?.nombre}`);
     }
   };
 
@@ -37,8 +81,6 @@ const RegistroCursosSilabos = ({
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       setFile(selectedFile);
-      // Aquí iría la lógica para procesar el PDF con OCR
-      // Por ahora solo simulamos que extraemos datos
       alert(`Archivo ${selectedFile.name} subido. Procesando con OCR...`);
     }
   };
@@ -47,14 +89,18 @@ const RegistroCursosSilabos = ({
     <div className="bg-gray-900 rounded-lg shadow-md p-6 mb-8 border border-gray-700">
       <h2 className="text-lg font-semibold text-white mb-4">Registro de Cursos y Sílabos</h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">Estudiante</label>
+          <p className="text-white">{`${student?.nombre} ${student?.apellido}` || 'No seleccionado'}</p>
+        </div>
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-1">Universidad de Origen</label>
-          <p className="text-white">{universityMap[student.idUniversidadOrigen]?.nombre || 'No especificada'}</p>
+          <p className="text-white">{student.universidad?.nombre || 'No especificada'}</p>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-1">Carrera de Origen</label>
-          <p className="text-white">{originCareer?.nombre || 'No especificada'}</p>
+          <p className="text-white">{student.carrera?.nombre || 'No especificada'}</p>
         </div>
       </div>
 
@@ -83,7 +129,12 @@ const RegistroCursosSilabos = ({
             placeholder="Créditos"
             value={newCourse.creditos}
             onChange={handleInputChange}
+            maxLength={2}
             className="bg-gray-800 text-white p-2 rounded border border-gray-700"
+            onInput={(e) => {
+              e.target.value = e.target.value.replace(/[^0-9]/g, '');
+              if (e.target.value.length > 2) e.target.value = e.target.value.slice(0, 2);
+            }}
           />
         </div>
         <button 
@@ -124,22 +175,57 @@ const RegistroCursosSilabos = ({
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase">Código</th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase">Nombre del Curso</th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase">Créditos</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase">Sílabo</th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-300 uppercase">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700">
               {courses.map((course) => (
                 <tr key={course.id}>
-                  <td className="px-4 py-3 text-white">{course.codigo}</td>
-                  <td className="px-4 py-3 text-white">{course.nombre}</td>
-                  <td className="px-4 py-3 text-white">{course.creditos}</td>
                   <td className="px-4 py-3">
-                    <button 
-                      onClick={() => removeCourse(course.id)}
-                      className="text-red-500 hover:text-red-400"
-                    >
-                      Eliminar
-                    </button>
+                    <span className="text-white">{course.codigo}</span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-white">{course.nombre}</span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-white">{course.creditos}</span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-sm text-gray-300">
+                      {course.silabo ? course.silabo.name : 'No cargado'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={() => startEditing(course)}
+                        className="text-blue-500 hover:text-blue-400 text-sm font-medium cursor-pointer"
+                      >
+                        Editar
+                      </button>
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={(e) => handleSilaboUpload(e, course.id)}
+                          className="hidden"
+                          id={`silabo-upload-${course.id}`}
+                        />
+                        <label 
+                          htmlFor={`silabo-upload-${course.id}`}
+                          className="text-purple-500 hover:text-purple-400 text-sm font-medium cursor-pointer"
+                        >
+                          Cargar Sílabo
+                        </label>
+                      </div>
+                      <button 
+                        onClick={() => removeCourse(course.id)}
+                        className="text-red-500 hover:text-red-400 text-sm font-medium cursor-pointer"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -159,11 +245,19 @@ const RegistroCursosSilabos = ({
         <button
           onClick={onNext}
           className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md"
-          disabled={courses.length === 0 && !file} // Deshabilitar si no hay cursos ni archivo
+          disabled={courses.length === 0 && !file}
         >
           Continuar
         </button>
       </div>
+
+      {/* Modal de Edición */}
+      <EditCourseModal
+        isOpen={isOpen}
+        onClose={cancelEditing}
+        course={editingCourse}
+        onSave={saveEdit}
+      />
     </div>
   );
 };
@@ -172,8 +266,8 @@ RegistroCursosSilabos.propTypes = {
   student: PropTypes.object.isRequired,
   universityMap: PropTypes.object.isRequired,
   careers: PropTypes.array.isRequired,
-  onNext: PropTypes.func.isRequired,  // Validación para la nueva prop
-  onPrev: PropTypes.func.isRequired   // Validación para la nueva prop
+  onNext: PropTypes.func.isRequired,
+  onPrev: PropTypes.func.isRequired
 };
 
 export default React.memo(RegistroCursosSilabos);

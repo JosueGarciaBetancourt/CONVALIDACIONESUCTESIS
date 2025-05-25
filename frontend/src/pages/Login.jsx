@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import routes from '../routes'
+import { LoaderCircle  } from 'lucide-react'
 
 function Login() {
   const [credentials, setCredentials] = useState({
@@ -88,7 +89,14 @@ function Login() {
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors cursor-pointer"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Iniciando sesión...' : 'Iniciar sesión'}
+            {isSubmitting ? (
+              <span className="flex items-center justify-center gap-2">
+                Iniciando sesión
+                <LoaderCircle  className="animate-spin h-5 w-5 text-white" />
+              </span>
+            ) : (
+              'Iniciar sesión'
+            )}
           </button>
         </form>
       </div>

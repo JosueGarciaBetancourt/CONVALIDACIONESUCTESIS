@@ -151,7 +151,7 @@ const InformacionEstudiante = ({
 
               <div className="bg-gray-900 rounded-lg shadow-md mt-8">
                 <h2 className="text-lg font-semibold text-white mb-2">Generación de Solicitud</h2>
-                <p className="text-gray-300 mb-6">Complete todos los campos</p>
+                <p className="text-gray-300 mb-6">Seleccione el destino de convalidación</p>
 
                 <div className="flex gap-4 flex-nowrap mb-5">
                   <div className="w-4/5">
